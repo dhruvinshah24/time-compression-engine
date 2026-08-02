@@ -52,12 +52,34 @@ async def run(context: PipelineContext) -> StageResult:
     logs.append(f"[{STAGE_NAME}] Starting compression policy for job {context.job_id}")
 
     # ── Step 1: Read inputs ────────────────────────────────────────────────
-    ranking_result = context.metadata.get("ranking_result")
-    if ranking_result is None:
+    # "ranking_result" key must exist in context (set by s10), but its value
+    # may legitimately be None when there were no story segments to rank.
+    if "ranking_result" not in context.metadata:
         duration_ms = int((time.perf_counter() - start) * 1000)
         return StageResult(
             success=False, stage_name=STAGE_NAME, duration_ms=duration_ms,
             errors=["ranking_result not in context — s10_rank must run first"],
+            logs=logs,
+        )
+
+    ranking_result = context.metadata.get("ranking_result")
+
+    # s10 sets ranking_result=None when there are no segments — that's valid.
+    if ranking_result is None:
+        context.metadata["compression_result"] = None
+        context.metadata["kept_event_ids"] = set()
+        context.metadata["summary_events"] = []
+        context.metadata["events"] = []
+        duration_ms = int((time.perf_counter() - start) * 1000)
+        logs.append(f"[{STAGE_NAME}] No ranked segments — compression policy skipped (no events)")
+        save_stage_metrics(context.job_id, STAGE_NAME, {
+            "segments_input": 0, "segments_kept": 0,
+            "events_kept": 0, "compression_ratio": 0.0,
+        })
+        return StageResult(
+            success=True, stage_name=STAGE_NAME, duration_ms=duration_ms,
+            warnings=["No ranked segments to compress — video contained no detected events."],
+            errors=[], metrics={"segments_input": 0, "segments_kept": 0, "events_kept": 0},
             logs=logs,
         )
 

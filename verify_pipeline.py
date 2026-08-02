@@ -27,7 +27,7 @@ print(f'[ANALYTICS] has_data={analytics["has_data"]}  total_videos={analytics["t
 
 # 3. Upload
 print('\n[UPLOAD] Sending test_video.mp4 ...')
-with open('test_video.mp4', 'rb') as f:
+with open('test_real.mp4', 'rb') as f:
     resp = requests.post(
         f'{BASE}/upload/',
         files={'file': ('office_test.mp4', f, 'video/mp4')},

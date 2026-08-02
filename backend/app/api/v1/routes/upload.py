@@ -26,7 +26,7 @@ from app.utils.ffmpeg import (
     get_processing_profile,
     probe_video,
 )
-from app.utils.storage import get_upload_path, save_upload
+from app.utils.storage import get_upload_path
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -62,11 +62,16 @@ async def upload_video(
 
     # ── 1. Save file to disk ───────────────────────────────────────────────
     try:
-        dest_path, file_size_bytes, sha256 = await save_upload(
-            file_obj=file.file,
-            job_id=job_id,
-            original_filename=file.filename,
-        )
+        # Read entire file into memory first (safe for video uploads up to STORAGE limit)
+        content = await file.read()
+        dest_path = get_upload_path(job_id, file.filename)
+        import hashlib as _hashlib
+        hasher = _hashlib.sha256()
+        hasher.update(content)
+        sha256 = hasher.hexdigest()
+        with open(dest_path, "wb") as f_out:
+            f_out.write(content)
+        file_size_bytes = len(content)
     except Exception as exc:
         logger.exception("[%s] Failed to save upload", job_id)
         raise HTTPException(status_code=500, detail=f"File save failed: {exc}") from exc

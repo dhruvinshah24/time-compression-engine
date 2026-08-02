@@ -1,0 +1,1 @@
+"""Model rtdetr_stub."""

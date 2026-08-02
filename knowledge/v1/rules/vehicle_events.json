@@ -1,0 +1,28 @@
+{
+  "rules": [
+    {
+      "event_id": "vehicle_arrived",
+      "conditions": {
+        "entity_type": "vehicle",
+        "spatial_condition": "velocity drops to ~0",
+        "temporal_condition": "duration_stationary > 10_seconds"
+      }
+    },
+    {
+      "event_id": "vehicle_departed",
+      "conditions": {
+        "entity_type": "vehicle",
+        "spatial_condition": "velocity increases from ~0",
+        "temporal_condition": "exits_frame"
+      }
+    },
+    {
+      "event_id": "vehicle_parked",
+      "conditions": {
+        "entity_type": "vehicle",
+        "spatial_condition": "inside_parking_zone AND velocity == 0",
+        "temporal_condition": "duration_stationary > 300_seconds"
+      }
+    }
+  ]
+}

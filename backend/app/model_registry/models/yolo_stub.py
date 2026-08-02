@@ -1,0 +1,1 @@
+"""Model yolo_stub."""

@@ -1,0 +1,27 @@
+{
+  "indoor": {
+    "entrance": {
+      "characteristics": ["doors", "high_traffic", "transition_zone"]
+    },
+    "hallway": {
+      "characteristics": ["linear_movement", "transit"]
+    },
+    "workspace": {
+      "characteristics": ["desks", "computers", "prolonged_presence"]
+    },
+    "storage_room": {
+      "characteristics": ["shelves", "boxes", "low_traffic"]
+    }
+  },
+  "outdoor": {
+    "parking_lot": {
+      "characteristics": ["vehicles", "parking_spaces", "asphalt"]
+    },
+    "outdoor_open": {
+      "characteristics": ["grass", "sky", "unconstrained_movement"]
+    },
+    "outdoor_covered": {
+      "characteristics": ["canopy", "shelter", "mixed_traffic"]
+    }
+  }
+}

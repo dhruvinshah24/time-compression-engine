@@ -1,0 +1,27 @@
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+sqlalchemy>=2.0.30
+asyncpg>=0.29.0
+alembic>=1.13.1
+python-multipart>=0.0.9
+aiofiles>=23.2.1
+structlog>=24.2.0
+celery>=5.3.6
+redis>=5.0.4
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+httpx>=0.27.0
+pytest>=8.2.0
+pytest-asyncio>=0.23.7
+
+# Phase 3A/3B: frame processing + object detection
+Pillow>=10.3.0
+numpy>=1.26.0
+
+# Phase 4: Hungarian algorithm for multi-object tracking
+scipy>=1.13.0
+
+# Phase 3B: object detection (optional — system degrades gracefully without it)
+# ultralytics>=8.0.0

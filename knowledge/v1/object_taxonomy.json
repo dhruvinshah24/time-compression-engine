@@ -1,0 +1,27 @@
+{
+  "person": {
+    "adult": {},
+    "child": {}
+  },
+  "vehicle": {
+    "car": {},
+    "truck": {},
+    "motorcycle": {},
+    "bicycle": {}
+  },
+  "package": {
+    "parcel": {},
+    "bag": {},
+    "box": {}
+  },
+  "furniture": {
+    "chair": {},
+    "table": {},
+    "desk": {}
+  },
+  "infrastructure": {
+    "door": {},
+    "window": {},
+    "gate": {}
+  }
+}

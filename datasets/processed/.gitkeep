@@ -1,0 +1,2 @@
+# placeholder — preprocessing pipeline writes here (Phase 2)
+# Structure: processed/{JOB_ID}/frames/, metadata.json, stage_results/

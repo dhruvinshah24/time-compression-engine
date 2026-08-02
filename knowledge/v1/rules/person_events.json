@@ -1,0 +1,29 @@
+{
+  "rules": [
+    {
+      "event_id": "person_entered",
+      "conditions": {
+        "entity_type": "person",
+        "spatial_condition": "intersects_entry_zone",
+        "temporal_condition": "duration_visible > 2_seconds"
+      },
+      "confidence_modifier": "+0.1 if close_to_door"
+    },
+    {
+      "event_id": "person_exited",
+      "conditions": {
+        "entity_type": "person",
+        "spatial_condition": "intersects_exit_zone",
+        "temporal_condition": "subsequently_invisible"
+      }
+    },
+    {
+      "event_id": "person_idle",
+      "conditions": {
+        "entity_type": "person",
+        "spatial_condition": "bounding_box_displacement_rate < 0.05",
+        "temporal_condition": "duration > 60_seconds"
+      }
+    }
+  ]
+}

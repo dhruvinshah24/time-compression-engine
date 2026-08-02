@@ -1,0 +1,119 @@
+[
+  {
+    "id": "person_entered",
+    "description": "A person has entered the scene from a defined entry point or border.",
+    "required_objects": ["person"],
+    "required_transitions": ["invisible -> visible"],
+    "confidence_threshold": 0.75,
+    "domain_applicability": ["all"],
+    "narrative_weight": 0.8
+  },
+  {
+    "id": "person_exited",
+    "description": "A person has left the scene through a defined exit point or border.",
+    "required_objects": ["person"],
+    "required_transitions": ["visible -> invisible"],
+    "confidence_threshold": 0.75,
+    "domain_applicability": ["all"],
+    "narrative_weight": 0.8
+  },
+  {
+    "id": "person_idle",
+    "description": "A person remains stationary within a specific zone for an extended period.",
+    "required_objects": ["person"],
+    "required_transitions": ["moving -> stationary"],
+    "confidence_threshold": 0.85,
+    "domain_applicability": ["workspace", "hallway", "outdoor_open"],
+    "narrative_weight": 0.6
+  },
+  {
+    "id": "vehicle_arrived",
+    "description": "A vehicle has entered the scene and come to a stop.",
+    "required_objects": ["vehicle"],
+    "required_transitions": ["invisible -> visible", "moving -> stationary"],
+    "confidence_threshold": 0.80,
+    "domain_applicability": ["parking_lot", "entrance", "outdoor_open"],
+    "narrative_weight": 0.85
+  },
+  {
+    "id": "vehicle_departed",
+    "description": "A vehicle has started moving from a stationary position and exited the scene.",
+    "required_objects": ["vehicle"],
+    "required_transitions": ["stationary -> moving", "visible -> invisible"],
+    "confidence_threshold": 0.80,
+    "domain_applicability": ["parking_lot", "entrance", "outdoor_open"],
+    "narrative_weight": 0.85
+  },
+  {
+    "id": "vehicle_parked",
+    "description": "A vehicle is occupying a designated parking space.",
+    "required_objects": ["vehicle"],
+    "required_transitions": ["moving -> stationary"],
+    "confidence_threshold": 0.90,
+    "domain_applicability": ["parking_lot"],
+    "narrative_weight": 0.5
+  },
+  {
+    "id": "parcel_delivered",
+    "description": "A package has been left in a scene, typically by a person who then departs.",
+    "required_objects": ["person", "package"],
+    "required_transitions": ["carried -> stationary"],
+    "confidence_threshold": 0.85,
+    "domain_applicability": ["entrance", "storage_room"],
+    "narrative_weight": 0.95
+  },
+  {
+    "id": "object_moved",
+    "description": "An object's location has been significantly altered within the scene.",
+    "required_objects": ["object", "person"],
+    "required_transitions": ["stationary -> moving -> stationary"],
+    "confidence_threshold": 0.70,
+    "domain_applicability": ["workspace", "storage_room"],
+    "narrative_weight": 0.6
+  },
+  {
+    "id": "object_placed",
+    "description": "A new object has been introduced into the scene and left stationary.",
+    "required_objects": ["object", "person"],
+    "required_transitions": ["invisible -> visible", "carried -> stationary"],
+    "confidence_threshold": 0.80,
+    "domain_applicability": ["all"],
+    "narrative_weight": 0.75
+  },
+  {
+    "id": "object_removed",
+    "description": "An object previously stationary in the scene has been taken away.",
+    "required_objects": ["object", "person"],
+    "required_transitions": ["stationary -> carried", "visible -> invisible"],
+    "confidence_threshold": 0.85,
+    "domain_applicability": ["all"],
+    "narrative_weight": 0.8
+  },
+  {
+    "id": "light_changed",
+    "description": "Significant alteration in scene illumination (on/off).",
+    "required_objects": ["scene"],
+    "required_transitions": ["dark -> light", "light -> dark"],
+    "confidence_threshold": 0.95,
+    "domain_applicability": ["indoor"],
+    "narrative_weight": 0.4
+  },
+  {
+    "id": "door_opened",
+    "description": "A door transitioned from closed to open state.",
+    "required_objects": ["door"],
+    "required_transitions": ["closed -> open"],
+    "confidence_threshold": 0.80,
+    "domain_applicability": ["entrance", "hallway", "workspace", "storage_room"],
+    "narrative_weight": 0.7
+  },
+  {
+    "id": "door_closed",
+    "description": "A door transitioned from open to closed state.",
+    "required_objects": ["door"],
+    "required_transitions": ["open -> closed"],
+    "confidence_threshold": 0.80,
+    "domain_applicability": ["entrance", "hallway", "workspace", "storage_room"],
+    "narrative_weight": 0.5
+  }
+]

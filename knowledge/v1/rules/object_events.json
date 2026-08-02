@@ -1,0 +1,21 @@
+{
+  "rules": [
+    {
+      "event_id": "parcel_delivered",
+      "conditions": {
+        "entity_type": "package",
+        "spatial_condition": "distance_to(person) initially < threshold, then > threshold",
+        "temporal_condition": "remains_stationary_after_separation"
+      },
+      "causality": "requires person_entered prior"
+    },
+    {
+      "event_id": "object_removed",
+      "conditions": {
+        "entity_type": "object",
+        "spatial_condition": "distance_to(person) becomes < threshold",
+        "temporal_condition": "object_disappears_or_moves_with_person"
+      }
+    }
+  ]
+}

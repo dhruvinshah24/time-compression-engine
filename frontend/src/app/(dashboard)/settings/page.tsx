@@ -1,0 +1,97 @@
+'use client';
+
+import { useState } from 'react';
+import { Save } from 'lucide-react';
+
+const SETTINGS_GROUPS = [
+  {
+    id: 'pipeline', title: 'Pipeline Settings',
+    settings: [
+      { id: 'frame_skip_rate', label: 'Frame Skip Rate', desc: 'Number of frames to skip during extraction', type: 'number', val: 5 },
+      { id: 'min_event_duration_ms', label: 'Min Event Duration (ms)', desc: 'Minimum duration for an event to be registered', type: 'number', val: 1500 },
+    ]
+  },
+  {
+    id: 'detection', title: 'Detection Parameters',
+    settings: [
+      { id: 'detection_confidence', label: 'Detection Confidence', desc: 'Threshold for object/event confidence (0-1)', type: 'number', val: 0.75 },
+      { id: 'min_motion_threshold', label: 'Motion Threshold', desc: 'Minimum motion vector magnitude to trigger analysis', type: 'number', val: 0.4 },
+    ]
+  },
+  {
+    id: 'temporal', title: 'Temporal Intelligence',
+    settings: [
+      { id: 'story_gap_threshold_ms', label: 'Story Gap Threshold (ms)', desc: 'Max time gap between events to link them', type: 'number', val: 5000 },
+      { id: 'compression_policy', label: 'Compression Policy', desc: 'Strategy for generating final timeline', type: 'select', val: 'narrative_priority', options: ['narrative_priority', 'max_compression', 'all_events'] },
+    ]
+  }
+];
+
+export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState('pipeline');
+
+  return (
+    <div className="max-w-4xl space-y-6 animate-fade-in h-full flex flex-col">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">System Settings</h1>
+          <p className="text-muted mt-1">Configure global parameters for the Time Compression Engine.</p>
+        </div>
+        <button className="flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+          <Save className="w-4 h-4" /> Save Changes
+        </button>
+      </div>
+
+      <div className="flex gap-6 flex-1 min-h-0 mt-6">
+        <div className="w-64 space-y-1">
+          {SETTINGS_GROUPS.map(g => (
+            <button
+              key={g.id}
+              onClick={() => setActiveTab(g.id)}
+              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === g.id ? 'bg-surface text-white border border-border' : 'text-muted hover:text-white hover:bg-surface/50 border border-transparent'
+              }`}
+            >
+              {g.title}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 glass rounded-xl border border-border p-8 overflow-y-auto">
+          {SETTINGS_GROUPS.map(g => g.id === activeTab && (
+            <div key={g.id} className="space-y-8 animate-slide-up">
+              <h2 className="text-xl font-semibold text-white border-b border-border pb-4">{g.title}</h2>
+              
+              <div className="space-y-6">
+                {g.settings.map(s => (
+                  <div key={s.id} className="flex justify-between items-start gap-8">
+                    <div className="flex-1">
+                      <label className="block font-medium text-white text-sm mb-1">{s.label}</label>
+                      <p className="text-sm text-muted">{s.desc}</p>
+                    </div>
+                    <div className="w-64">
+                      {s.type === 'number' ? (
+                        <input 
+                          type="number" 
+                          defaultValue={s.val}
+                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white text-sm focus:border-accent outline-none"
+                        />
+                      ) : (
+                        <select 
+                          defaultValue={s.val}
+                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white text-sm focus:border-accent outline-none"
+                        >
+                          {s.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

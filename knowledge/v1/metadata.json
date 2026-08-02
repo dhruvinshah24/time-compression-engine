@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "created_at": "2025-01-01",
+  "description": "Initial knowledge base for Time Compression Engine",
+  "taxonomies": [
+    "event_taxonomy",
+    "object_taxonomy",
+    "scene_taxonomy"
+  ],
+  "rule_sets": [
+    "person_events",
+    "vehicle_events",
+    "object_events"
+  ],
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-01-01",
+      "notes": "Initial taxonomy definitions"
+    }
+  ]
+}

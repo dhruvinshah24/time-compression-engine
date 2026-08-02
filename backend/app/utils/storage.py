@@ -156,9 +156,15 @@ def delete_job_files(job_id: str) -> dict[str, int]:
     ]:
         if base.exists():
             count = sum(1 for _ in base.rglob("*") if _.is_file())
-            shutil.rmtree(base, ignore_errors=True)
-            deleted[category] = count
-            logger.info("Deleted %d files from %s for job %s", count, category, job_id)
+            try:
+                shutil.rmtree(base)
+                deleted[category] = count
+                logger.info("Deleted %d files from %s for job %s", count, category, job_id)
+            except OSError as exc:
+                logger.warning(
+                    "Failed to delete %s files for job %s: %s",
+                    category, job_id, exc
+                )
 
     return deleted
 

@@ -28,7 +28,7 @@ export default function AnalyticsPage() {
         <p className="text-muted mt-1">Performance and compression metrics across all processed jobs.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="glass rounded-xl border border-border p-6 h-[350px] flex flex-col">
           <h2 className="text-lg font-medium text-white mb-6">Average Compression Ratio</h2>
           <div className="flex-1 min-h-0">
@@ -43,7 +43,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="date" stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}:1`} />
-                <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff' }} itemStyle={{ color: '#6366f1' }} />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--surface, #18181b)', borderColor: 'var(--border, #27272a)', color: '#fff' }} itemStyle={{ color: '#6366f1' }} />
                 <Area type="monotone" dataKey="ratio" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorRatio)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -60,14 +60,14 @@ export default function AnalyticsPage() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="transparent" />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff' }} />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--surface, #18181b)', borderColor: 'var(--border, #27272a)', color: '#fff' }} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-col gap-3 justify-center ml-4">
               {eventTypes.map((entry, index) => (
                 <div key={entry.name} className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index] }}></div>
-                  <span className="text-sm text-gray-300">{entry.name}</span>
+                  <span className="text-sm text-muted">{entry.name}</span>
                 </div>
               ))}
             </div>
@@ -82,7 +82,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="stage" stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip cursor={{ fill: '#27272a', opacity: 0.4 }} contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff' }} />
+                <Tooltip cursor={{ fill: 'var(--border, #27272a)', opacity: 0.4 }} contentStyle={{ backgroundColor: 'var(--surface, #18181b)', borderColor: 'var(--border, #27272a)', color: '#fff' }} />
                 <Bar dataKey="ms" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Search, Filter, Clock, Zap, Download, PlayCircle, Eye, Settings2 } from 'lucide-react';
+import { Search, Filter, Clock, Zap, Download, PlayCircle, Eye, Settings2, TrendingDown } from 'lucide-react';
 import { useState } from 'react';
 
 const MOCK_EVENTS = [
@@ -24,7 +24,7 @@ export default function TimelinePage({ params }: { params: { videoId: string } }
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-white tracking-tight">cam_front_door_04.mp4</h1>
           <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-xs font-medium">
-            <TrendingDownIcon className="w-3.5 h-3.5" /> 1,920:1 Ratio
+            <TrendingDown className="w-3.5 h-3.5" /> 1,920:1 Ratio
           </div>
           <span className="text-sm text-muted">Aug 14, 2024</span>
         </div>
@@ -70,7 +70,7 @@ export default function TimelinePage({ params }: { params: { videoId: string } }
             className={`relative z-10 flex gap-6 ${selectedEvent === event.id ? 'scale-[1.01] transition-transform' : ''}`}
             onClick={() => setSelectedEvent(event.id)}
           >
-            <div className="w-16 flex flex-col items-center pt-4">
+            <div className="w-16 flex flex-col items-center pt-5">
               <div className="w-3 h-3 rounded-full bg-accent ring-4 ring-background mb-2"></div>
               <div className="text-xs font-mono text-muted">{event.time}</div>
             </div>
@@ -116,8 +116,4 @@ export default function TimelinePage({ params }: { params: { videoId: string } }
       </div>
     </div>
   );
-}
-
-function TrendingDownIcon(props: React.SVGProps<SVGSVGElement>) {
-  return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>;
 }

@@ -124,8 +124,9 @@ export default function UploadPage() {
           </div>
 
           <div className="glass rounded-xl border border-border p-6">
-            <label className="block text-sm font-medium text-white mb-2">Source Domain</label>
+            <label htmlFor="source-domain" className="block text-sm font-medium text-white mb-2">Source Domain</label>
             <select 
+              id="source-domain"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
               className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-white outline-none focus:border-accent transition-colors"

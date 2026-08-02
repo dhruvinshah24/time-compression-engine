@@ -102,6 +102,8 @@ async def run(context: PipelineContext) -> StageResult:
             errors=[f"Required library not installed: {exc}. Run: pip install Pillow numpy"],
             logs=logs,
         )
+    except (KeyboardInterrupt, SystemExit):
+        raise  # Never suppress process-level signals in a pipeline stage
     except Exception as exc:
         duration_ms = int((time.perf_counter() - start) * 1000)
         logger.exception("Scene change detection failed for job %s", context.job_id)

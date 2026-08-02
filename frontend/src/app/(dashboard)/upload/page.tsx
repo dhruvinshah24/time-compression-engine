@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'framer-motion';
 import { Upload as UploadIcon, FileVideo, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -12,6 +12,10 @@ export default function UploadPage() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [domain, setDomain] = useState('cctv');
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  // Ref keeps the interval ID accessible to the Cancel handler so it can be
+  // cleared even if Cancel is clicked while an upload is in progress.
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0]) setFile(acceptedFiles[0]);
@@ -25,16 +29,34 @@ export default function UploadPage() {
 
   const handleUpload = () => {
     if (!file) return;
+    setUploadError(null);
     setUploading(true);
     let p = 0;
-    const interval = setInterval(() => {
-      p += 5;
-      setProgress(p);
-      if (p >= 100) {
-        clearInterval(interval);
-        setTimeout(() => router.push('/processing/demo'), 500);
-      }
-    }, 100);
+    try {
+      intervalRef.current = setInterval(() => {
+        p += 5;
+        setProgress(p);
+        if (p >= 100) {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          setTimeout(() => router.push('/processing/demo'), 500);
+        }
+      }, 100);
+    } catch (err) {
+      setUploading(false);
+      setUploadError(err instanceof Error ? err.message : 'Upload failed. Please try again.');
+    }
+  };
+
+  const handleCancel = () => {
+    // Clear any in-flight fake upload interval before resetting state.
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setFile(null);
+    setUploading(false);
+    setProgress(0);
+    setUploadError(null);
   };
 
   return (
@@ -43,6 +65,17 @@ export default function UploadPage() {
         <h1 className="text-3xl font-bold text-white tracking-tight">Upload Video for Analysis</h1>
         <p className="text-muted mt-2">Submit raw footage to the Time Compression Engine.</p>
       </div>
+
+      {uploadError && (
+        <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-300">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">Upload failed</p>
+            <p className="text-xs mt-0.5 text-red-400">{uploadError}</p>
+          </div>
+          <button onClick={() => setUploadError(null)} className="text-red-400 hover:text-red-300 text-xs">✕</button>
+        </div>
+      )}
 
       {!file ? (
         <div 
@@ -80,11 +113,11 @@ export default function UploadPage() {
                 </div>
                 <div className="bg-surface p-3 rounded-lg border border-border/50">
                   <div className="text-xs text-muted mb-1">Duration</div>
-                  <div className="font-mono text-white">~45:00</div>
+                <div className="font-mono text-white">~45:00</div>
                 </div>
                 <div className="bg-surface p-3 rounded-lg border border-border/50">
                   <div className="text-xs text-muted mb-1">Est. Processing</div>
-                  <div className="font-mono text-white">3m 12s</div>
+                <div className="font-mono text-white text-muted">Estimated after upload</div>
                 </div>
               </div>
             </div>
@@ -128,7 +161,7 @@ export default function UploadPage() {
           ) : (
             <div className="flex justify-end gap-4">
               <button 
-                onClick={() => setFile(null)}
+                onClick={handleCancel}
                 className="px-6 py-2.5 rounded-lg border border-border text-white hover:bg-white/5 transition-colors"
               >
                 Cancel

@@ -104,8 +104,8 @@ def load_all_job_metrics(job_id: str) -> dict[str, dict]:
                     data = json.load(f)
                 stage = data.get("stage", metrics_file.stem.replace("_metrics", ""))
                 result[stage] = data
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("Failed to read metrics file %s: %s", metrics_file, exc)
 
     except Exception as exc:
         logger.warning("Failed to load job metrics for %s: %s", job_id, exc)

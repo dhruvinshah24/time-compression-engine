@@ -14,9 +14,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Time Compression Engine API",
     description="Research-grade video event summarization system",
-    version="0.1.0",
+    version="1.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
+    redirect_slashes=False,
     lifespan=lifespan
 )
 

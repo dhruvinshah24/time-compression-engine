@@ -44,6 +44,7 @@ export default function TimelinePage({ params }: { params: { videoId: string } }
           <input 
             type="text" 
             placeholder="Search events, objects, descriptions..." 
+            aria-label="Search events"
             className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:border-accent outline-none transition-colors"
           />
         </div>

@@ -1,8 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { LayoutGrid, Network, Filter, Download } from 'lucide-react';
+import { LayoutGrid, Network, Filter, Download, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+// Demo events — replaced with API data once /api/v1/events/ returns results
+const MOCK_EVENTS = [
+  { type: 'Person Entered',    time: 'Today, 08:17', conf: 94 },
+  { type: 'Locker Opened',     time: 'Today, 08:25', conf: 82 },
+  { type: 'Parcel Retrieved',  time: 'Today, 08:27', conf: 88 },
+  { type: 'Person Exited',     time: 'Today, 08:29', conf: 91 },
+  { type: 'Parcel Delivered',  time: 'Today, 11:41', conf: 87 },
+  { type: 'Lights Turned Off', time: 'Today, 14:05', conf: 85 },
+  { type: 'Chair Moved',       time: 'Today, 15:33', conf: 76 },
+  { type: 'Vehicle Arrived',   time: 'Today, 16:48', conf: 93 },
+];
 
 export default function EventsPage() {
   const [activeTab, setActiveTab] = useState<'list' | 'graph'>('list');
@@ -65,20 +77,30 @@ export default function EventsPage() {
 
         <div className="flex-1 glass rounded-xl border border-border overflow-hidden relative">
           {activeTab === 'list' ? (
-            <div className="p-6 grid grid-cols-3 gap-4 overflow-y-auto h-full">
-              {Array.from({length: 12}).map((_, i) => (
-                <div key={i} className="bg-surface border border-border rounded-lg p-4 hover:border-accent/50 transition-colors cursor-pointer">
-                  <div className="w-full h-32 bg-[#09090b] rounded mb-3 border border-border flex items-center justify-center relative overflow-hidden group">
-                    <span className="text-muted text-xs">Preview</span>
-                    <div className="absolute inset-0 bg-accent/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  </div>
-                  <h3 className="font-medium text-white mb-1">Person Entered</h3>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-muted">Today, 08:17</span>
-                    <span className="text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded">94%</span>
-                  </div>
+            <div className="p-6 overflow-y-auto h-full">
+              {MOCK_EVENTS.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center py-16">
+                  <Zap className="w-12 h-12 text-muted opacity-30 mb-4" />
+                  <h3 className="text-lg font-medium text-white mb-2">No events detected yet</h3>
+                  <p className="text-sm text-muted max-w-xs">Upload and process a video to see detected events here.</p>
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {MOCK_EVENTS.map((evt, i) => (
+                    <div key={i} className="bg-surface border border-border rounded-lg p-4 hover:border-accent/50 transition-colors cursor-pointer">
+                      <div className="w-full h-32 bg-background rounded mb-3 border border-border flex items-center justify-center relative overflow-hidden group">
+                        <span className="text-muted text-xs">Preview</span>
+                        <div className="absolute inset-0 bg-accent/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      </div>
+                      <h3 className="font-medium text-white mb-1">{evt.type}</h3>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-muted">{evt.time}</span>
+                        <span className="text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded">{evt.conf}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center flex-col p-8">

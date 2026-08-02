@@ -7,9 +7,12 @@ import { motion } from 'framer-motion';
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Uploads', href: '/upload', icon: Upload },
+  // TODO: replace with dynamic job ID from global store once upload API is wired
   { name: 'Processing', href: '/processing/demo', icon: Cpu },
+  // TODO: replace with dynamic video ID from global store
   { name: 'Timeline', href: '/timeline/demo', icon: Timer },
   { name: 'Events', href: '/events', icon: Zap },
+  // TODO: replace with dynamic video ID from global store
   { name: 'AI Summary', href: '/summary/demo', icon: Sparkles },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },
@@ -19,7 +22,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-[240px] flex-shrink-0 bg-[#0d0d10] border-r border-[#1f1f23] flex flex-col h-full glass">
+    <div className="w-[240px] flex-shrink-0 bg-background border-r border-border flex flex-col h-full glass">
       <div className="p-6">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center glow-blue">
@@ -54,7 +57,7 @@ export function Sidebar() {
 
       <div className="p-4 mt-auto">
         <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-surface border border-border">
-          <span className="text-xs text-muted font-mono">System v2.4.1</span>
+          <span className="text-xs text-muted font-mono">v1.0.0</span>
           <div className="w-2 h-2 rounded-full bg-success animate-pulse-slow"></div>
         </div>
       </div>

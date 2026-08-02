@@ -54,7 +54,9 @@ def _detect_git_commit() -> str:
         )
         commit = result.stdout.strip()
         return commit if commit else "unknown"
-    except Exception:
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).debug("git commit detection failed: %s", exc)
         return "unknown"
 
 

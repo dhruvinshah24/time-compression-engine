@@ -128,6 +128,8 @@ async def run(context: PipelineContext) -> StageResult:
             keyframe_timestamps=path_to_ts,
             frame_numbers=path_to_frame,
         )
+    except (KeyboardInterrupt, SystemExit):
+        raise  # Never suppress process-level signals in a pipeline stage
     except Exception as exc:
         duration_ms = int((time.perf_counter() - start) * 1000)
         logger.exception("Object detection failed for job %s", context.job_id)

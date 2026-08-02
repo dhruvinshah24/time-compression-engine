@@ -125,6 +125,53 @@ class VideoMetadata:
         }
 
 
+# ── Processing profile auto-detection ────────────────────────────────────────
+
+_PROFILES = [
+    ("Quick Test",         0,     120,   8),
+    ("Short Clip",         120,   600,   20),
+    ("Standard",           600,   3600,  90),
+    ("Long Recording",     3600,  21600, 600),
+    ("Extended Recording", 21600, 86400, 3600),
+    ("Custom",             86400, float("inf"), None),
+]
+
+
+def get_processing_profile(duration_seconds: float, fps: float = 25.0, frame_skip_rate: int = 5) -> dict:
+    """
+    Return the recommended processing profile for a video of the given duration.
+
+    Returns a dict with: profile, estimated_frames, estimated_keyframes,
+    estimated_processing_s, duration_hms.
+    """
+    total_frames = int(duration_seconds * fps)
+    estimated_frames = max(1, total_frames // frame_skip_rate)
+
+    profile_name = "Custom"
+    est_processing_s: int | None = None
+    for i, (name, lo, hi, est) in enumerate(_PROFILES):
+        if lo <= duration_seconds < hi:
+            profile_name = name
+            if est is not None:
+                next_est = _PROFILES[i + 1][3] if i + 1 < len(_PROFILES) else est * 2
+                ratio = (duration_seconds - lo) / max(1, hi - lo)
+                est_processing_s = int(est + ratio * ((next_est or est * 2) - est))
+            break
+
+    h = int(duration_seconds // 3600)
+    m = int((duration_seconds % 3600) // 60)
+    s = int(duration_seconds % 60)
+    duration_hms = f"{h:02d}:{m:02d}:{s:02d}"
+
+    return {
+        "profile": profile_name,
+        "estimated_frames": estimated_frames,
+        "estimated_keyframes": max(1, estimated_frames // 5),
+        "estimated_processing_s": est_processing_s,
+        "duration_hms": duration_hms,
+    }
+
+
 @dataclass
 class FrameExtractionConfig:
     """

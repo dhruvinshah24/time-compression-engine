@@ -1,8 +1,193 @@
-"""Upload route."""
-from fastapi import APIRouter
+"""
+Upload route — Time Compression Engine v1.0.1.
+
+POST /api/v1/upload/
+  - Accepts multipart: file + source_domain
+  - Saves file to disk
+  - Probes video metadata with ffprobe
+  - Creates Video + Job records (InMemory)
+  - Starts the pipeline as a background task
+  - Returns full metadata immediately (no waiting for pipeline)
+"""
+
+import asyncio
+import logging
+import uuid
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+
+from app.pipeline.context import PipelineContext
+from app.pipeline.orchestrator import PipelineOrchestrator
+from app.repositories.inmemory import get_event_repo, get_job_repo, get_video_repo
+from app.utils.ffmpeg import (
+    FFmpegNotFoundError,
+    VideoCorruptedError,
+    get_processing_profile,
+    probe_video,
+)
+from app.utils.storage import get_upload_path, save_upload
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+
+def _job_id() -> str:
+    now = datetime.now(timezone.utc)
+    return f"JOB-{now.strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}"
+
+
+def _video_id() -> str:
+    return f"VID-{uuid.uuid4().hex[:12].upper()}"
+
 
 @router.post("/")
-async def upload_video():
-    return {"status": "uploaded"}
+async def upload_video(
+    file: UploadFile = File(...),
+    source_domain: str = Form(default="general"),
+):
+    """
+    Accept a video upload, probe its metadata, and start the TCE pipeline.
+
+    Returns immediately with job ID and video metadata. The pipeline runs
+    in the background. Poll GET /api/v1/jobs/{job_id} for progress.
+    """
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No filename provided.")
+
+    video_id = _video_id()
+    job_id = _job_id()
+
+    logger.info("[%s] Upload received: %s (domain=%s)", job_id, file.filename, source_domain)
+
+    # ── 1. Save file to disk ───────────────────────────────────────────────
+    try:
+        dest_path, file_size_bytes, sha256 = await save_upload(
+            file_obj=file.file,
+            job_id=job_id,
+            original_filename=file.filename,
+        )
+    except Exception as exc:
+        logger.exception("[%s] Failed to save upload", job_id)
+        raise HTTPException(status_code=500, detail=f"File save failed: {exc}") from exc
+
+    logger.info("[%s] Saved %d bytes → %s", job_id, file_size_bytes, dest_path)
+
+    # ── 2. Probe video metadata ────────────────────────────────────────────
+    ffprobe_available = True
+    try:
+        meta = probe_video(dest_path)
+        profile_info = get_processing_profile(
+            duration_seconds=meta.duration_seconds,
+            fps=meta.fps,
+            frame_skip_rate=5,
+        )
+        video_meta_dict = meta.to_dict()
+        video_meta_dict["source_domain"] = source_domain
+        video_meta_dict["sha256"] = sha256
+        video_meta_dict.update(profile_info)
+    except FFmpegNotFoundError:
+        logger.warning("[%s] ffprobe not found — using basic file metadata", job_id)
+        ffprobe_available = False
+        video_meta_dict = {
+            "filename": file.filename,
+            "file_size_bytes": file_size_bytes,
+            "source_domain": source_domain,
+            "sha256": sha256,
+            "duration_seconds": None,
+            "fps": None,
+            "frame_count": None,
+            "resolution": "unknown",
+            "codec": "unknown",
+            "profile": "Unknown (ffprobe not installed)",
+            "estimated_frames": None,
+            "estimated_processing_s": None,
+            "duration_hms": "--:--:--",
+        }
+        profile_info = {}
+    except (VideoCorruptedError, Exception) as exc:
+        logger.error("[%s] Probe failed: %s", job_id, exc)
+        raise HTTPException(status_code=422, detail=f"Video probe failed: {exc}") from exc
+
+    logger.info("[%s] Probe: %s", job_id, video_meta_dict.get("profile", "unknown"))
+
+    # ── 3. Create Video + Job records ──────────────────────────────────────
+    video_repo = get_video_repo()
+    job_repo = get_job_repo()
+    event_repo = get_event_repo()
+
+    video_record = {
+        "id":            video_id,
+        "filename":      file.filename,
+        "file_path":     str(dest_path),
+        "file_size_bytes": file_size_bytes,
+        "source_domain": source_domain,
+        "metadata":      video_meta_dict,
+    }
+    await video_repo.create(video_record)
+
+    # Build the initial stage list for the Inspector (all pending)
+    from app.pipeline.orchestrator import STAGE_LABELS, _STAGE_MODULES
+    initial_stages = [
+        {
+            "name":    m.split(".")[-1],
+            "label":   STAGE_LABELS.get(m.split(".")[-1], m.split(".")[-1]),
+            "status":  "pending",
+            "duration_ms": None,
+            "metrics": {},
+            "errors":  [],
+        }
+        for m in _STAGE_MODULES
+    ]
+
+    job_record = {
+        "id":               job_id,
+        "video_id":         video_id,
+        "filename":         file.filename,
+        "status":           "queued",
+        "progress":         0,
+        "current_stage":    None,
+        "current_stage_label": None,
+        "failed_stage":     None,
+        "error":            None,
+        "stages":           initial_stages,
+        "logs":             [],
+        "event_count":      0,
+        "video_metadata":   video_meta_dict,
+        "ffprobe_available": ffprobe_available,
+    }
+    await job_repo.create(job_record)
+
+    # ── 4. Start pipeline in background ───────────────────────────────────
+    output_dir = str(dest_path.parent)
+    context = PipelineContext(
+        job_id=job_id,
+        video_id=video_id,
+        video_path=str(dest_path),
+        output_dir=output_dir,
+        settings={"source_domain": source_domain, "frame_skip_rate": 5},
+    )
+
+    orchestrator = PipelineOrchestrator(job_repo=job_repo, event_repo=event_repo)
+
+    async def run_pipeline() -> None:
+        try:
+            await orchestrator.run(context)
+        except Exception as exc:
+            logger.exception("[%s] Pipeline crashed", job_id)
+            await job_repo.update(job_id, {
+                "status": "failed",
+                "error": f"Pipeline crashed: {exc}",
+            })
+
+    asyncio.create_task(run_pipeline())
+    logger.info("[%s] Pipeline queued as background task", job_id)
+
+    # ── 5. Return immediately ──────────────────────────────────────────────
+    return {
+        "video_id":   video_id,
+        "job_id":     job_id,
+        "filename":   file.filename,
+        "status":     "queued",
+        "metadata":   video_meta_dict,
+    }

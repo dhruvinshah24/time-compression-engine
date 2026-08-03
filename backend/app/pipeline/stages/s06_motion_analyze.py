@@ -64,10 +64,16 @@ async def run(context: PipelineContext) -> StageResult:
             logs=logs,
         )
 
-    confirmed = [t for t in all_tracks if t.is_confirmed and len(t.observations) >= 2]
+    # Include ENDED confirmed tracks — finalize() ends all tracks, so
+    # confirmed tracks will be in ENDED state by the time s06 runs.
+    confirmed = [
+        t for t in all_tracks
+        if (t.is_confirmed or t.confirmed_at_frame is not None)
+        and len(t.observations) >= 1
+    ]
     logs.append(
         f"[{STAGE_NAME}] {len(all_tracks)} total tracks, "
-        f"{len(confirmed)} confirmed with ≥2 observations"
+        f"{len(confirmed)} confirmed with ≥1 observations"
     )
 
     # ── Step 2: Configure analyzer ─────────────────────────────────────────

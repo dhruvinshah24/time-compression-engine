@@ -69,18 +69,26 @@ async def run(context: PipelineContext) -> StageResult:
         f"{total_input_detections} total detections"
     )
 
-    # ── Step 2: Configure tracker ─────────────────────────────────────────
+    # ── Step 2: Configure tracker ────────────────────────────────────────────
     config = TrackerConfig(
-        iou_threshold=float(context.settings.get("tracker_iou_threshold", 0.3)),
-        max_lost_frames=int(context.settings.get("tracker_max_lost_frames", 3)),
-        min_confirmation_frames=int(context.settings.get("tracker_min_confirmation_frames", 2)),
+        iou_threshold=float(context.settings.get("tracker_iou_threshold", 0.20)),
+        # Allow 30 missing frames before ending a track — bridges 1-second gaps
+        # between sparse keyframes (28 keyframes over 31s = 1.1s per frame).
+        max_lost_frames=int(context.settings.get("tracker_max_lost_frames", 30)),
+        # 1 = confirm immediately on first detection. With sparse keyframes a person
+        # may only appear in 2-3 frames total; requiring 2 consecutive means they
+        # are never confirmed even when clearly visible.
+        min_confirmation_frames=int(context.settings.get("tracker_min_confirmation_frames", 1)),
+        # Must match detection_confidence. If detection fires at 0.40 confidence,
+        # the tracker must accept 0.40 or it silently discards all detections.
         min_detection_confidence=float(
-            context.settings.get("tracker_min_detection_confidence", 0.65)
+            context.settings.get("tracker_min_detection_confidence", 0.30)
         ),
     )
     logs.append(
         f"[{STAGE_NAME}] Config: iou={config.iou_threshold}, "
-        f"max_lost={config.max_lost_frames}, confirm={config.min_confirmation_frames}"
+        f"max_lost={config.max_lost_frames}, confirm={config.min_confirmation_frames}, "
+        f"min_conf={config.min_detection_confidence}"
     )
 
     # ── Step 3: Run tracking ───────────────────────────────────────────────

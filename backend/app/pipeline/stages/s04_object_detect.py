@@ -52,19 +52,38 @@ async def run(context: PipelineContext) -> StageResult:
 
     logs.append(f"[{STAGE_NAME}] Starting object detection for job {context.job_id}")
 
-    # ── Step 1: Read keyframes from context ────────────────────────────────
-    keyframe_paths = context.metadata.get("keyframe_paths")
-    if not keyframe_paths:
+    # ── Step 1: Read frames from context ──────────────────────────────────
+    # Priority: use all extracted frames for detection to ensure proper tracking.
+    # s03 keyframes are used only when the extracted frame set is large (>30 frames)
+    # AND s03 returned more than 5% of frames as keyframes.
+    # Otherwise s03's aggressive deduplication would collapse a person-in-scene
+    # video to 1 frame, making tracking completely impossible.
+    all_frame_paths: list[str] = context.metadata.get("frame_paths", [])
+    keyframe_paths: list[str] = context.metadata.get("keyframe_paths") or []
+    MIN_FRAMES_FOR_TRACKING = 30
+
+    # Decide which frame set to run detection on
+    if len(keyframe_paths) >= MIN_FRAMES_FOR_TRACKING:
+        frames_to_detect = keyframe_paths
+        frame_source = "s03_keyframes"
+    elif all_frame_paths:
+        # s03 over-filtered — fall back to all extracted frames
+        frames_to_detect = all_frame_paths
+        frame_source = "all_extracted_frames"
+        logs.append(
+            f"[{STAGE_NAME}] s03 returned only {len(keyframe_paths)} keyframes — "
+            f"falling back to all {len(all_frame_paths)} extracted frames for detection"
+        )
+    else:
         duration_ms = int((time.perf_counter() - start) * 1000)
         return StageResult(
             success=False,
             stage_name=STAGE_NAME,
             duration_ms=duration_ms,
-            errors=["keyframe_paths not found in context — s03_scene_detect must run first"],
+            errors=["No frames available — s02_extract and s03_scene_detect must run first"],
             logs=logs,
         )
 
-    keyframe_numbers: list[int] = context.metadata.get("keyframe_numbers", [])
     scene_change_result = context.metadata.get("scene_change_result")
     fps = float(context.metadata.get("fps", 25.0))
     frame_skip_rate = int(context.metadata.get("frame_skip_rate", 5))
@@ -76,16 +95,30 @@ async def run(context: PipelineContext) -> StageResult:
         for score in scene_change_result.all_scores:
             path_to_frame[score.frame_path] = score.frame_number
             path_to_ts[score.frame_path] = score.timestamp_ms
-    elif keyframe_numbers:
-        for path, num in zip(keyframe_paths, keyframe_numbers):
-            path_to_frame[path] = num
-            path_to_ts[path] = (num * frame_skip_rate * 1000.0) / fps
 
-    logs.append(f"[{STAGE_NAME}] Running detection on {len(keyframe_paths)} keyframes")
+    # Fill in any frames not covered by s03 scores (all_extracted_frames path)
+    from pathlib import Path as _Path
+    for idx, path in enumerate(frames_to_detect):
+        if path not in path_to_frame:
+            stem = _Path(path).stem
+            try:
+                frame_num = int(stem.split("_")[1]) if stem.startswith("frame_") else idx
+            except (IndexError, ValueError):
+                frame_num = idx * frame_skip_rate
+            path_to_frame[path] = frame_num
+            path_to_ts[path] = (frame_num * frame_skip_rate * 1000.0) / fps
+
+    logs.append(
+        f"[{STAGE_NAME}] Running detection on {len(frames_to_detect)} frames "
+        f"(source={frame_source})"
+    )
 
     # ── Step 2: Configure from system settings ─────────────────────────────
     model_name = context.settings.get("detection_model_name", "yolov8n")
-    confidence = float(context.settings.get("detection_confidence", 0.72))
+    # Use 0.40 default — yolov8n (nano) needs a lower threshold than larger
+    # models to reliably detect people in real-world indoor/CCTV footage.
+    # 0.72 was calibrated for a larger model and misses most detections here.
+    confidence = float(context.settings.get("detection_confidence", 0.40))
 
     config = ObjectDetectorConfig(
         model_name=model_name,
@@ -106,7 +139,7 @@ async def run(context: PipelineContext) -> StageResult:
 
     try:
         result = detector.detect_keyframes(
-            keyframe_paths=keyframe_paths,
+            keyframe_paths=frames_to_detect,
             keyframe_timestamps=path_to_ts,
             frame_numbers=path_to_frame,
         )

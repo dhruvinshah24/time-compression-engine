@@ -183,7 +183,7 @@ class MultiObjectTracker(IntelligenceModule):
             )
             track.update(frame_number, timestamp_ms, bbox)
 
-            # Tentative → Active after enough consecutive matches
+            # Tentative → Active once it has enough matched frames
             if (track.state == TrackState.TENTATIVE
                     and track.total_frames_matched >= self.config.min_confirmation_frames):
                 track.state = TrackState.ACTIVE
@@ -199,8 +199,10 @@ class MultiObjectTracker(IntelligenceModule):
             track.mark_lost()
 
             if track.state == TrackState.TENTATIVE:
-                # Tentative tracks end quickly — never confirmed
-                if track.lost_frames >= 1:
+                # Kill tentative tracks only after min_confirmation_frames misses
+                # (not after 1 miss). This lets a newly created track survive
+                # across sparse keyframe gaps before being confirmed.
+                if track.lost_frames > max(self.config.min_confirmation_frames, 2):
                     track.end()
             elif track.lost_frames > self.config.max_lost_frames:
                 track.end()
@@ -221,11 +223,13 @@ class MultiObjectTracker(IntelligenceModule):
                 class_id=det.class_id,
                 class_name=det.class_name,
             )
+            # Start as TENTATIVE; promote immediately if min_confirmation_frames=1
+            initial_state = TrackState.TENTATIVE
             track = Track(
                 track_id=self._next_id,
                 class_name=det.class_name,
                 class_id=det.class_id,
-                state=TrackState.TENTATIVE,
+                state=initial_state,
                 created_frame=frame_number,
                 created_timestamp_ms=timestamp_ms,
                 last_seen_frame=frame_number,
@@ -233,6 +237,12 @@ class MultiObjectTracker(IntelligenceModule):
                 current_bbox=bbox,
             )
             track.update(frame_number, timestamp_ms, bbox)
+            # track.update() sets total_frames_matched=1. If that already meets
+            # the confirmation threshold, promote to ACTIVE right now so the
+            # track is never killed by the tentative-death logic on the next frame.
+            if track.total_frames_matched >= self.config.min_confirmation_frames:
+                track.state = TrackState.ACTIVE
+                track.confirmed_at_frame = frame_number
             self._tracks[self._next_id] = track
             self._next_id += 1
 

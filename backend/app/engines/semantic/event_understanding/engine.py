@@ -190,7 +190,13 @@ class EventUnderstandingEngine(IntelligenceModule):
         start = time.perf_counter()
 
         camera_frames: set[int] = set(camera_motion_frames or [])
-        confirmed_tracks = [t for t in tracks if t.is_confirmed]
+        # finalize() moves all tracks to ENDED, so is_confirmed (ACTIVE|LOST) is always
+        # False by the time the engine runs. Use confirmed_at_frame as the authoritative
+        # marker — if it was set, the track was genuinely confirmed during tracking.
+        confirmed_tracks = [
+            t for t in tracks
+            if t.confirmed_at_frame is not None or t.is_confirmed
+        ]
         new_track_ids: set[int] = set()  # tracks that are "newly confirmed" this pass
         ended_track_ids: set[int] = set(
             t.track_id for t in tracks if t.state == TrackState.ENDED

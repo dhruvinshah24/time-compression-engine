@@ -77,7 +77,7 @@ async def run(context: PipelineContext) -> StageResult:
             context.settings.get("event_min_confidence", 0.4)
         ),
         min_track_frames_for_entry=int(
-            context.settings.get("event_min_track_frames", 2)
+            context.settings.get("event_min_track_frames", 1)
         ),
         suppress_camera_motion_events=bool(
             context.settings.get("event_suppress_camera_motion", True)

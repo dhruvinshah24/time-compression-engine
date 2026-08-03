@@ -269,8 +269,8 @@ KNOWLEDGE_BASE: list[EventRule] = [
         description="Person track first appears (new confirmed track)",
         class_names=PERSON_CLASSES,
         require_new_track=True,
-        min_track_frames=2,
-        rule_confidence=0.82,  # specific — track creation is reliable
+        min_track_frames=1,
+        rule_confidence=0.82,
     ),
     EventRule(
         name="rule_person_left",
@@ -278,7 +278,7 @@ KNOWLEDGE_BASE: list[EventRule] = [
         description="Person track permanently closed (left scene)",
         class_names=PERSON_CLASSES,
         require_ended_track=True,
-        min_track_frames=2,
+        min_track_frames=1,
         rule_confidence=0.80,
     ),
 
@@ -320,7 +320,7 @@ KNOWLEDGE_BASE: list[EventRule] = [
         event_type=EventType.OBJECT_APPEARED,
         description="Any new confirmed object track appeared",
         require_new_track=True,
-        min_track_frames=2,
+        min_track_frames=1,
         rule_confidence=0.65,  # general — any class, more noise
     ),
     EventRule(
@@ -328,7 +328,7 @@ KNOWLEDGE_BASE: list[EventRule] = [
         event_type=EventType.OBJECT_DISAPPEARED,
         description="Any confirmed object track ended",
         require_ended_track=True,
-        min_track_frames=2,
+        min_track_frames=1,
         rule_confidence=0.65,
     ),
 ]

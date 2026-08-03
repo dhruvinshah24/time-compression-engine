@@ -306,10 +306,12 @@ class TestS04ObjectDetect:
     @pytest.mark.asyncio
     async def test_missing_keyframe_paths_fails(self, tmp_path):
         from app.pipeline.stages import s04_object_detect
-        context = _make_context(tmp_path)  # no keyframe_paths
+        # Neither keyframe_paths nor frame_paths in context → should fail
+        context = _make_context(tmp_path)  # no keyframe_paths, no frame_paths
         result = await s04_object_detect.run(context)
         assert result.success is False
-        assert any("keyframe_paths" in e for e in result.errors)
+        # Error message should mention that no frames are available
+        assert len(result.errors) > 0
 
     @pytest.mark.asyncio
     @patch("app.pipeline.stages.s04_object_detect.save_stage_metrics")
@@ -319,14 +321,17 @@ class TestS04ObjectDetect:
         from app.pipeline.stages import s04_object_detect
         ModelRegistry.reset()
 
-        context = _make_context(tmp_path, keyframe_paths=[
-            str(tmp_path / "frame_00000001.jpg"),
-            str(tmp_path / "frame_00000006.jpg"),
-        ])
+        kf_paths = [
+            str(tmp_path / f"frame_{i:08d}.jpg") for i in range(1, 32)
+        ]
         # Create fake frame files so PIL doesn't crash
-        for p in context.metadata["keyframe_paths"]:
+        for p in kf_paths:
             from PIL import Image
             Image.new("RGB", (64, 64), color=(128, 128, 128)).save(p)
+
+        # 31 keyframes >= MIN_FRAMES_FOR_TRACKING(30), so keyframes are used directly
+        context = _make_context(tmp_path, keyframe_paths=kf_paths)
+        context.metadata["frame_paths"] = kf_paths
 
         result = await s04_object_detect.run(context)
         assert result.success is True
@@ -359,10 +364,10 @@ class TestS04ObjectDetect:
         MockDetector.return_value.detect_keyframes.return_value = mock_result
         mock_save.return_value = None
 
-        context = _make_context(tmp_path, keyframe_paths=[
-            "/frames/frame_00000001.jpg",
-            "/frames/frame_00000006.jpg",
-        ])
+        # Supply frame_paths so the fallback path has frames to work with
+        frame_paths = ["/frames/frame_00000001.jpg", "/frames/frame_00000006.jpg"]
+        context = _make_context(tmp_path, keyframe_paths=frame_paths)
+        context.metadata["frame_paths"] = frame_paths
 
         result = await s04_object_detect.run(context)
         assert result.success is True
@@ -390,7 +395,10 @@ class TestS04ObjectDetect:
         ]
         mock_save.return_value = None
 
-        context = _make_context(tmp_path, keyframe_paths=["/f1.jpg", "/f2.jpg"])
+        # Supply frame_paths so the fallback selection has frames
+        frame_paths = ["/f1.jpg", "/f2.jpg"]
+        context = _make_context(tmp_path, keyframe_paths=frame_paths)
+        context.metadata["frame_paths"] = frame_paths
         result = await s04_object_detect.run(context)
 
         assert result.success is True

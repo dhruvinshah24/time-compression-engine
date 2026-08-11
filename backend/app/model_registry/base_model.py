@@ -184,14 +184,16 @@ class BaseDetectionModel(ABC):
         image: np.ndarray,
         frame_number: int = 0,
         timestamp_ms: float = 0.0,
+        override_confidence: float | None = None,
     ) -> FrameDetectionResult:
         """
         Run inference on a single frame.
 
         Args:
-            image:        RGB uint8 numpy array (H, W, 3).
-            frame_number: Original frame number for provenance.
-            timestamp_ms: Frame timestamp for event correlation.
+            image:               RGB uint8 numpy array (H, W, 3).
+            frame_number:        Original frame number for provenance.
+            timestamp_ms:        Frame timestamp for event correlation.
+            override_confidence: If set, use this instead of spec default.
 
         Returns:
             FrameDetectionResult with all detections above confidence_threshold.

@@ -170,10 +170,28 @@ class MultiObjectTracker(IntelligenceModule):
             unmatched_tracks = list(range(len(candidate_tracks)))
             unmatched_dets = list(range(len(detections)))
 
-        # ── Step 2: Update matched tracks ─────────────────────────────────
+        # ── Step 2: Update matched tracks (class-gated) ────────────────────
+        # Only accept a match if the detection's class matches the track's class.
+        # This prevents a person bbox from hijacking a chair track (or vice versa)
+        # when they overlap spatially.
         for track_idx, det_idx in matched:
             track = candidate_tracks[track_idx]
             det = detections[det_idx]
+            # Class gate: skip if class_name differs (both non-empty)
+            if (track.class_name and det.class_name
+                    and track.class_name.lower() != det.class_name.lower()):
+                # Treat as unmatched
+                track.mark_lost()
+                if track.state == TrackState.TENTATIVE:
+                    if track.lost_frames > max(self.config.min_confirmation_frames, 2):
+                        track.end()
+                elif track.lost_frames > self.config.max_lost_frames:
+                    track.end()
+                else:
+                    track.state = TrackState.LOST
+                # The unmatched detection will create a new track in step 4
+                unmatched_dets.append(det_idx)
+                continue
             bbox = TrackBBox(
                 x1=det.bbox_x1, y1=det.bbox_y1,
                 x2=det.bbox_x2, y2=det.bbox_y2,

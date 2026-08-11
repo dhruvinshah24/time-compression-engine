@@ -21,6 +21,7 @@ class StubDetectionModel(BaseDetectionModel):
         image: np.ndarray,
         frame_number: int = 0,
         timestamp_ms: float = 0.0,
+        override_confidence: float | None = None,
     ) -> FrameDetectionResult:
         self._calls_total += 1
         return FrameDetectionResult(

@@ -68,10 +68,11 @@ export default function ProcessingPage() {
   const params   = useParams<{ jobId: string }>();
   const jobId    = params?.jobId ?? '';
 
-  const [job, setJob]           = useState<JobRecord | null>(null);
-  const [error, setError]       = useState<string | null>(null);
-  const [logsOpen, setLogsOpen] = useState(false);
-  const pollRef                 = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [job, setJob]             = useState<JobRecord | null>(null);
+  const [error, setError]         = useState<string | null>(null);
+  const [logsOpen, setLogsOpen]   = useState(false);
+  const [errCount, setErrCount]   = useState(0);
+  const pollRef                   = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchJob = async () => {
     try {
@@ -79,13 +80,23 @@ export default function ProcessingPage() {
       if (!res.ok) { setError(`Job not found (${res.status})`); return; }
       const data: JobRecord = await res.json();
       setJob(data);
+      setError(null);     // BUG-20 FIX: Clear error on successful fetch
+      setErrCount(0);
 
-      // Stop polling once terminal state reached
-      if (['completed', 'failed', 'cancelled'].includes(data.status)) {
+      // Auto-redirect when job completes
+      if (data.status === 'completed' && data.video_id) {
+        if (pollRef.current) clearInterval(pollRef.current);
+        setTimeout(() => router.push(`/timeline/${data.video_id}`), 1500);
+      } else if (['failed', 'cancelled'].includes(data.status)) {
         if (pollRef.current) clearInterval(pollRef.current);
       }
     } catch (e) {
-      setError('Could not reach the backend. Is it running?');
+      // BUG-20 FIX: Only show error after 3 consecutive failures
+      setErrCount(prev => {
+        const next = prev + 1;
+        if (next >= 3) setError('Cannot reach the backend after 3 retries. Is it running?');
+        return next;
+      });
     }
   };
 
@@ -101,8 +112,14 @@ export default function ProcessingPage() {
     <div className="max-w-3xl mx-auto py-20 text-center space-y-4">
       <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
       <h2 className="text-xl font-semibold text-white">Job not found</h2>
-      <p className="text-muted text-sm font-mono">{error}</p>
-      <Link href="/upload" className="inline-block mt-4 text-accent text-sm hover:underline">← Upload a video</Link>
+      <p className="text-white/40 text-sm font-mono">{error}</p>
+      <button
+        onClick={() => { setError(null); setErrCount(0); fetchJob(); }}
+        className="inline-block mt-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm hover:bg-white/10 transition-colors"
+      >
+        Retry
+      </button>
+      <Link href="/upload" className="inline-block mt-4 text-indigo-400 text-sm hover:underline">← Upload a video</Link>
     </div>
   );
 

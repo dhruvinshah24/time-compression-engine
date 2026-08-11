@@ -227,14 +227,25 @@ class CompressionPolicy:
         target_keep = int(total_events * cfg.target_ratio)
         budget_remaining = max(0, target_keep - events_kept_so_far)
 
+        # Special case: if total events are small (< keep_all_threshold), keep all
+        # of them — compressing 4 events by 40% produces 1 kept event which is
+        # meaningless and breaks the narrative.
+        keep_all = total_events <= cfg.keep_all_threshold
+
         # candidates are already sorted by combined_rank desc (from RankingEngine)
         candidate_keep: list[RankedSegment] = []
         candidate_discard: list[RankedSegment] = []
 
         for rs in candidates:
-            if cfg.chain_atomicity:
-                # Keep entire segment or none
-                if rs.segment.event_count <= budget_remaining:
+            if keep_all:
+                candidate_keep.append(rs)
+            elif cfg.chain_atomicity:
+                # Keep entire segment or none.
+                # If the segment is larger than the remaining budget but it's the
+                # only candidate left, keep it anyway to avoid keeping 0 events.
+                fits = rs.segment.event_count <= budget_remaining
+                is_last_chance = (budget_remaining == 0 and not candidate_keep and not definite_keep)
+                if fits or is_last_chance:
                     candidate_keep.append(rs)
                     budget_remaining -= rs.segment.event_count
                 else:

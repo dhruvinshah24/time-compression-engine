@@ -108,6 +108,14 @@ class Track:
     total_frames_matched: int = 0
     confirmed_at_frame: int | None = None
 
+    # ── ReID / Identity fields (set by s05 ReID pass) ─────────────────────
+    # These are None until the crop extractor + PersonGallery have run.
+    person_label:        Optional[str] = None   # "Person 1", "Person 2", …
+    entry_direction:     Optional[str] = None   # "left", "right", "top", "bottom"
+    exit_direction:      Optional[str] = None   # edge person last seen near
+    appearance_embedding: Optional[object] = None  # np.ndarray, type-erased to avoid numpy dep here
+
+
     @property
     def age_frames(self) -> int:
         """Total frames since this track was created."""

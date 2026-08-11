@@ -90,6 +90,7 @@ class ObjectDetector(IntelligenceModule):
         keyframe_paths: list[str],
         keyframe_timestamps: dict[str, float] | None = None,
         frame_numbers: dict[str, int] | None = None,
+        override_confidence: float | None = None,
     ) -> ObjectDetectionResult:
         """
         Run detection on a list of keyframe paths.
@@ -98,6 +99,8 @@ class ObjectDetector(IntelligenceModule):
             keyframe_paths:       Ordered list of JPEG paths.
             keyframe_timestamps:  Optional {path: timestamp_ms} map.
             frame_numbers:        Optional {path: frame_number} map.
+            override_confidence:  Override the model spec confidence threshold.
+                                  Pass from context.settings["detection_confidence"].
 
         Returns:
             ObjectDetectionResult with all frame results and aggregate stats.
@@ -129,7 +132,12 @@ class ObjectDetector(IntelligenceModule):
                 ))
                 continue
 
-            result = model.detect(image, frame_number=frame_number, timestamp_ms=timestamp_ms)
+            result = model.detect(
+                image,
+                frame_number=frame_number,
+                timestamp_ms=timestamp_ms,
+                override_confidence=override_confidence,
+            )
             result.frame_path = path
             frame_results.append(result)
             total_detections += result.detection_count

@@ -30,10 +30,11 @@ logger = logging.getLogger(__name__)
 
 
 class ModelBackend(str, Enum):
-    YOLO = "yolo"
-    DINO = "dino"
+    YOLO  = "yolo"
+    WORLD = "world"   # YOLO-World open-vocabulary
+    DINO  = "dino"
     RTDETR = "rtdetr"
-    STUB = "stub"
+    STUB  = "stub"
 
 
 @dataclass
@@ -84,6 +85,59 @@ YOLOV8S_SPEC = ModelSpec(
     description="YOLOv8 Small — Phase 9 accuracy upgrade candidate.",
 )
 
+YOLOV8M_SPEC = ModelSpec(
+    name="yolov8m",
+    backend=ModelBackend.YOLO,
+    version="8.0.0",
+    weight_path=None,
+    input_size=(640, 640),
+    confidence_threshold=0.18,
+    description="YOLOv8 Medium — 80 fixed COCO classes. mAP 50.2.",
+)
+
+YOLOV8L_SPEC = ModelSpec(
+    name="yolov8l",
+    backend=ModelBackend.YOLO,
+    version="8.0.0",
+    weight_path=None,  # auto-downloads yolov8l.pt (~87MB)
+    input_size=(640, 640),
+    confidence_threshold=0.25,
+    description="YOLOv8 Large — best accuracy for CCTV person tracking. mAP 52.9. ~87MB.",
+)
+
+YOLOV8X_SPEC = ModelSpec(
+    name="yolov8x",
+    backend=ModelBackend.YOLO,
+    version="8.0.0",
+    weight_path=None,
+    input_size=(640, 640),
+    confidence_threshold=0.18,
+    description="YOLOv8 Extra-Large — highest COCO accuracy. mAP 53.9. ~136MB.",
+)
+
+# ── YOLO-World: open-vocabulary, detects ANY object via text prompts ─────────
+# No retraining required. Uses 200+ class vocabulary from WORLD_VOCABULARY.
+# Reference: Cheng et al., Tencent AI Lab, CVPR 2024.
+YOLOWORLD_S_SPEC = ModelSpec(
+    name="yolov8s-worldv2",
+    backend=ModelBackend.WORLD,
+    version="2.0.0",
+    weight_path=None,   # auto-downloads yolov8s-worldv2.pt (~45MB)
+    input_size=(640, 640),
+    confidence_threshold=0.15,
+    description="YOLO-World Small — open-vocabulary, fast. Detects wallet, pen, safe, etc.",
+)
+
+YOLOWORLD_L_SPEC = ModelSpec(
+    name="yolov8l-worldv2",
+    backend=ModelBackend.WORLD,
+    version="2.0.0",
+    weight_path=None,   # auto-downloads yolov8l-worldv2.pt (~100MB)
+    input_size=(640, 640),
+    confidence_threshold=0.15,
+    description="YOLO-World Large — open-vocabulary, best accuracy. 200+ custom classes.",
+)
+
 STUB_SPEC = ModelSpec(
     name="stub",
     backend=ModelBackend.STUB,
@@ -91,10 +145,75 @@ STUB_SPEC = ModelSpec(
     description="Stub model — returns empty detections. Used when no model is installed.",
 )
 
+# ── YOLO11 family (Ultralytics 2024 — successor to YOLOv8) ──────────────────────────
+YOLO11N_SPEC = ModelSpec(
+    name="yolo11n",
+    backend=ModelBackend.YOLO,
+    version="11.0.0",
+    weight_path=None,
+    input_size=(640, 640),
+    confidence_threshold=0.20,
+    description="YOLO11 Nano — 2.6M params, 6.5 GFLOPs. Fastest, Experiment A baseline.",
+)
+
+YOLO11S_SPEC = ModelSpec(
+    name="yolo11s",
+    backend=ModelBackend.YOLO,
+    version="11.0.0",
+    weight_path=None,
+    input_size=(640, 640),
+    confidence_threshold=0.20,
+    description="YOLO11 Small — 9.4M params, 21.5 GFLOPs. mAP 47.0. Experiment B.",
+)
+
+YOLO11M_SPEC = ModelSpec(
+    name="yolo11m",
+    backend=ModelBackend.YOLO,
+    version="11.0.0",
+    weight_path=None,
+    input_size=(640, 640),
+    confidence_threshold=0.20,
+    description="YOLO11 Medium — 20.1M params, 68.0 GFLOPs. mAP 51.5. Experiment C.",
+)
+
+YOLO11L_SPEC = ModelSpec(
+    name="yolo11l",
+    backend=ModelBackend.YOLO,
+    version="11.0.0",
+    weight_path=None,
+    input_size=(640, 640),
+    confidence_threshold=0.20,
+    description="YOLO11 Large — 25.3M params, 86.9 GFLOPs. mAP 53.4. Experiment D.",
+)
+
+YOLO11X_SPEC = ModelSpec(
+    name="yolo11x",
+    backend=ModelBackend.YOLO,
+    version="11.0.0",
+    weight_path=None,
+    input_size=(640, 640),
+    confidence_threshold=0.20,
+    description="YOLO11 Extra-Large — 56.9M params, 194.9 GFLOPs. mAP 54.7. Max accuracy.",
+)
+
 _BUILTIN_SPECS: dict[str, ModelSpec] = {
-    "yolov8n": YOLOV8N_SPEC,
-    "yolov8s": YOLOV8S_SPEC,
-    "stub": STUB_SPEC,
+    # YOLOv8 family (fixed-class COCO, ordered by size)
+    "yolov8n":          YOLOV8N_SPEC,
+    "yolov8s":          YOLOV8S_SPEC,
+    "yolov8m":          YOLOV8M_SPEC,
+    "yolov8l":          YOLOV8L_SPEC,
+    "yolov8x":          YOLOV8X_SPEC,
+    # YOLO11 family (2024 — better accuracy, same COCO 80 classes)
+    "yolo11n":          YOLO11N_SPEC,
+    "yolo11s":          YOLO11S_SPEC,
+    "yolo11m":          YOLO11M_SPEC,
+    "yolo11l":          YOLO11L_SPEC,
+    "yolo11x":          YOLO11X_SPEC,   # ← Experiment D: maximum accuracy
+    # Open-vocabulary YOLO-World models (for object inventory panel)
+    "yolov8s-worldv2":  YOLOWORLD_S_SPEC,
+    "yolov8l-worldv2":  YOLOWORLD_L_SPEC,
+    # Stub
+    "stub":             STUB_SPEC,
 }
 
 
@@ -166,6 +285,17 @@ class ModelRegistry:
 
         return self._loaded[name]
 
+    def get_model(self, name: str) -> "BaseDetectionModel | None":
+        """
+        Return a loaded model instance, or None if not registered.
+        Alias for get() that returns None instead of raising KeyError.
+        Used by BenchmarkRunner and other non-pipeline callers.
+        """
+        if name not in self._specs:
+            logger.warning("[Registry] Model '%s' not registered", name)
+            return None
+        return self.get(name)
+
     def unload(self, name: str) -> None:
         """Unload a model to free memory."""
         if name in self._loaded:
@@ -189,9 +319,13 @@ class ModelRegistry:
             from app.model_registry.models.yolo_model import YOLODetectionModel
             return YOLODetectionModel(spec)
 
+        if spec.backend == ModelBackend.WORLD:
+            from app.model_registry.models.yolo_model import YOLOWorldDetectionModel
+            return YOLOWorldDetectionModel(spec)
+
         raise NotImplementedError(
             f"Backend '{spec.backend}' is not yet implemented. "
-            f"Available: YOLO, STUB"
+            f"Available: YOLO, WORLD, STUB"
         )
 
     def health_report(self) -> dict[str, str]:

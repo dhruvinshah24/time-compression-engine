@@ -106,7 +106,12 @@ async def run(context: PipelineContext) -> StageResult:
             except (IndexError, ValueError):
                 frame_num = idx * frame_skip_rate
             path_to_frame[path] = frame_num
-            path_to_ts[path] = (frame_num * frame_skip_rate * 1000.0) / fps
+            # BUG-FIX S04-1: frame_num is the ABSOLUTE frame number from the
+            # filename (e.g. "frame_00000375" → 375). The correct timestamp is
+            # frame_num / fps * 1000ms. Multiplying by frame_skip_rate again
+            # was double-scaling: at skip=5 and fps=60, frame 375 was getting
+            # timestamp 375*5*1000/60=31250ms instead of correct 375/60*1000=6250ms.
+            path_to_ts[path] = (frame_num / max(fps, 1.0)) * 1000.0
 
     logs.append(
         f"[{STAGE_NAME}] Running detection on {len(frames_to_detect)} frames "
@@ -114,34 +119,73 @@ async def run(context: PipelineContext) -> StageResult:
     )
 
     # ── Step 2: Configure from system settings ─────────────────────────────
-    model_name = context.settings.get("detection_model_name", "yolov8n")
-    # Use 0.40 default — yolov8n (nano) needs a lower threshold than larger
-    # models to reliably detect people in real-world indoor/CCTV footage.
-    # 0.72 was calibrated for a larger model and misses most detections here.
-    confidence = float(context.settings.get("detection_confidence", 0.40))
+    model_name = context.settings.get("detection_model", "yolo11x")
+    confidence = float(context.settings.get("detection_confidence", 0.20))
+
+    # Device info log (Experiment framework requirement)
+    try:
+        import torch
+        device_str = "CUDA" if torch.cuda.is_available() else "CPU"
+        if torch.cuda.is_available():
+            gpu_name = torch.cuda.get_device_name(0)
+            vram_gb  = round(torch.cuda.get_device_properties(0).total_memory / 1e9, 1)
+            logs.append(
+                f"[{STAGE_NAME}] Inference Device: {device_str} | "
+                f"GPU: {gpu_name} | VRAM: {vram_gb}GB"
+            )
+        else:
+            logs.append(f"[{STAGE_NAME}] Inference Device: CPU (no CUDA GPU available)")
+    except Exception:
+        device_str = "unknown"
+
+    # Per-class confidence thresholds (JSON dict from settings)
+    per_class_conf: dict = context.settings.get("per_class_confidence", {})
+    default_conf = per_class_conf.get("default", confidence)
+
+    # SAHI configuration
+    use_sahi       = bool(context.settings.get("use_sahi", False))
+    sahi_tile_size = int(context.settings.get("sahi_tile_size", 640))
+    sahi_overlap   = float(context.settings.get("sahi_overlap", 0.2))
 
     config = ObjectDetectorConfig(
         model_name=model_name,
         confidence_threshold=confidence,
     )
-    # Override the confidence threshold in the registry spec for this job
-    registry = ModelRegistry.instance()
-    spec = registry.get_spec(model_name)
-    if spec:
-        spec.confidence_threshold = confidence
 
     logs.append(
-        f"[{STAGE_NAME}] Model: {model_name}, confidence_threshold: {confidence}"
+        f"[{STAGE_NAME}] Model: {model_name} | conf: {confidence} | "
+        f"SAHI: {'ON tile={sahi_tile_size} overlap={sahi_overlap}' if use_sahi else 'OFF'}"
     )
 
-    # ── Step 3: Run detection ──────────────────────────────────────────────
+    # ── Step 3: Run detection (with optional SAHI tiling) ─────────────────
     detector = ObjectDetector(config=config)
+
+    # Wrap detector with SAHI if enabled
+    if use_sahi:
+        try:
+            from app.utils.sahi_detector import SAHIDetector, SAHIConfig
+            raw_model = ModelRegistry.instance().get(model_name)
+            sahi_cfg  = SAHIConfig(
+                enabled=True,
+                tile_size=sahi_tile_size,
+                overlap_ratio=sahi_overlap,
+                nms_iou_threshold=0.50,
+            )
+            sahi_wrapper = SAHIDetector(raw_model, sahi_cfg)
+            logs.append(f"[{STAGE_NAME}] SAHI wrapper active")
+        except Exception as exc:
+            logs.append(f"[{STAGE_NAME}] SAHI init failed ({exc}) — using standard inference")
+            sahi_wrapper = None
+            use_sahi = False
+    else:
+        sahi_wrapper = None
 
     try:
         result = detector.detect_keyframes(
             keyframe_paths=frames_to_detect,
             keyframe_timestamps=path_to_ts,
             frame_numbers=path_to_frame,
+            override_confidence=confidence,   # ← actually reaches YOLO now
         )
     except ImportError as exc:
         # Model library not installed — fall back to stub
@@ -151,13 +195,10 @@ async def run(context: PipelineContext) -> StageResult:
         )
         logs.append(f"[{STAGE_NAME}] WARNING: {warnings[-1]}")
 
-        # Register stub and retry
-        registry.unload(model_name)
-        from app.model_registry.registry import STUB_SPEC
         config = ObjectDetectorConfig(model_name="stub")
         detector = ObjectDetector(config=config)
         result = detector.detect_keyframes(
-            keyframe_paths=keyframe_paths,
+            keyframe_paths=frames_to_detect,
             keyframe_timestamps=path_to_ts,
             frame_numbers=path_to_frame,
         )
@@ -174,11 +215,60 @@ async def run(context: PipelineContext) -> StageResult:
             logs=logs,
         )
 
-    # ── Step 4: Store in context ───────────────────────────────────────────
-    context.metadata["detection_result"] = result
-    context.metadata["frame_detections"] = result.frame_results
-    context.metadata["total_detections"] = result.total_detections
-    context.metadata["detected_classes"] = result.detections_by_class()
+    # ── Step 4: Apply per-class confidence filtering ────────────────────────
+    # Re-filter detections using per-class thresholds from settings.
+    # YOLO was run with global confidence floor; this applies class-specific
+    # lower thresholds for hard-to-detect objects (phone, bottle, book, etc.)
+    if per_class_conf:
+        pre_filter_count = result.total_detections
+        for fdr in result.frame_results:
+            filtered = []
+            for det in fdr.detections:
+                cls_threshold = per_class_conf.get(
+                    det.class_name.lower().replace("_", " "),
+                    per_class_conf.get(det.class_name.lower(), default_conf)
+                )
+                if det.confidence >= cls_threshold:
+                    filtered.append(det)
+            fdr.detections = filtered
+        # Recompute total after filtering
+        new_total = sum(len(fdr.detections) for fdr in result.frame_results)
+        logs.append(
+            f"[{STAGE_NAME}] Per-class confidence filter: "
+            f"{pre_filter_count} → {new_total} detections"
+        )
+
+    # ── Step 5: Store in context ─────────────────────────────────────────────
+    context.metadata["detection_result"]   = result
+    context.metadata["frame_detections"]   = result.frame_results
+    context.metadata["total_detections"]   = sum(len(f.detections) for f in result.frame_results)
+    context.metadata["detected_classes"]   = result.detections_by_class()
+
+
+    # Build frame_number → path dict for ReID crop extractor (s05).
+    # The crop extractor needs to load the actual frame image for each
+    # track observation. It looks up by frame_number, not by list index.
+    frame_paths_by_number: dict[int, str] = {}
+    for fdr in result.frame_results:
+        fn = getattr(fdr, "frame_number", None)
+        fp = getattr(fdr, "frame_path", None)
+        if fn is not None and fp:
+            frame_paths_by_number[fn] = fp
+    # Also build from the path list used for detection (fallback)
+    if not frame_paths_by_number:
+        for path_str in frames_to_detect:
+            from pathlib import Path as _Path
+            stem = _Path(path_str).stem
+            try:
+                fn = int(stem.split("_")[-1])
+            except (ValueError, IndexError):
+                fn = len(frame_paths_by_number)
+            frame_paths_by_number[fn] = path_str
+    context.metadata["frame_paths"] = frame_paths_by_number
+    logs.append(
+        f"[{STAGE_NAME}] Built frame_paths dict: {len(frame_paths_by_number)} entries "
+        f"for ReID crop extraction"
+    )
 
     # ── Step 5: Metrics and warnings ───────────────────────────────────────
     if result.total_detections == 0:

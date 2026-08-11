@@ -114,7 +114,7 @@ class InMemoryEventRepository:
     async def list_by_video(self, video_id: str) -> list[dict]:
         return sorted(
             [r for r in self._store.values() if r.get("video_id") == video_id],
-            key=lambda r: r.get("timestamp_ms", 0),
+            key=lambda r: r.get("start_ms") or r.get("timestamp_ms") or 0,
         )
 
     async def list_all(self) -> list[dict]:
@@ -122,6 +122,15 @@ class InMemoryEventRepository:
 
     async def get(self, event_id: str) -> dict | None:
         return self._store.get(event_id)
+
+    async def list(self, limit: int = 50, offset: int = 0) -> list[dict]:
+        """Return all events, newest first (by created_at), with pagination."""
+        all_evts = sorted(
+            self._store.values(),
+            key=lambda r: r.get("start_ms") or r.get("timestamp_ms") or 0,
+            reverse=True,
+        )
+        return list(all_evts)[offset: offset + limit]
 
 
 # ─────────────────────────────────────────────────────────────────────────────

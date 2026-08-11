@@ -15,8 +15,10 @@ only updates it as stages complete.
 """
 
 import asyncio
+import importlib
 import logging
 import time
+import uuid
 from typing import Any
 
 from app.pipeline.context import PipelineContext
@@ -169,20 +171,35 @@ class PipelineOrchestrator:
         logger.info("[%s] ✓ Pipeline complete in %.2fs", job_id, total_ms / 1000)
 
         # Extract events from context and store in EventRepository
-        events = context.metadata.get("summary_events") or context.metadata.get("events") or []
+        # ORC-3 FIX: Don't use `or` with lists — empty list is falsy but valid.
+        # summary_events=[] means "no events kept after ranking" (correct behaviour),
+        # not "summary stage not run".
+        if "summary_events" in context.metadata:
+            events = context.metadata["summary_events"]
+        elif "events" in context.metadata:
+            events = context.metadata["events"]
+        else:
+            events = []
         video_id = context.video_id
         event_records = []
         for evt in events:
             try:
-                # Events are domain objects — convert to plain dict
                 if hasattr(evt, "__dict__"):
                     d = {k: v for k, v in evt.__dict__.items()
                          if not k.startswith("_")}
                 elif isinstance(evt, dict):
-                    d = evt
+                    d = dict(evt)
                 else:
                     continue
-                d.setdefault("id", str(id(evt)))
+                # ORC-1 FIX: Use event_id (UUID set by Event dataclass).
+                # id(evt) = memory address — not unique across runs.
+                evt_id = (
+                    d.get("event_id")
+                    or d.get("id")
+                    or str(uuid.uuid4())
+                )
+                d["id"] = evt_id
+                d["event_id"] = evt_id
                 d["video_id"] = video_id
                 d["job_id"] = job_id
                 event_records.append(d)
@@ -193,23 +210,100 @@ class PipelineOrchestrator:
             await self._event_repo.create_many(event_records)
             logger.info("[%s] Stored %d events", job_id, len(event_records))
 
+        # ── Build detected objects inventory from confirmed tracks ────────
+        # This gives the UI an "Objects Seen" panel without re-running detection.
+        detected_objects: dict[str, dict] = {}
+        all_tracks = context.metadata.get("all_tracks", [])
+
+        try:
+            from app.model_registry.models.yolo_model import (
+                COCO_DISPLAY_NAMES, COCO_CATEGORIES, WORLD_CATEGORIES, _world_category,
+            )
+        except ImportError:
+            COCO_DISPLAY_NAMES = {}
+            COCO_CATEGORIES = {}
+            WORLD_CATEGORIES = {}
+            def _world_category(cn): return "object"  # noqa: E731
+
+        for track in all_tracks:
+            cn = getattr(track, "class_name", None)
+            if not cn:
+                continue
+            cid = getattr(track, "class_id", -1)
+            avg_conf = getattr(track, "avg_confidence", 0.0)
+            created_ms = getattr(track, "created_timestamp_ms", 0.0)
+
+            if cn not in detected_objects:
+                # Try COCO display name first, then prettify the class string
+                display = COCO_DISPLAY_NAMES.get(cid) or cn.replace("_", " ").title()
+                # Try COCO category, then YOLO-World category, then fuzzy
+                category = COCO_CATEGORIES.get(cid) or _world_category(cn)
+                detected_objects[cn] = {
+                    "class_name":     cn,
+                    "display_name":   display,
+                    "class_id":       cid,
+                    "category":       category,
+                    "instance_count": 0,
+                    "max_confidence": 0.0,
+                    "first_seen_ms":  created_ms,
+                }
+            detected_objects[cn]["instance_count"] += 1
+            detected_objects[cn]["max_confidence"] = round(max(
+                detected_objects[cn]["max_confidence"], avg_conf
+            ), 4)
+            detected_objects[cn]["first_seen_ms"] = min(
+                detected_objects[cn]["first_seen_ms"], created_ms
+            )
+
+        # ORC-4 FIX: Sort by category priority then confidence (most useful first)
+        _PRIORITY_CAT = {
+            "people": 0, "electronics": 1, "bag": 2,
+            "drinkware": 3, "documents": 4, "clothing": 5,
+        }
+        detected_objects_list = sorted(
+            detected_objects.values(),
+            key=lambda x: (
+                x["class_name"] != "person",
+                _PRIORITY_CAT.get(x.get("category", ""), 99),
+                -x.get("max_confidence", 0),
+                x.get("first_seen_ms", 0),
+            ),
+        )
+        logger.info(
+            "[%s] Detected object classes: %s",
+            job_id,
+            [o["display_name"] for o in detected_objects_list],
+        )
+
         # Persist summary / export manifest
         summary = context.metadata.get("summary", {})
         export_manifest = context.metadata.get("export_manifest", {})
 
+        video_meta = context.metadata.get("video_metadata", {})
+        video_meta_dict = (
+            video_meta if isinstance(video_meta, dict)
+            else getattr(video_meta, "to_dict", lambda: {})()
+        )
+
         await self._job_repo.update(job_id, {
-            "status":          "completed",
-            "progress":        100,
-            "current_stage":   "done",
-            "stages":          completed_stages,
-            "logs":            all_logs,
-            "event_count":     len(event_records),
-            "summary":         summary,
-            "export_manifest": export_manifest,
+            "status":           "completed",
+            "progress":         100,
+            "current_stage":    "done",
+            "stages":           completed_stages,
+            "logs":             all_logs,
+            "event_count":      len(event_records),
+            "summary":          summary,
+            "export_manifest":  export_manifest,
             "total_duration_ms": total_ms,
-            "video_metadata":  context.metadata.get("video_metadata", {}) if isinstance(
-                               context.metadata.get("video_metadata"), dict)
-                               else getattr(context.metadata.get("video_metadata"), "to_dict", lambda: {})(),
+            "video_metadata":   video_meta_dict,
+            "detected_objects": detected_objects_list,
+            # ── Phase 7: Person ReID data ───────────────────────────────────
+            # person_gallery: {label → {first_seen_ms, last_seen_ms, crop_path, ...}}
+            # Used by the timeline API to build the "People Detected" panel.
+            "person_gallery":   context.metadata.get("person_gallery", {}),
+            "track_to_label":   context.metadata.get("track_to_label", {}),
+            "unique_persons":   len(set(context.metadata.get("track_to_label", {}).values())),
         })
 
         return True
+

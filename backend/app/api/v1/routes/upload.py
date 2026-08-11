@@ -170,7 +170,76 @@ async def upload_video(
         video_id=video_id,
         video_path=str(dest_path),
         output_dir=output_dir,
-        settings={"source_domain": source_domain, "frame_skip_rate": 5},
+        settings={
+            "source_domain":       source_domain,
+
+            # ── Frame extraction (adaptive skip) ────────────────────────────
+            # Adaptive skip uses MOG2 motion analysis to vary sampling rate:
+            #   static room → skip=10 (~1fps), running → skip=1 (full fps).
+            # Experiment A baseline: fixed skip=3. Experiment D: adaptive=True.
+            "frame_skip_rate":     3,            # fixed fallback / warmup
+            "adaptive_skip":       True,         # enable motion-adaptive skipping
+            "adaptive_skip_min":   1,
+            "adaptive_skip_max":   10,
+
+            # ── Detection model ─────────────────────────────────────────────
+            # Experiment framework — switchable via system_settings:
+            #   yolov8l  → mAP 52.9  (v1.0 baseline)
+            #   yolo11m  → mAP 51.5  (Experiment B: architecture upgrade)
+            #   yolo11l  → mAP 53.4  (Experiment C)
+            #   yolo11x  → mAP 54.7  (Experiment D: maximum accuracy)
+            "detection_model":     "yolo11x",
+            "detection_confidence": 0.20,
+
+            # ── Per-class confidence (JSON string, data-driven) ───────────────
+            # Lower thresholds for small/hard-to-detect objects.
+            # Parsed in s04_object_detect.py — edit without code changes.
+            "per_class_confidence": {
+                "person":        0.20,  # must catch all people
+                "man":           0.20,
+                "woman":         0.20,
+                "child":         0.18,
+                "bicycle":       0.22,
+                "car":           0.25,
+                "motorcycle":    0.22,
+                "laptop":        0.17,  # reflective screens reduce score
+                "cell phone":    0.15,  # small, often partially visible
+                "phone":         0.15,
+                "bottle":        0.15,  # small, round
+                "cup":           0.15,
+                "book":          0.17,
+                "backpack":      0.18,
+                "handbag":       0.18,
+                "default":       0.20,
+            },
+
+            # ── SAHI sliced inference ────────────────────────────────────────
+            # Experiment C/D: tiles frame into 640×640 patches so small objects
+            # (person 15m away = 8×20px) become 80×200px within their tile.
+            "use_sahi":           True,
+            "sahi_tile_size":     640,
+            "sahi_overlap":       0.2,  # 20% tile overlap to avoid edge misses
+
+            # ── Tracker ─────────────────────────────────────────────────────
+            "tracker_max_lost":    15,
+            "tracker_iou_threshold": 0.25,
+            "tracker_min_confirm": 2,
+
+            # ── ReID ────────────────────────────────────────────────────────
+            "reid_similarity_threshold": 0.52,
+
+            # ── Event understanding ──────────────────────────────────────────
+            "event_min_confidence": 0.30,
+            "event_min_track_frames": 3,
+            "event_suppress_camera_motion": True,
+
+            # ── Pose estimation ──────────────────────────────────────────────
+            "pose_model":          "yolov8n-pose",
+            "pose_confidence":     0.30,
+            "pose_min_consecutive": 3,
+            # ── Brightness ──────────────────────────────────────────────────
+            "brightness_threshold": 15.0,
+        },
     )
 
     orchestrator = PipelineOrchestrator(job_repo=job_repo, event_repo=event_repo)

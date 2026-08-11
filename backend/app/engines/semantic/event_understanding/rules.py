@@ -46,9 +46,74 @@ class EventType:
     PERSON_STANDING = "person_standing"
     PERSON_LOITERING = "person_loitering"
 
+    # Person posture
+    PERSON_SITTING = "person_sitting"
+    PERSON_STANDING_UP = "person_standing_up"
+    PERSON_CROUCHING = "person_crouching"           # low aspect ratio, not sitting
+    PERSON_FALLEN = "person_fallen"                 # horizontal bbox + no motion (safety alert)
+
+    # Person gestures (keypoint-derived)
+    PERSON_REACHING_UP = "person_reaching_up"       # wrist above shoulder
+    PERSON_CARRYING = "person_carrying"             # person + object moving together
+
     # Person entry / exit
     PERSON_ENTERED_SCENE = "person_entered_scene"
     PERSON_LEFT_SCENE = "person_left_scene"
+
+    # Person-object interaction
+    PERSON_NEAR_CHAIR = "person_near_chair"
+    PERSON_NEAR_DESK = "person_near_desk"
+    PERSON_INTERACTION = "person_interaction"
+
+    # Group events (multiple persons)
+    GROUP_GATHERING = "group_gathering"             # 3+ persons in close proximity
+    GROUP_DISPERSING = "group_dispersing"           # group breaks apart
+
+    # Security / safety events
+    UNATTENDED_BAG = "unattended_bag"               # bag/backpack with no person nearby 10s+
+    PACKAGE_LEFT = "package_left"                   # package/box left in scene
+    PERSON_RUNNING_TOWARD = "person_running_toward" # running + approaching camera
+
+    # Door / access events
+    DOOR_OPENED = "door_opened"
+    DOOR_CLOSED = "door_closed"
+
+    # Lighting events (scene-level, detected via brightness analysis)
+    LIGHT_TURNED_ON = "light_turned_on"
+    LIGHT_TURNED_OFF = "light_turned_off"
+
+    # Vehicle
+    VEHICLE_APPROACHING = "vehicle_approaching"
+    VEHICLE_RECEDING = "vehicle_receding"
+    VEHICLE_STATIONARY = "vehicle_stationary"
+    VEHICLE_STOPPED = "vehicle_stopped"             # vehicle parks / comes to halt
+
+    # General object
+    OBJECT_APPEARED = "object_appeared"
+    OBJECT_DISAPPEARED = "object_disappeared"
+
+    # Scene level
+    SCENE_ACTIVITY = "scene_activity"
+
+    # Person posture
+    PERSON_SITTING = "person_sitting"
+    PERSON_STANDING_UP = "person_standing_up"
+
+    # Person gestures (keypoint-derived)
+    PERSON_REACHING_UP = "person_reaching_up"   # wrist above shoulder → e.g. light switch
+
+    # Person entry / exit
+    PERSON_ENTERED_SCENE = "person_entered_scene"
+    PERSON_LEFT_SCENE = "person_left_scene"
+
+    # Person-object interaction
+    PERSON_NEAR_CHAIR = "person_near_chair"
+    PERSON_NEAR_DESK = "person_near_desk"
+    PERSON_INTERACTION = "person_interaction"
+
+    # Lighting events (scene-level, detected via brightness analysis)
+    LIGHT_TURNED_ON = "light_turned_on"
+    LIGHT_TURNED_OFF = "light_turned_off"
 
     # Vehicle
     VEHICLE_APPROACHING = "vehicle_approaching"
@@ -64,8 +129,13 @@ class EventType:
 
 
 # Class name groupings (COCO-based)
-PERSON_CLASSES: frozenset[str] = frozenset({"person"})
-VEHICLE_CLASSES: frozenset[str] = frozenset({"car", "truck", "bus", "motorcycle", "bicycle"})
+# Class name groupings — includes both COCO ("person") and YOLO-World labels
+# ("man", "woman", "child", "baby") so rules fire correctly regardless of model.
+PERSON_CLASSES: frozenset[str] = frozenset({
+    "person", "man", "woman", "child", "baby", "crowd",
+})
+VEHICLE_CLASSES: frozenset[str] = frozenset({"car", "truck", "bus", "motorcycle", "bicycle", "scooter", "van"})
+
 
 
 # ---------------------------------------------------------------------------
@@ -314,21 +384,39 @@ KNOWLEDGE_BASE: list[EventRule] = [
         rule_confidence=0.78,
     ),
 
-    # ── General object events ──────────────────────────────────────────────
+    # ── General object events ────────────────────────────────────────────
+    # Only fire for non-background classes that actually change (e.g. a
+    # bottle appearing on a table, a phone being picked up).
+    # Background furniture (bed, chair, couch, TV) is always present and
+    # generates meaningless appeared/disappeared events every time a track
+    # fragments. Suppress them here; they are shown in the Objects panel.
     EventRule(
         name="rule_object_appeared",
         event_type=EventType.OBJECT_APPEARED,
-        description="Any new confirmed object track appeared",
+        description="Non-background object newly appeared in the scene",
+        class_names=frozenset({
+            # Interesting transient objects only:
+            "bottle", "wine_glass", "cup", "fork", "knife", "spoon", "bowl",
+            "banana", "apple", "sandwich", "orange", "book", "cell_phone",
+            "laptop", "mouse", "remote", "keyboard", "backpack", "handbag",
+            "suitcase", "umbrella", "scissors", "vase", "clock",
+        }),
         require_new_track=True,
-        min_track_frames=1,
-        rule_confidence=0.65,  # general — any class, more noise
+        min_track_frames=3,   # must persist 3+ frames to avoid flicker noise
+        rule_confidence=0.68,
     ),
     EventRule(
         name="rule_object_disappeared",
         event_type=EventType.OBJECT_DISAPPEARED,
-        description="Any confirmed object track ended",
+        description="Non-background object disappeared from the scene",
+        class_names=frozenset({
+            "bottle", "wine_glass", "cup", "fork", "knife", "spoon", "bowl",
+            "banana", "apple", "sandwich", "orange", "book", "cell_phone",
+            "laptop", "mouse", "remote", "keyboard", "backpack", "handbag",
+            "suitcase", "umbrella", "scissors", "vase", "clock",
+        }),
         require_ended_track=True,
-        min_track_frames=1,
+        min_track_frames=3,
         rule_confidence=0.65,
     ),
 ]

@@ -1,8 +1,9 @@
+/* BUG-31 FIX: @import must precede @tailwind directives */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
   --font-sans: 'Inter', system-ui, sans-serif;
@@ -53,4 +54,23 @@ body {
 @keyframes stagePulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
   50% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+}
+
+/* BUG-17 FIX: animate-slide-up was undefined — define it here */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+/* BUG-32 FIX: Define legacy CSS token vars for any remaining usages */
+/* These ensure old code doesn't completely break if token references slip through */
+:root {
+  --color-background: #09090b;
+  --color-surface:    rgba(255,255,255,0.03);
+  --color-border:     rgba(255,255,255,0.07);
+  --color-muted:      rgba(255,255,255,0.40);
+  --color-accent:     #6366f1;
 }

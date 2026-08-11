@@ -36,3 +36,7 @@ class CompressionConfig:
     always_keep_complete: bool = True
     completeness_min_threshold: float = 0.20
     chain_atomicity: bool = True
+    # Keep ALL events when the total is below this number.
+    # Rationale: compressing 4 events by 40% → 1 kept event is meaningless
+    # and destroys the narrative. Short videos should be kept in full.
+    keep_all_threshold: int = 20

@@ -1,149 +1,160 @@
-# Time Compression Engine
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/) [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/) [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-009688.svg)](https://fastapi.tiangolo.com/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
+# 🧠 Time Compression Engine (TCE)
 
-**"Hours of Video. Seconds of Truth."**
+> **Research-grade video event summarization system** — detects every person, object, and activity in long-duration video and compresses it into a precise, human-readable event timeline.
 
-Time Compression Engine (TCE) is a research-grade AI video event summarization system designed to distil protracted video recordings into dense, narrative-preserving semantic summaries. Moving beyond simple motion detection, TCE employs a sophisticated three-engine architecture that parses raw perceptual signals, translates them into high-level semantic events using a knowledge-graph-backed taxonomy, and applies temporal intelligence to select events that maintain narrative coherence. This system addresses the fundamental limitation of traditional video surveillance and analysis by ensuring that the semantic causality of events is preserved while achieving extreme temporal compression ratios.
+[![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-green?logo=fastapi)](https://fastapi.tiangolo.com)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org)
+[![YOLO11x](https://img.shields.io/badge/YOLO-11x-purple)](https://ultralytics.com)
+[![CUDA](https://img.shields.io/badge/CUDA-13.2-76B900?logo=nvidia)](https://developer.nvidia.com/cuda-toolkit)
 
-## Architecture Overview
+---
 
-```mermaid
-graph TD
-    subgraph Input
-        V[Raw Video Stream]
-    end
+## What It Does
 
-    subgraph Perception Engine
-        OD[Object Detection]
-        MT[Motion Tracking]
-        SC[Scene Context]
-    end
+Upload a video (even 24-hour CCTV footage). TCE processes it through a 12-stage AI pipeline and returns:
 
-    subgraph Semantic Intelligence Engine
-        CF[Confidence Fusion]
-        ES[Event Selection Strategy]
-        KB[(Knowledge Base v1)]
-    end
+- **Event timeline** - every person entry/exit, interaction, posture change, lighting event
+- **31 event types** - from `person_walking` to `unattended_bag` and `person_fallen`
+- **Compressed summary** - skip the boring parts, keep everything meaningful
+- **Live dashboard** - real-time processing status, GPU metrics, event feed
 
-    subgraph Temporal Intelligence Engine
-        EG[Event Graph Generation]
-        SP[Story Preservation Layer]
-        CP[Compression Policy]
-    end
+## Architecture
 
-    subgraph Output
-        CV[Compressed Narrative Video]
-        EX[Explainability Metadata]
-    end
-
-    V --> OD
-    V --> MT
-    V --> SC
-
-    OD --> CF
-    MT --> CF
-    SC --> CF
-
-    CF --> ES
-    KB -.-> ES
-
-    ES --> EG
-    EG --> SP
-    SP --> CP
-
-    CP --> CV
-    CP --> EX
+```
+Video Upload -> Frame Extraction -> Scene Detection -> Object Detection (YOLO11x + SAHI)
+    -> Tracking -> Motion Analysis -> Event Understanding -> Confidence Fusion
+    -> Story Building -> Ranking -> Summarization -> Export
 ```
 
-## Feature Highlights
-- **Semantic Event Recognition**: Knowledge-graph-backed event labelling, identifying complex occurrences like "person loitering" or "package delivered" rather than simple pixel changes.
-- **Narrative-Preserving Compression**: Ensures causal sequences (e.g., person enters -> places object -> person exits) are maintained in the output, preventing context loss.
-- **Explainable Decisions**: Every inclusion or exclusion of an event in the final summary includes a transparent reasoning chain.
-- **Multi-Signal Confidence Fusion**: Aggregates object detection, motion tracking, and scene context into a unified confidence metric.
-- **Event Graph Representation**: Models video events dynamically as a directed graph indicating causality and sequence.
+### Tech Stack
 
-## Technology Stack
-
-| Layer | Technologies |
+| Layer | Technology |
 |---|---|
-| **Frontend** | Next.js 14, React, Tailwind CSS, TypeScript |
-| **Backend** | Python 3.11+, FastAPI, SQLAlchemy, Pydantic |
-| **Database** | PostgreSQL 16 (asyncpg), Redis (Caching/Tasks) |
-| **AI / ML** | PyTorch, YOLO, DINO (Phase 3+) |
-| **Video Processing** | FFmpeg, OpenCV |
+| Backend | FastAPI + Python 3.14 |
+| Frontend | Next.js 14 + Framer Motion |
+| Detection | YOLO11x (57M params, mAP 54.7) |
+| Tiling | SAHI batch GPU tile inference |
+| GPU | NVIDIA RTX 5050, CUDA 13.2, PyTorch 2.13 |
+| Tracking | Custom IoU + appearance tracker |
+| Events | 7-pass semantic understanding engine |
 
-## Quick Start
+---
 
-### Using Docker Compose (Recommended)
-```bash
-# Clone the repository
-git clone https://github.com/organization/time-compression-engine.git
-cd time-compression-engine
+## Key Features
 
-# Copy environment variables
-cp .env.example .env
+### GPU-Accelerated Pipeline
+- Full CUDA inference on YOLO11x - 38 fps on 1080p
+- SAHI tiled detection for small objects (phones at 15m range)
+- Adaptive frame skipping - more frames when motion is detected
 
-# Start all services
-docker-compose up -d --build
+### 31 Event Types
+
+| Category | Events |
+|---|---|
+| Motion | walking, running, loitering |
+| Posture | sitting, standing up, crouching, fallen |
+| Interaction | using phone/laptop, drinking, reading, carrying |
+| Security | unattended bag, person fallen, group gathering, package left |
+| Scene | light on/off, door opened/closed |
+| Vehicle | approaching, receding, stopped |
+
+### Multi-Model Registry
 ```
-The API will be available at `http://localhost:8000` and the frontend at `http://localhost:3000`.
+yolo11x (default) . yolo11l . yolo11m . yolo11s . yolo11n
+yolov8x . yolov8l . yolov8s-worldv2 . yolov8l-worldv2
+```
 
-### Manual Setup
-1. Ensure PostgreSQL and Redis are running locally.
-2. Setup the backend:
-   ```bash
-   cd backend
-   python -m venv venv
-   source venv/bin/activate # or venv\Scripts\activate on Windows
-   pip install -r requirements.txt
-   uvicorn app.main:app --reload
-   ```
-3. Setup the frontend:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
+---
 
-## Project Structure (Top-Level)
+## Getting Started
+
+### Prerequisites
+- Python 3.11+
+- Node.js 18+
+- NVIDIA GPU with CUDA 12+ (CPU fallback works too)
+
+### Backend
+```bash
+cd backend
+pip install -r requirements.txt
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open **http://localhost:3000** and upload a video.
+
+API docs: **http://localhost:8000/api/docs**
+
+---
+
+## Project Structure
+
 ```
 time-compression-engine/
-├── backend/            # FastAPI application and Python microservices
-├── benchmark/          # Performance and evaluation benchmarks
-├── docs/               # System architecture and API documentation
-├── evaluation/         # Metrics and testing ground-truth
-├── frontend/           # Next.js web application
-├── knowledge/          # Versioned semantic knowledge base and taxonomies
-└── research/           # Patent notes, algorithmic research, and ideas
+├── backend/
+│   ├── app/
+│   │   ├── api/v1/routes/        # FastAPI endpoints
+│   │   ├── engines/              # Perception / Semantic / Temporal AI
+│   │   ├── pipeline/stages/      # 12-stage processing pipeline
+│   │   ├── model_registry/       # YOLO model management
+│   │   └── utils/                # SAHI, adaptive skip, benchmark, tracking
+│   └── requirements.txt
+├── frontend/
+│   └── src/app/
+│       ├── (dashboard)/          # Main dashboard + event feed
+│       ├── upload/               # Video upload page
+│       ├── processing/[jobId]/   # Real-time processing view
+│       └── timeline/[videoId]/   # Event timeline viewer
+└── README.md
 ```
+
+---
+
+## Pipeline Stages
+
+| Stage | Name | Description |
+|---|---|---|
+| S01 | Upload | Video ingestion + metadata extraction |
+| S02 | Extract | Frame extraction (adaptive rate) |
+| S03 | Scene Detect | Shot boundary + scene change detection |
+| S04 | Object Detect | YOLO11x + SAHI GPU inference |
+| S05 | Track | Multi-object tracking with ReID |
+| S06 | Motion Analyze | Velocity, direction, approach signals |
+| S07 | Event Understand | 7-pass semantic engine (31 event types) |
+| S08 | Confidence Fusion | Multi-source evidence merging |
+| S09 | Story Build | Narrative continuity + sequence building |
+| S10 | Rank | Event importance scoring |
+| S11 | Summarize | Compression + highlight selection |
+| S12 | Export | Timeline JSON + clip generation |
+
+---
+
+## Performance
+
+| Metric | Value |
+|---|---|
+| Detection speed (1080p) | 38 fps (YOLO11x GPU) |
+| SAHI tiled inference | 85ms for 4-tile batch |
+| GPU VRAM usage | ~290MB (yolo11x) |
+| Supported video length | 24h+ (chunked processing) |
+
+---
 
 ## Roadmap
 
-| Phase | Description | Status |
-|---|---|---|
-| **Phase 1** | Architecture Definition & Seed Infrastructure | Completed |
-| **Phase 2** | Perception Engine - Baseline Implementation | Planned |
-| **Phase 3** | Semantic Intelligence Engine Core | Planned |
-| **Phase 4** | Temporal Intelligence Engine Core | Planned |
-| **Phase 5** | Explainability Pipeline Integration | Planned |
-| **Phase 6** | End-to-End Evaluation Framework | Planned |
-| **Phase 7** | Frontend Dashboard MVP | Planned |
-| **Phase 8** | Video Processing Pipeline Optimization | Planned |
-| **Phase 9** | Advanced Multi-Signal Confidence Fusion | Planned |
-| **Phase 10** | Event Graph Analytics UI | Planned |
-| **Phase 11** | Knowledge Base v2 (Dynamic Rules) | Planned |
-| **Phase 12** | Model Inference Optimization (TensorRT) | Planned |
-| **Phase 13** | Edge Deployment Capabilities | Planned |
-| **Phase 14** | Multi-Camera Correlation | Planned |
-| **Phase 15** | Real-time Streaming Summarization | Planned |
+- [ ] BoT-SORT tracker integration
+- [ ] LLM-based event narration (GPT-4V / Gemini)
+- [ ] Real-time RTSP stream support
+- [ ] PostgreSQL + async persistence layer
+- [ ] Docker Compose deployment
 
-## Research Contributions
-Time Compression Engine introduces novel approaches to video summarization:
-1. **Confidence Fusion Methodology**: A unique weighting mechanism across heterogeneous perceptual signals.
-2. **Semantic Event Selection Strategy**: Bridging the gap between low-level vision and high-level knowledge representations.
-3. **Narrative-Preserving Temporal Compression**: Formalizing story coherence as a quantifiable metric in video summarization.
-4. **Explainable Event Selection**: Providing auditable reasoning chains for automated editing decisions.
-5. **Event Graph Representation**: Structuring temporal data as causal graphs rather than linear timelines.
+---
 
-## License
-MIT License. See `LICENSE` for details.
+**Dhruvin Shah** - [@dhruvinshah24](https://github.com/dhruvinshah24)

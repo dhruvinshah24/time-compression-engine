@@ -145,7 +145,7 @@ class SAHIDetector:
         duration_ms = (time.perf_counter() - start) * 1000
         logger.debug(
             "[SAHI] frame=%d tiles=%d raw_det=%d merged=%d time=%.0fms",
-            frame_number, len(tiles), len(all_detections), len(merged), duration_ms
+            frame_number, len(tile_images), len(all_detections), len(merged), duration_ms
         )
         
         return FrameDetectionResult(

@@ -1,0 +1,119 @@
+{
+  "timestamp": "2026-08-25T14:42:36.762087",
+  "system": {
+    "python": "3.14.5 (tags/v3.14.5:5607950, May 10 2026, 10:43:50) [MSC v.1944 64 bit (AMD64)]",
+    "pytorch": "2.13.0+cu132",
+    "cuda_available": true,
+    "cuda_version": "13.2",
+    "gpu_name": "NVIDIA GeForce RTX 5050 Laptop GPU",
+    "vram_gb": 8.55,
+    "compute_capability": "12.0"
+  },
+  "models": {
+    "yolo11n": {
+      "640x360": {
+        "avg_ms": 12.5,
+        "fps": 80.2,
+        "vram_mb": "44",
+        "avg_detections": 0.0
+      },
+      "1280x720": {
+        "avg_ms": 18.3,
+        "fps": 54.8,
+        "vram_mb": "44",
+        "avg_detections": 0.0
+      },
+      "1920x1080": {
+        "avg_ms": 12.4,
+        "fps": 80.4,
+        "vram_mb": "44",
+        "avg_detections": 0.0
+      }
+    },
+    "yolo11s": {
+      "640x360": {
+        "avg_ms": 18.2,
+        "fps": 54.9,
+        "vram_mb": "82",
+        "avg_detections": 0.0
+      },
+      "1280x720": {
+        "avg_ms": 16.6,
+        "fps": 60.3,
+        "vram_mb": "82",
+        "avg_detections": 0.0
+      },
+      "1920x1080": {
+        "avg_ms": 17.6,
+        "fps": 56.9,
+        "vram_mb": "82",
+        "avg_detections": 0.0
+      }
+    },
+    "yolo11m": {
+      "640x360": {
+        "avg_ms": 27.1,
+        "fps": 37.0,
+        "vram_mb": "127",
+        "avg_detections": 0.0
+      },
+      "1280x720": {
+        "avg_ms": 20.0,
+        "fps": 50.0,
+        "vram_mb": "127",
+        "avg_detections": 0.0
+      },
+      "1920x1080": {
+        "avg_ms": 25.2,
+        "fps": 39.7,
+        "vram_mb": "127",
+        "avg_detections": 0.0
+      }
+    },
+    "yolo11l": {
+      "640x360": {
+        "avg_ms": 27.4,
+        "fps": 36.5,
+        "vram_mb": "183",
+        "avg_detections": 0.0
+      },
+      "1280x720": {
+        "avg_ms": 27.7,
+        "fps": 36.1,
+        "vram_mb": "183",
+        "avg_detections": 0.0
+      },
+      "1920x1080": {
+        "avg_ms": 31.1,
+        "fps": 32.2,
+        "vram_mb": "183",
+        "avg_detections": 0.0
+      }
+    },
+    "yolo11x": {
+      "640x360": {
+        "avg_ms": 33.9,
+        "fps": 29.5,
+        "vram_mb": "392",
+        "avg_detections": 0.0
+      },
+      "1280x720": {
+        "avg_ms": 29.8,
+        "fps": 33.6,
+        "vram_mb": "392",
+        "avg_detections": 0.0
+      },
+      "1920x1080": {
+        "avg_ms": 31.7,
+        "fps": 31.5,
+        "vram_mb": "392",
+        "avg_detections": 0.0
+      }
+    }
+  },
+  "inference": {
+    "sahi_sequential_ms": 103.8,
+    "sahi_batch_ms": 88.3,
+    "sahi_speedup": 1.18
+  }
+}

@@ -196,6 +196,54 @@ YOLO11X_SPEC = ModelSpec(
     description="YOLO11 Extra-Large — 56.9M params, 194.9 GFLOPs. mAP 54.7. Max accuracy.",
 )
 
+YOLO11X_POSE_SPEC = ModelSpec(
+    name="yolo11x-pose",
+    backend=ModelBackend.YOLO,
+    version="11.0.0",
+    weight_path=None,
+    input_size=(640, 640),
+    confidence_threshold=0.20,
+    description="YOLO11x Pose — 57M params + 17 keypoints. For crawling/posture detection.",
+)
+
+# ---------------------------------------------------------------------------
+# Model Profiles — benchmarked on RTX 5050 (8.55GB VRAM, CC 12.0)
+# Benchmark date: 2026-08-25
+# Results: yolo11n=80fps, yolo11s=57fps, yolo11m=40fps, yolo11l=32fps, yolo11x=32fps
+# yolo11l and yolo11x run at the same speed on RTX 5050.
+# Default is yolo11x (best accuracy, same speed as yolo11l on this hardware).
+# ---------------------------------------------------------------------------
+MODEL_PROFILES: dict[str, dict] = {
+    "fast": {
+        "model": "yolo11n",
+        "description": "80 fps @ 1080p. 44MB VRAM. Best for real-time or low-power.",
+        "vram_required_mb": 100,
+    },
+    "balanced": {
+        "model": "yolo11m",
+        "description": "40 fps @ 1080p. 127MB VRAM. Good accuracy/speed balance.",
+        "vram_required_mb": 300,
+    },
+    "accuracy": {
+        "model": "yolo11x",
+        "description": "32 fps @ 1080p. 392MB VRAM. Best mAP 54.7. Recommended.",
+        "vram_required_mb": 800,
+    },
+    "pose": {
+        "model": "yolo11x-pose",
+        "description": "32 fps @ 1080p + 17 keypoints. For crawling/activity detection.",
+        "vram_required_mb": 900,
+    },
+}
+
+# Fallback chain: accuracy → balanced → fast
+_PROFILE_FALLBACK: dict[str, str] = {
+    "accuracy": "balanced",
+    "pose":     "accuracy",
+    "balanced": "fast",
+    "fast":     "fast",  # no further fallback
+}
+
 _BUILTIN_SPECS: dict[str, ModelSpec] = {
     # YOLOv8 family (fixed-class COCO, ordered by size)
     "yolov8n":          YOLOV8N_SPEC,
@@ -208,13 +256,15 @@ _BUILTIN_SPECS: dict[str, ModelSpec] = {
     "yolo11s":          YOLO11S_SPEC,
     "yolo11m":          YOLO11M_SPEC,
     "yolo11l":          YOLO11L_SPEC,
-    "yolo11x":          YOLO11X_SPEC,   # ← Experiment D: maximum accuracy
+    "yolo11x":          YOLO11X_SPEC,   # ← Default accuracy profile (mAP 54.7)
+    "yolo11x-pose":     YOLO11X_POSE_SPEC,  # ← Pose profile (keypoints)
     # Open-vocabulary YOLO-World models (for object inventory panel)
     "yolov8s-worldv2":  YOLOWORLD_S_SPEC,
     "yolov8l-worldv2":  YOLOWORLD_L_SPEC,
     # Stub
     "stub":             STUB_SPEC,
 }
+
 
 
 # ---------------------------------------------------------------------------
@@ -328,9 +378,72 @@ class ModelRegistry:
             f"Available: YOLO, WORLD, STUB"
         )
 
+    def get_for_profile(self, profile: str) -> "BaseDetectionModel":
+        """
+        Return a model for the given profile ('fast', 'balanced', 'accuracy', 'pose').
+
+        Checks available VRAM before loading. If VRAM is insufficient, automatically
+        falls back to the next lighter profile. Records the fallback in logs.
+
+        Args:
+            profile: One of 'fast', 'balanced', 'accuracy', 'pose'.
+
+        Returns:
+            Loaded BaseDetectionModel for the resolved profile.
+        """
+        resolved = profile
+        while True:
+            if resolved not in MODEL_PROFILES:
+                logger.warning("[Registry] Unknown profile '%s', falling back to 'fast'", resolved)
+                resolved = "fast"
+
+            prof = MODEL_PROFILES[resolved]
+            model_name = prof["model"]
+            vram_required_mb = prof["vram_required_mb"]
+
+            # Check VRAM availability
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    free_mb = (
+                        torch.cuda.get_device_properties(0).total_memory
+                        - torch.cuda.memory_allocated(0)
+                    ) / 1e6
+                    if free_mb < vram_required_mb:
+                        next_profile = _PROFILE_FALLBACK.get(resolved, "fast")
+                        if next_profile == resolved:
+                            # No further fallback
+                            logger.warning(
+                                "[Registry] Profile '%s' needs %.0fMB VRAM, only %.0fMB free. "
+                                "Loading anyway (last resort).",
+                                resolved, vram_required_mb, free_mb,
+                            )
+                            break
+                        logger.warning(
+                            "[Registry] Profile '%s' needs %.0fMB VRAM, only %.0fMB free. "
+                            "Falling back to '%s'.",
+                            resolved, vram_required_mb, free_mb, next_profile,
+                        )
+                        resolved = next_profile
+                        continue
+            except Exception:
+                pass  # CUDA not available — proceed anyway
+            break
+
+        model_name = MODEL_PROFILES[resolved]["model"]
+        if model_name not in self._specs:
+            logger.warning("[Registry] Model '%s' not in specs, using stub", model_name)
+            model_name = "stub"
+
+        if resolved != profile:
+            logger.info("[Registry] Profile '%s' → resolved to '%s' (%s)", profile, resolved, model_name)
+
+        return self.get(model_name)
+
     def health_report(self) -> dict[str, str]:
         """Return health status of all loaded models."""
         return {
             name: model.health()
             for name, model in self._loaded.items()
         }
+

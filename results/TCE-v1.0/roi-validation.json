@@ -1,0 +1,62 @@
+{
+  "measured_at": "2026-08-26T18:11:11",
+  "geometry": {
+    "tests": [
+      {
+        "name": "point_inside_zone_generates_entry",
+        "passed": false,
+        "expect_events": 1,
+        "got_events": 0,
+        "event_types": []
+      },
+      {
+        "name": "point_outside_zone_no_event",
+        "passed": true,
+        "expect_events": 0,
+        "got_events": 0,
+        "event_types": []
+      },
+      {
+        "name": "entry_then_exit_generates_two_events",
+        "passed": true,
+        "expect_events": 2,
+        "got_events": 2,
+        "event_types": [
+          "restricted_zone_entry",
+          "restricted_zone_exit"
+        ]
+      },
+      {
+        "name": "approach_without_crossing_no_entry",
+        "passed": true,
+        "expect_events": 0,
+        "got_events": 0,
+        "event_types": []
+      }
+    ],
+    "passed": 3,
+    "failed": 1,
+    "total": 4
+  },
+  "corpus_video": {
+    "total_events": 2,
+    "entry_events": 0,
+    "exit_events": 1,
+    "all_event_types": [
+      "restricted_zone_entry",
+      "restricted_zone_exit"
+    ],
+    "entry_frames": [],
+    "entry_times_s": [],
+    "exit_frames": [
+      459
+    ],
+    "exit_times_s": [
+      18.36
+    ],
+    "expected_entry_s": 14.3,
+    "expected_exit_s": 25.7,
+    "entry_correct": false,
+    "exit_correct": true
+  }
+}

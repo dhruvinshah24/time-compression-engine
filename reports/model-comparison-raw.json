@@ -1,0 +1,93 @@
+{
+  "measured_at": "2026-08-26T17:42:44",
+  "benchmark_frames": 100,
+  "results": [
+    {
+      "model": "yolo11n.pt",
+      "conf": 0.25,
+      "status": "completed",
+      "error": null,
+      "load_time_s": 0.828,
+      "vram_after_load_mb": 30,
+      "frame_source": "normal_light_walking_60s.mp4",
+      "vram_inference_mb": 90,
+      "fps": 38.14,
+      "ms_per_frame": 26.22,
+      "frames_benchmarked": 100,
+      "total_detections": 0,
+      "avg_detections_per_frame": 0.0,
+      "classes_detected": {},
+      "note": "Measured on normal_light_walking_60s.mp4. Synthetic video: expect 0 person detections (YOLO not trained on shapes). FPS is reliable. Detection counts are only meaningful on real footage."
+    },
+    {
+      "model": "yolo11s.pt",
+      "conf": 0.25,
+      "status": "completed",
+      "error": null,
+      "load_time_s": 1.389,
+      "vram_after_load_mb": 82,
+      "frame_source": "normal_light_walking_60s.mp4",
+      "vram_inference_mb": 150,
+      "fps": 36.72,
+      "ms_per_frame": 27.23,
+      "frames_benchmarked": 100,
+      "total_detections": 0,
+      "avg_detections_per_frame": 0.0,
+      "classes_detected": {},
+      "note": "Measured on normal_light_walking_60s.mp4. Synthetic video: expect 0 person detections (YOLO not trained on shapes). FPS is reliable. Detection counts are only meaningful on real footage."
+    },
+    {
+      "model": "yolo11m.pt",
+      "conf": 0.25,
+      "status": "completed",
+      "error": null,
+      "load_time_s": 2.994,
+      "vram_after_load_mb": 130,
+      "frame_source": "normal_light_walking_60s.mp4",
+      "vram_inference_mb": 268,
+      "fps": 30.08,
+      "ms_per_frame": 33.25,
+      "frames_benchmarked": 100,
+      "total_detections": 23,
+      "avg_detections_per_frame": 0.23,
+      "classes_detected": {
+        "tv": 23
+      },
+      "note": "Measured on normal_light_walking_60s.mp4. Synthetic video: expect 0 person detections (YOLO not trained on shapes). FPS is reliable. Detection counts are only meaningful on real footage."
+    },
+    {
+      "model": "yolo11l.pt",
+      "conf": 0.25,
+      "status": "completed",
+      "error": null,
+      "load_time_s": 3.386,
+      "vram_after_load_mb": 234,
+      "frame_source": "normal_light_walking_60s.mp4",
+      "vram_inference_mb": 366,
+      "fps": 21.66,
+      "ms_per_frame": 46.16,
+      "frames_benchmarked": 100,
+      "total_detections": 0,
+      "avg_detections_per_frame": 0.0,
+      "classes_detected": {},
+      "note": "Measured on normal_light_walking_60s.mp4. Synthetic video: expect 0 person detections (YOLO not trained on shapes). FPS is reliable. Detection counts are only meaningful on real footage."
+    },
+    {
+      "model": "yolo11x.pt",
+      "conf": 0.25,
+      "status": "completed",
+      "error": null,
+      "load_time_s": 7.449,
+      "vram_after_load_mb": 380,
+      "frame_source": "normal_light_walking_60s.mp4",
+      "vram_inference_mb": 536,
+      "fps": 21.86,
+      "ms_per_frame": 45.75,
+      "frames_benchmarked": 100,
+      "total_detections": 0,
+      "avg_detections_per_frame": 0.0,
+      "classes_detected": {},
+      "note": "Measured on normal_light_walking_60s.mp4. Synthetic video: expect 0 person detections (YOLO not trained on shapes). FPS is reliable. Detection counts are only meaningful on real footage."
+    }
+  ]
+}

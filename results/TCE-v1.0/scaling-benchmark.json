@@ -1,0 +1,165 @@
+{
+  "measured_at": "2026-08-26T18:21:43",
+  "results": [
+    {
+      "video_id": "scaling_30s",
+      "status": "completed",
+      "expected_duration_s": 30,
+      "actual_duration_s": 30.0,
+      "file_size_mb": 10.7,
+      "video_info": {
+        "frames": 750,
+        "fps": 25.0,
+        "width": 1920,
+        "height": 1080
+      },
+      "extraction": {
+        "extraction_time_s": 1.02,
+        "frames_extracted": 150,
+        "ffmpeg_returncode": 0
+      },
+      "adaptive_skip": {
+        "adaptive_skip_time_s": 5.74,
+        "frames_selected": 116,
+        "effective_ratio": 0.15466666666666667,
+        "status": "completed"
+      },
+      "quality_analysis": {
+        "quality_analysis_time_s": 7.54,
+        "frames_analyzed": 75,
+        "ms_per_frame": 100.6
+      },
+      "total_analysis_time_s": 14.42,
+      "real_time_factor": 0.481,
+      "ram_delta_mb": -1661
+    },
+    {
+      "video_id": "scaling_60s",
+      "status": "completed",
+      "expected_duration_s": 60,
+      "actual_duration_s": 60.0,
+      "file_size_mb": 21.5,
+      "video_info": {
+        "frames": 1500,
+        "fps": 25.0,
+        "width": 1920,
+        "height": 1080
+      },
+      "extraction": {
+        "extraction_time_s": 1.64,
+        "frames_extracted": 300,
+        "ffmpeg_returncode": 0
+      },
+      "adaptive_skip": {
+        "adaptive_skip_time_s": 11.54,
+        "frames_selected": 230,
+        "effective_ratio": 0.15333333333333332,
+        "status": "completed"
+      },
+      "quality_analysis": {
+        "quality_analysis_time_s": 15.37,
+        "frames_analyzed": 150,
+        "ms_per_frame": 102.5
+      },
+      "total_analysis_time_s": 28.64,
+      "real_time_factor": 0.477,
+      "ram_delta_mb": 1102
+    },
+    {
+      "video_id": "scaling_5min",
+      "status": "completed",
+      "expected_duration_s": 300,
+      "actual_duration_s": 300.0,
+      "file_size_mb": 107.5,
+      "video_info": {
+        "frames": 7500,
+        "fps": 25.0,
+        "width": 1920,
+        "height": 1080
+      },
+      "extraction": {
+        "extraction_time_s": 7.51,
+        "frames_extracted": 1500,
+        "ffmpeg_returncode": 0
+      },
+      "adaptive_skip": {
+        "adaptive_skip_time_s": 69.17,
+        "frames_selected": 1142,
+        "effective_ratio": 0.15226666666666666,
+        "status": "completed"
+      },
+      "quality_analysis": {
+        "quality_analysis_time_s": 103.73,
+        "frames_analyzed": 750,
+        "ms_per_frame": 138.3
+      },
+      "total_analysis_time_s": 180.82,
+      "real_time_factor": 0.603,
+      "ram_delta_mb": -537
+    },
+    {
+      "video_id": "scaling_10min",
+      "status": "completed",
+      "expected_duration_s": 600,
+      "actual_duration_s": 600.0,
+      "file_size_mb": 215.0,
+      "video_info": {
+        "frames": 15000,
+        "fps": 25.0,
+        "width": 1920,
+        "height": 1080
+      },
+      "extraction": {
+        "extraction_time_s": 15.72,
+        "frames_extracted": 3000,
+        "ffmpeg_returncode": 0
+      },
+      "adaptive_skip": {
+        "adaptive_skip_time_s": 152.96,
+        "frames_selected": 2282,
+        "effective_ratio": 0.15213333333333334,
+        "status": "completed"
+      },
+      "quality_analysis": {
+        "quality_analysis_time_s": 193.56,
+        "frames_analyzed": 1500,
+        "ms_per_frame": 129.0
+      },
+      "total_analysis_time_s": 363.87,
+      "real_time_factor": 0.606,
+      "ram_delta_mb": -343
+    },
+    {
+      "video_id": "scaling_30min",
+      "status": "completed",
+      "expected_duration_s": 1800,
+      "actual_duration_s": -1.0,
+      "file_size_mb": 116.8,
+      "video_info": {
+        "frames": -1,
+        "fps": -1.0,
+        "width": -1,
+        "height": -1
+      },
+      "extraction": {
+        "extraction_time_s": 0.05,
+        "frames_extracted": 0,
+        "ffmpeg_returncode": 3199971767
+      },
+      "adaptive_skip": {
+        "adaptive_skip_time_s": 0.12,
+        "frames_selected": 0,
+        "effective_ratio": 0.0,
+        "status": "completed"
+      },
+      "quality_analysis": {
+        "quality_analysis_time_s": 0.0,
+        "frames_analyzed": 0,
+        "ms_per_frame": 0.0
+      },
+      "total_analysis_time_s": 0.28,
+      "real_time_factor": 0.0,
+      "ram_delta_mb": -2
+    }
+  ]
+}

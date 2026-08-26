@@ -155,18 +155,33 @@ class TestCheckPoint:
         mgr.load_zones(self.SQUARE_ZONE_CFG)
         return mgr
 
-    def test_first_observation_no_event(self):
-        """First check_point call for a track → no event (just initializes state)."""
+    def test_first_observation_inside_emits_entry(self):
+        """First check_point inside zone → immediate entry event (cold-start fix, Phase 4).
+
+        Previous behaviour: no event on first observation.
+        Corrected behaviour: if track starts inside a restricted zone, emit entry immediately.
+        Bug confirmed by Phase 4 experiment, fixed 2026-08-26.
+        """
         mgr = self.make_mgr()
         events = mgr.check_point("track_1", 0.5, 0.5, frame_number=1, timestamp_ms=100.0)
+        assert len(events) == 1
+        assert events[0].event_type == "restricted_zone_entry"
+        assert events[0].direction == "entering"
+        assert events[0].evidence.get("cold_start") is True
+
+    def test_first_observation_outside_no_event(self):
+        """First check_point outside zone → no event (normal cold-start)."""
+        mgr = self.make_mgr()
+        events = mgr.check_point("track_1", 0.05, 0.05, frame_number=1, timestamp_ms=100.0)
         assert events == []
 
     def test_track_stays_inside_no_duplicate_event(self):
-        """Track inside zone across 3 consecutive frames → only 0 events (no re-fire)."""
+        """Track inside zone across consecutive frames → entry only on first, none on subsequent."""
         mgr = self.make_mgr()
-        # First observation (inside)
-        mgr.check_point("track_1", 0.5, 0.5, frame_number=1, timestamp_ms=100.0)
-        # Stay inside
+        # First observation (inside) → entry event
+        e0 = mgr.check_point("track_1", 0.5, 0.5, frame_number=1, timestamp_ms=100.0)
+        assert len(e0) == 1  # cold-start entry
+        # Stay inside — no re-fire
         e1 = mgr.check_point("track_1", 0.5, 0.5, frame_number=2, timestamp_ms=200.0)
         e2 = mgr.check_point("track_1", 0.5, 0.5, frame_number=3, timestamp_ms=300.0)
         assert e1 == []

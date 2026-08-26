@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-08-26T18:36:04",
+  "run_id": "phase4",
+  "statistics": {
+    "total": 5,
+    "most_common_failure": "MISSED_EVENT",
+    "most_implicated_stage": "s04_object_detect",
+    "failure_count_by_category": {
+      "VALIDATOR_WARNING": 1,
+      "MISSED_EVENT": 2,
+      "FALSE_EVENT": 1,
+      "COMPRESSION_ERROR": 1
+    },
+    "failure_count_by_severity": {
+      "MAJOR": 3,
+      "CRITICAL": 1,
+      "MINOR": 1
+    },
+    "failure_count_by_stage": {
+      "s04_object_detect": 2,
+      "s07_event_understand": 2,
+      "s02_extract": 1
+    }
+  },
+  "failures": [
+    {
+      "failure_id": "FAIL-001",
+      "video_id": "all_low_light_levels",
+      "category": "VALIDATOR_WARNING",
+      "severity": "MAJOR",
+      "description": "Quality classifier classifies ALL synthetic frames as UNUSABLE regardless of brightness level (78.8/255 \u2192 UNUSABLE, 33.5/255 \u2192 UNUSABLE, 10.8/255 \u2192 UNUSABLE, 2.8/255 \u2192 UNUSABLE). Root cause: Laplacian blur score is near-zero for solid-color synthetic frames. The unusable_blur_score threshold (15.0) fires on every frame. This is classifier-correct behaviour on synthetic input but means quality classification cannot be validated using these test videos.",
+      "stage": "s04_object_detect",
+      "timestamp_s": null,
+      "expected": "level_a_normal \u2192 NORMAL, level_b_low \u2192 LOW_LIGHT, level_c_very_low \u2192 VERY_LOW_LIGHT",
+      "actual": "All 4 levels \u2192 UNUSABLE (0% LOW_LIGHT, 0% VERY_LOW_LIGHT, 100% UNUSABLE)",
+      "evidence_frame": null,
+      "possible_cause": "Laplacian variance on solid-color frames \u2248 0. The QualityThresholds.unusable_blur_score=15.0 threshold triggers. Real surveillance frames have texture (walls, ground, objects) that produce non-zero Laplacian variance. Fix: use real footage for validation.",
+      "benchmark_file": "results/TCE-v1.0/low-light-benchmark.json",
+      "recorded_at": "2026-08-26T18:36:04"
+    },
+    {
+      "failure_id": "FAIL-002",
+      "video_id": "exp_e_roi_crossing",
+      "category": "MISSED_EVENT",
+      "severity": "CRITICAL",
+      "description": "When a track's first observation is inside a restricted zone, no restricted_zone_entry event is emitted. The ROIManager.check_point() method silently records the initial state without generating an event. This means any person who is ALREADY in a restricted area when the camera starts recording will never trigger an entry alert.",
+      "stage": "s07_event_understand",
+      "timestamp_s": 0.0,
+      "expected": "restricted_zone_entry event at frame 0 when track starts inside zone",
+      "actual": "0 events generated (no transition detected, only initial state recorded)",
+      "evidence_frame": null,
+      "possible_cause": "ROIManager._membership[track_id][zone_id] is None on first observation. Code silently assigned the state: `if was_inside is None: self._membership[...] = inside_now; continue` without emitting any event. Fixed in Phase 4: now emits entry event immediately with evidence={'cold_start': True}.",
+      "benchmark_file": "results/TCE-v1.0/roi-validation.json",
+      "recorded_at": "2026-08-26T18:36:04"
+    },
+    {
+      "failure_id": "FAIL-003",
+      "video_id": "exp_e_roi_crossing",
+      "category": "MISSED_EVENT",
+      "severity": "MAJOR",
+      "description": "In the corpus video trajectory simulation, the rectangle entered the zone at ~t=14.3s but no restricted_zone_entry event was generated. An exit event was detected at t=18.36s (expected at t=25.7s \u2014 timing error of 7.34s). Note: this failure is partially explained by FAIL-002 (cold-start bug). The cold-start fix may resolve the entry detection issue.",
+      "stage": "s07_event_understand",
+      "timestamp_s": 14.3,
+      "expected": "entry event at ~t=14.3s, exit event at ~t=25.7s",
+      "actual": "0 entry events, 1 exit event at t=18.36s (7.34s error)",
+      "evidence_frame": null,
+      "possible_cause": "The ROI cold-start bug (FAIL-002) is the primary cause. The synthetic track starts outside the zone, so the cold-start bug doesn't apply directly. There may be a second issue: the zone boundary check fires inconsistently. The exit at 18.36s (instead of 25.7s) suggests the zone boundary polygon may have floating-point precision issues at the edge.",
+      "benchmark_file": "results/TCE-v1.0/roi-validation.json",
+      "recorded_at": "2026-08-26T18:36:04"
+    },
+    {
+      "failure_id": "FAIL-004",
+      "video_id": "exp_a_normal_walking",
+      "category": "FALSE_EVENT",
+      "severity": "MINOR",
+      "description": "YOLO11m detected 23 'tv' class objects across 100 frames of a synthetic video containing only a white rectangle on a gray background. YOLO11n, yolo11l, and yolo11x detected 0 objects on the same video. This is not a pipeline failure \u2014 YOLO models are not designed for synthetic input. But it demonstrates that YOLO11m has higher false positive rates on rectangular shapes that pattern-match COCO class 63 (tv).",
+      "stage": "s04_object_detect",
+      "timestamp_s": null,
+      "expected": "0 detections on synthetic geometric shapes",
+      "actual": "23 'tv' detections across 100 frames (avg 0.23/frame)",
+      "evidence_frame": null,
+      "possible_cause": "YOLO11m confidence threshold (0.25) is low enough to trigger on rectangular shapes that partially match COCO 'tv' feature patterns. At conf=0.5 this might not occur. Not a critical issue for real footage.",
+      "benchmark_file": "reports/model-comparison-raw.json",
+      "recorded_at": "2026-08-26T18:36:04"
+    },
+    {
+      "failure_id": "FAIL-005",
+      "video_id": "exp_c_fast_motion",
+      "category": "COMPRESSION_ERROR",
+      "severity": "MAJOR",
+      "description": "On fast_motion_60s.mp4 (60s, burst at t=20-30s), adaptive skip selected only 174 frames (11.6% ratio) vs fixed-5 which selected 300 frames (20% ratio). Within the motion burst region (frames 500-750), adaptive retained 16.3% of frames vs 20.3% for fixed-5. This means adaptive skip MISSED MORE CRITICAL FRAMES than fixed-5 during the most important part of the video.",
+      "stage": "s02_extract",
+      "timestamp_s": null,
+      "expected": "Adaptive skip should retain MORE frames during motion burst than fixed-5",
+      "actual": "Adaptive retained 16.3% of burst frames; fixed-5 retained 20.3%",
+      "evidence_frame": null,
+      "possible_cause": "MOG2 warmup (25 frames default) means the first 1 second of motion is not well-detected. The protection_threshold (0.08) may be too high for synthetic motion. Additionally, the adaptive selection overhead was 14.9 seconds \u2014 25% of the 60s video duration.",
+      "benchmark_file": "results/TCE-v1.0/adaptive-skip-comparison.json",
+      "recorded_at": "2026-08-26T18:36:04"
+    }
+  ]
+}

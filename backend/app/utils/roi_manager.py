@@ -198,9 +198,33 @@ class ROIManager:
             inside_now = self._point_in_polygon(cx, cy, zone.polygon)
             was_inside = self._membership[track_id].get(zone.zone_id, None)
 
-            # First observation for this track/zone — record state, no event
+            # First observation for this track/zone
             if was_inside is None:
                 self._membership[track_id][zone.zone_id] = inside_now
+                # Phase 4 fix: if first observation is inside, emit entry immediately.
+                # Previous behaviour: silently recorded state, no event.
+                # Bug found: 2026-08-26 during ROI validation (Exp-E).
+                if inside_now:
+                    if zone.zone_type == ZoneType.RESTRICTED:
+                        event_type = "restricted_zone_entry"
+                    elif zone.zone_type in (ZoneType.ENTRY, ZoneType.EXIT):
+                        event_type = "zone_entry"
+                    else:
+                        event_type = "zone_crossing"
+                    events.append(ZoneEvent(
+                        event_type=event_type,
+                        zone_id=zone.zone_id,
+                        zone_name=zone.name,
+                        zone_type=zone.zone_type,
+                        track_id=track_id,
+                        frame_number=frame_number,
+                        timestamp_ms=timestamp_ms,
+                        centroid_x=cx,
+                        centroid_y=cy,
+                        confidence=confidence,
+                        direction="entering",
+                        evidence={"cold_start": True},
+                    ))
                 continue
 
             # State change: crossing detected

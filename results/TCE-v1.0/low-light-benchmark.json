@@ -1,0 +1,137 @@
+{
+  "measured_at": "2026-08-26T18:09:25",
+  "results": [
+    {
+      "video_id": "level_a_normal",
+      "expected_label": "NORMAL",
+      "status": "completed",
+      "analysis_time_s": 17.6,
+      "brightness": {
+        "mean_brightness": 78.83,
+        "median_brightness": 78.83,
+        "min_brightness": 78.81,
+        "max_brightness": 78.85,
+        "std_brightness": 0.01,
+        "frames_analyzed": 750
+      },
+      "quality": {
+        "total_frames": 750,
+        "frames_sampled": 75,
+        "low_light_count": 0,
+        "very_low_light_count": 0,
+        "unusable_count": 75,
+        "low_light_ratio": 0.0,
+        "very_low_light_ratio": 0.0,
+        "unusable_ratio": 1.0,
+        "avg_mean_luminance": 78.83,
+        "min_mean_luminance": 78.81
+      },
+      "clahe_effect": {
+        "frames_compared": 30,
+        "avg_brightness_raw": 78.83,
+        "avg_brightness_clahe": 78.83,
+        "brightness_gain": 0.0,
+        "brightness_gain_pct": 0.0
+      }
+    },
+    {
+      "video_id": "level_b_low",
+      "expected_label": "LOW_LIGHT",
+      "status": "completed",
+      "analysis_time_s": 17.69,
+      "brightness": {
+        "mean_brightness": 33.53,
+        "median_brightness": 33.54,
+        "min_brightness": 33.49,
+        "max_brightness": 33.57,
+        "std_brightness": 0.02,
+        "frames_analyzed": 750
+      },
+      "quality": {
+        "total_frames": 750,
+        "frames_sampled": 75,
+        "low_light_count": 0,
+        "very_low_light_count": 0,
+        "unusable_count": 75,
+        "low_light_ratio": 0.0,
+        "very_low_light_ratio": 0.0,
+        "unusable_ratio": 1.0,
+        "avg_mean_luminance": 33.54,
+        "min_mean_luminance": 33.5
+      },
+      "clahe_effect": {
+        "frames_compared": 30,
+        "avg_brightness_raw": 33.54,
+        "avg_brightness_clahe": 33.54,
+        "brightness_gain": 0.0,
+        "brightness_gain_pct": 0.0
+      }
+    },
+    {
+      "video_id": "level_c_very_low",
+      "expected_label": "VERY_LOW_LIGHT",
+      "status": "completed",
+      "analysis_time_s": 17.38,
+      "brightness": {
+        "mean_brightness": 10.8,
+        "median_brightness": 10.8,
+        "min_brightness": 10.78,
+        "max_brightness": 10.81,
+        "std_brightness": 0.01,
+        "frames_analyzed": 750
+      },
+      "quality": {
+        "total_frames": 750,
+        "frames_sampled": 75,
+        "low_light_count": 0,
+        "very_low_light_count": 0,
+        "unusable_count": 75,
+        "low_light_ratio": 0.0,
+        "very_low_light_ratio": 0.0,
+        "unusable_ratio": 1.0,
+        "avg_mean_luminance": 10.8,
+        "min_mean_luminance": 10.79
+      },
+      "clahe_effect": {
+        "frames_compared": 30,
+        "avg_brightness_raw": 10.8,
+        "avg_brightness_clahe": 10.8,
+        "brightness_gain": 0.0,
+        "brightness_gain_pct": 0.0
+      }
+    },
+    {
+      "video_id": "level_d_unusable",
+      "expected_label": "UNUSABLE",
+      "status": "completed",
+      "analysis_time_s": 17.93,
+      "brightness": {
+        "mean_brightness": 2.8,
+        "median_brightness": 2.8,
+        "min_brightness": 2.79,
+        "max_brightness": 2.81,
+        "std_brightness": 0.01,
+        "frames_analyzed": 750
+      },
+      "quality": {
+        "total_frames": 750,
+        "frames_sampled": 75,
+        "low_light_count": 0,
+        "very_low_light_count": 0,
+        "unusable_count": 75,
+        "low_light_ratio": 0.0,
+        "very_low_light_ratio": 0.0,
+        "unusable_ratio": 1.0,
+        "avg_mean_luminance": 2.8,
+        "min_mean_luminance": 2.79
+      },
+      "clahe_effect": {
+        "frames_compared": 30,
+        "avg_brightness_raw": 2.8,
+        "avg_brightness_clahe": 2.8,
+        "brightness_gain": 0.0,
+        "brightness_gain_pct": 0.0
+      }
+    }
+  ]
+}

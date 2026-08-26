@@ -1,0 +1,97 @@
+{
+  "measured_at": "2026-08-26T18:06:20",
+  "video": "fast_motion_60s.mp4",
+  "total_frames": 1500,
+  "motion_burst_region": "frames 500-750",
+  "results": {
+    "fixed_1": {
+      "strategy": "fixed_skip_1",
+      "skip_rate": 1,
+      "total_video_frames": 1500,
+      "frames_selected": 1500,
+      "effective_ratio": 1.0,
+      "selection_time_ms": 5,
+      "burst_frames_selected": 251,
+      "burst_frames_total": 251,
+      "burst_retention_pct": 100.0,
+      "frame_indices_sample": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "note": "Simple modulo selection: every 1th frame"
+    },
+    "fixed_5": {
+      "strategy": "fixed_skip_5",
+      "skip_rate": 5,
+      "total_video_frames": 1500,
+      "frames_selected": 300,
+      "effective_ratio": 0.2,
+      "selection_time_ms": 4,
+      "burst_frames_selected": 51,
+      "burst_frames_total": 251,
+      "burst_retention_pct": 20.3,
+      "frame_indices_sample": [
+        0,
+        5,
+        10,
+        15,
+        20,
+        25,
+        30,
+        35,
+        40,
+        45
+      ],
+      "note": "Simple modulo selection: every 5th frame"
+    },
+    "adaptive": {
+      "strategy": "adaptive_mog2",
+      "skip_rate": "variable",
+      "total_video_frames": 1500,
+      "frames_selected": 174,
+      "effective_ratio": 0.116,
+      "selection_time_ms": 14866,
+      "burst_frames_selected": 41,
+      "burst_frames_total": 251,
+      "burst_retention_pct": 16.3,
+      "frame_indices_sample": [
+        0,
+        3,
+        6,
+        9,
+        12,
+        15,
+        18,
+        21,
+        24,
+        27
+      ],
+      "adaptive_stats": {
+        "total_video_frames": 1500,
+        "frames_examined": 1500,
+        "frames_selected": 174,
+        "frames_skipped": 1326,
+        "effective_sampling_ratio": 0.116,
+        "average_motion_score_pct": 0.23,
+        "maximum_motion_score_pct": 100.0,
+        "protected_windows": 0,
+        "protected_frames": 0,
+        "skip_source": "adaptive",
+        "tier_distribution": {
+          "MEDIUM_MOTION": 25,
+          "STATIC": 1215,
+          "LOW_MOTION": 260
+        }
+      },
+      "note": "Pre-extraction MOG2 streaming: selects high-motion frames more densely, skips static frames aggressively. Protection window triggered during burst."
+    }
+  }
+}

@@ -366,6 +366,104 @@ async def run(context: PipelineContext) -> StageResult:
             except Exception:
                 pass
 
+    # ── Pass 3b: Temporal Pose State Machine (bbox-based) ──────────────────
+    # Uses TemporalPoseAnalyzer to detect SUSTAINED activities:
+    # crawling, crouching, falling, running — from bounding box geometry.
+    #
+    # This pass runs on EVERY confirmed person track regardless of whether
+    # yolo-pose was successful. It uses bbox geometry only (no keypoints).
+    # Hysteresis gating: requires multiple consecutive frames before emitting.
+    #
+    # Status: IMPLEMENTED as of Phase 3. Phase 4: wired and run on real pipeline.
+    # Results will be classified PARTIALLY VALIDATED after first real run.
+    temporal_pose_events_total = 0
+    if confirmed_tracks:
+        try:
+            from app.utils.pose_temporal import SimplePoseFrame, TemporalPoseAnalyzer
+
+            temporal_pose_events: list = []
+            for track in confirmed_tracks:
+                if (track.class_name or "").lower() not in {
+                    "person", "man", "woman", "child"
+                }:
+                    continue
+                if len(track.observations) < 3:
+                    continue
+
+                analyzer = TemporalPoseAnalyzer(
+                    track_id=track.track_id,
+                    window_size=20,
+                    min_frames_crawling=int(context.settings.get("pose_min_consecutive", 3)),
+                    min_frames_crouching=int(context.settings.get("pose_min_consecutive", 3)),
+                    min_frames_running=3,
+                    min_frames_fallen=2,
+                    hysteresis_frames=2,
+                )
+
+                for obs in track.observations:
+                    bbox = getattr(obs, "bbox", None)
+                    if bbox is None or len(bbox) < 4:
+                        continue
+                    x1, y1, x2, y2 = bbox
+                    # Normalise if pixel coords
+                    if any(v > 1.5 for v in [x1, y1, x2, y2]):
+                        x1 /= max(frame_w, 1)
+                        y1 /= max(frame_h, 1)
+                        x2 /= max(frame_w, 1)
+                        y2 /= max(frame_h, 1)
+
+                    spf = SimplePoseFrame.from_bbox(
+                        frame_number=obs.frame_number,
+                        timestamp_ms=obs.timestamp_ms,
+                        track_id=track.track_id,
+                        x1=x1, y1=y1, x2=x2, y2=y2,
+                        frame_h=1.0,  # already normalised above
+                    )
+                    spf.pose_confidence = float(getattr(obs, "confidence", 0.5))
+                    evt = analyzer.update(spf)
+                    if evt:
+                        temporal_pose_events.append(evt)
+
+                # Flush pending events at track end
+                temporal_pose_events.extend(analyzer.flush())
+
+            for tpe in temporal_pose_events:
+                d = tpe.to_pipeline_event_dict()
+                all_events.append(Event(
+                    event_id=str(uuid.uuid4()),
+                    event_type=d["event_type"],
+                    track_id=d["track_id"],
+                    class_name="person",
+                    rule_name="temporal_pose_bbox",
+                    confidence=d["confidence"],
+                    evidence={
+                        **d["evidence"],
+                        "source": "TemporalPoseAnalyzer",
+                        "note": (
+                            "IMPLEMENTED — thresholds not yet calibrated against "
+                            "real labelled footage. Treat events as candidate observations."
+                        ),
+                    },
+                    start_frame=d["start_frame"],
+                    end_frame=d["end_frame"],
+                    start_ms=d["start_ms"],
+                    end_ms=d["end_ms"],
+                    dependencies=[f"track_{d['track_id']}", "temporal_pose"],
+                ))
+                temporal_pose_events_total += 1
+
+            logs.append(
+                f"[{STAGE_NAME}] Pass 3b (temporal_pose_bbox): "
+                f"{temporal_pose_events_total} sustained-activity events "
+                f"from {len(confirmed_tracks)} track(s)"
+            )
+
+        except Exception as exc:
+            import traceback
+            logs.append(f"[{STAGE_NAME}] Pass 3b (temporal_pose_bbox) failed (non-fatal): {exc}")
+            logs.append(traceback.format_exc()[:400])
+            warnings.append(f"Temporal pose analysis failed: {exc}")
+
     # ── Pass 5: Activity State Machine (REPLACES noisy frame-by-frame events) ─
     # The state machine analyses the full person track trajectory and emits
     # one event per state transition — no duplicate "reaching_up" or
@@ -374,6 +472,7 @@ async def run(context: PipelineContext) -> StageResult:
     # Strategy: run state machine for each person track, then REPLACE the
     # rule-based person events (Pass 1) with state-machine events for that track.
     # Non-person events (lighting) are kept as-is.
+
     sm_events_total = 0
     sm_replaced_track_ids: set[int] = set()
 
@@ -787,6 +886,7 @@ async def run(context: PipelineContext) -> StageResult:
     metrics = merged_result.to_metrics_dict()
     metrics["lighting_events_detected"] = len(lighting_events_raw)
     metrics["pose_events_detected"] = pose_events_total
+    metrics["temporal_pose_events"] = temporal_pose_events_total
     metrics["state_machine_events"] = sm_events_total
     metrics["state_machine_tracks"] = len(sm_replaced_track_ids)
     metrics["interaction_events"] = interaction_events_total
@@ -800,7 +900,8 @@ async def run(context: PipelineContext) -> StageResult:
     logs.append(
         f"[{STAGE_NAME}] Total: {len(all_events)} events "
         f"(rules={len(result.events)}, light={len(lighting_events_raw)}, "
-        f"pose={pose_events_total}, state_machine={sm_events_total}, roi={roi_events_total})"
+        f"pose={pose_events_total}, temporal_pose={temporal_pose_events_total}, "
+        f"state_machine={sm_events_total}, roi={roi_events_total})"
     )
     logs.append(f"[{STAGE_NAME}] Event types: {merged_result.events_by_type()}")
     logs.append(f"[{STAGE_NAME}] Completed in {duration_ms}ms")

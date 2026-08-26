@@ -1,159 +1,136 @@
 """
-Tests for the failure catalogue — Phase 11 evaluation tool.
+Tests: Failure Catalogue (Phase 4).
 """
-from __future__ import annotations
-
 import json
-import tempfile
-from pathlib import Path
-
 import pytest
-
-from app.evaluation.failure_catalogue import (
-    FailureCatalogue,
-    FailureCategory,
-    FailureRecord,
-    FailureSeverity,
-)
+from app.utils.failure_catalogue import FailureCatalogue, FailureRecord
 
 
-def _record(
-    video_id: str = "vid_01",
-    category: FailureCategory = FailureCategory.MISSED_EVENT,
-    severity: FailureSeverity = FailureSeverity.MAJOR,
-    stage: str = "s04_object_detect",
-) -> FailureRecord:
-    return FailureRecord(
+def _add_sample(cat, video_id="vid1", category="MISSED_EVENT", severity="MAJOR"):
+    return cat.add(
         video_id=video_id,
-        timestamp_ms=1200.0,
         category=category,
         severity=severity,
-        description="Person entered but pipeline produced no entry event.",
-        ground_truth="PERSON_ENTERED_SCENE at 1200ms",
-        pipeline_output="No event produced",
-        pipeline_stage=stage,
-        improvement_hypothesis="Increase detection confidence or lower entry threshold.",
+        description="Test failure",
+        stage="s04_object_detect",
+        possible_cause="Synthetic video",
     )
 
 
-class TestFailureCatalogue:
-    def test_add_and_count(self):
-        cat = FailureCatalogue()
-        cat.add(_record())
-        assert len(cat.records) == 1
+def test_add_returns_failure_record():
+    cat = FailureCatalogue()
+    rec = _add_sample(cat)
+    assert isinstance(rec, FailureRecord)
+    assert rec.failure_id == "FAIL-001"
+    assert rec.category == "MISSED_EVENT"
+    assert rec.severity == "MAJOR"
 
-    def test_by_category(self):
-        cat = FailureCatalogue()
-        cat.add(_record(category=FailureCategory.MISSED_EVENT))
-        cat.add(_record(category=FailureCategory.FALSE_EVENT))
-        assert len(cat.by_category(FailureCategory.MISSED_EVENT)) == 1
 
-    def test_by_severity(self):
-        cat = FailureCatalogue()
-        cat.add(_record(severity=FailureSeverity.CRITICAL))
-        cat.add(_record(severity=FailureSeverity.MINOR))
-        assert len(cat.by_severity(FailureSeverity.CRITICAL)) == 1
-        assert len(cat.by_severity(FailureSeverity.MINOR)) == 1
-        assert len(cat.by_severity(FailureSeverity.INFORMATIONAL)) == 0
+def test_failure_ids_increment():
+    cat = FailureCatalogue()
+    r1 = _add_sample(cat)
+    r2 = _add_sample(cat)
+    r3 = _add_sample(cat)
+    assert r1.failure_id == "FAIL-001"
+    assert r2.failure_id == "FAIL-002"
+    assert r3.failure_id == "FAIL-003"
 
-    def test_by_video(self):
-        cat = FailureCatalogue()
-        cat.add(_record(video_id="vid_01"))
-        cat.add(_record(video_id="vid_02"))
-        assert len(cat.by_video("vid_01")) == 1
 
-    def test_by_stage(self):
-        cat = FailureCatalogue()
-        cat.add(_record(stage="s04_object_detect"))
-        cat.add(_record(stage="s09_story_build"))
-        assert len(cat.by_stage("s04_object_detect")) == 1
+def test_invalid_category_raises():
+    cat = FailureCatalogue()
+    with pytest.raises(ValueError, match="Invalid category"):
+        cat.add("vid", "NOT_A_CATEGORY", "MAJOR", "desc", "s04")
 
-    def test_summary_has_required_keys(self):
-        cat = FailureCatalogue()
-        cat.add(_record())
-        s = cat.summary()
-        for key in ["total_failures", "videos_analysed", "by_category",
-                    "by_severity", "most_common_failure", "most_implicated_stage"]:
-            assert key in s
 
-    def test_summary_empty_catalogue(self):
-        cat = FailureCatalogue()
-        s = cat.summary()
-        assert s["total_failures"] == 0
+def test_invalid_severity_raises():
+    cat = FailureCatalogue()
+    with pytest.raises(ValueError, match="Invalid severity"):
+        cat.add("vid", "MISSED_EVENT", "CATASTROPHIC", "desc", "s04")
 
-    def test_most_common_failure_identified(self):
-        cat = FailureCatalogue()
-        cat.add(_record(category=FailureCategory.MISSED_EVENT))
-        cat.add(_record(category=FailureCategory.MISSED_EVENT))
-        cat.add(_record(category=FailureCategory.FALSE_EVENT))
-        assert cat.summary()["most_common_failure"] == "missed_event"
 
-    def test_critical_count_in_summary(self):
-        cat = FailureCatalogue()
-        cat.add(_record(severity=FailureSeverity.CRITICAL))
-        cat.add(_record(severity=FailureSeverity.MAJOR))
-        cat.add(_record(severity=FailureSeverity.INFORMATIONAL))
-        assert cat.summary()["critical_count"] == 1
+def test_statistics_empty():
+    cat = FailureCatalogue()
+    stats = cat.statistics()
+    assert stats["total"] == 0
+    assert stats["most_common_failure"] is None
 
-    def test_all_four_severities_representable(self):
-        cat = FailureCatalogue()
-        for sev in FailureSeverity:
-            cat.add(_record(severity=sev))
-        assert len(cat.records) == 4
-        summary = cat.summary()
-        for sev in FailureSeverity:
-            assert sev.value in summary["by_severity"]
 
-    def test_markdown_table_renders(self):
-        cat = FailureCatalogue()
-        cat.add(_record())
-        md = cat.to_markdown_table()
-        assert "| Failure Category |" in md
-        assert "missed_event" in md
-        assert "|" in md
+def test_statistics_by_category():
+    cat = FailureCatalogue()
+    _add_sample(cat, category="MISSED_EVENT")
+    _add_sample(cat, category="MISSED_EVENT")
+    _add_sample(cat, category="FALSE_EVENT")
+    stats = cat.statistics()
+    assert stats["total"] == 3
+    assert stats["failure_count_by_category"]["MISSED_EVENT"] == 2
+    assert stats["failure_count_by_category"]["FALSE_EVENT"] == 1
+    assert stats["most_common_failure"] == "MISSED_EVENT"
 
-    def test_save_and_load_roundtrip(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / "failures.json"
-            cat = FailureCatalogue()
-            cat.add(_record(video_id="roundtrip_vid"))
-            cat.save(path)
 
-            assert path.exists()
-            loaded = FailureCatalogue.load(path)
-            assert len(loaded.records) == 1
-            assert loaded.records[0].video_id == "roundtrip_vid"
-            assert loaded.records[0].category == FailureCategory.MISSED_EVENT
+def test_statistics_most_implicated_stage():
+    cat = FailureCatalogue()
+    cat.add("v", "MISSED_EVENT", "MAJOR", "d", "s04_object_detect")
+    cat.add("v", "MISSED_EVENT", "MAJOR", "d", "s04_object_detect")
+    cat.add("v", "FALSE_EVENT",  "MINOR", "d", "s07_event_understand")
+    stats = cat.statistics()
+    assert stats["most_implicated_stage"] == "s04_object_detect"
 
-    def test_save_json_valid(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / "out.json"
-            cat = FailureCatalogue()
-            cat.add(_record())
-            cat.save(path)
 
-            with open(path, encoding="utf-8") as f:
-                data = json.load(f)
-            assert "records" in data
-            assert "summary" in data
-            assert data["total_records"] == 1
+def test_save_creates_json(tmp_path):
+    cat = FailureCatalogue()
+    _add_sample(cat)
+    _add_sample(cat, category="FALSE_EVENT", severity="MINOR")
+    path = cat.save(tmp_path, run_id="test")
+    assert (tmp_path / "catalogue-test.json").exists()
+    data = json.loads((tmp_path / "catalogue-test.json").read_text())
+    assert len(data["failures"]) == 2
 
-    def test_all_six_categories_representable(self):
-        cat = FailureCatalogue()
-        for fc in FailureCategory:
-            cat.add(_record(category=fc))
-        assert len(cat.records) == 6
-        summary = cat.summary()
-        for fc in FailureCategory:
-            assert fc.value in summary["by_category"]
 
-    def test_improvement_hypothesis_preserved(self):
-        rec = _record()
-        rec.improvement_hypothesis = "Test hypothesis"
-        cat = FailureCatalogue()
-        cat.add(rec)
-        with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / "out.json"
-            cat.save(path)
-            loaded = FailureCatalogue.load(path)
-            assert loaded.records[0].improvement_hypothesis == "Test hypothesis"
+def test_save_creates_markdown_for_major(tmp_path):
+    cat = FailureCatalogue()
+    rec = _add_sample(cat, severity="MAJOR")
+    cat.save(tmp_path)
+    md = tmp_path / f"{rec.failure_id}.md"
+    assert md.exists()
+    content = md.read_text()
+    assert "MISSED_EVENT" in content
+    assert "MAJOR" in content
+
+
+def test_save_no_markdown_for_minor(tmp_path):
+    cat = FailureCatalogue()
+    rec = _add_sample(cat, severity="MINOR")
+    cat.save(tmp_path)
+    md = tmp_path / f"{rec.failure_id}.md"
+    assert not md.exists()
+
+
+def test_load_roundtrip(tmp_path):
+    cat = FailureCatalogue()
+    _add_sample(cat, category="TRACKING_FAILURE", severity="CRITICAL")
+    _add_sample(cat, category="COMPRESSION_ERROR", severity="MINOR")
+    path = cat.save(tmp_path)
+    loaded = FailureCatalogue.load(path)
+    assert len(loaded.failures) == 2
+    assert loaded.failures[0].category == "TRACKING_FAILURE"
+    assert loaded.failures[1].category == "COMPRESSION_ERROR"
+    # Counter should be synced
+    r3 = _add_sample(loaded)
+    assert r3.failure_id == "FAIL-003"
+
+
+def test_all_valid_categories():
+    cat = FailureCatalogue()
+    for cat_name in [
+        "MISSED_EVENT", "FALSE_EVENT", "TRACKING_FAILURE",
+        "STORY_BREAK", "COMPRESSION_ERROR", "VALIDATOR_WARNING",
+    ]:
+        r = cat.add("v", cat_name, "INFORMATIONAL", "test", "s01")
+        assert r.category == cat_name
+
+
+def test_all_valid_severities():
+    cat = FailureCatalogue()
+    for sev in ["CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"]:
+        r = cat.add("v", "MISSED_EVENT", sev, "test", "s01")
+        assert r.severity == sev

@@ -1,0 +1,79 @@
+# VIRAT Validation Video Metadata Template
+# Copy this file to metadata/{video_id}.yaml and fill in the values.
+
+video_id: "VIRAT_S_XXXXXX"       # VIRAT filename stem (without extension)
+source: "VIRAT Ground Dataset v2.0"
+url: "https://viratdata.org/"
+download_path: "data/real/virat/raw/VIRAT_S_XXXXXX.mp4"   # local path after download
+
+# ── Video properties (fill after download) ───────────────────────────────────
+duration_seconds: null        # e.g. 120.0
+resolution: null              # e.g. "1920x1080"
+fps: null                     # e.g. 30.0
+file_size_mb: null
+
+# ── Scene context ─────────────────────────────────────────────────────────────
+scene_type: null              # e.g. "outdoor_parking", "outdoor_open", "indoor_corridor"
+camera_position: null         # e.g. "elevated_fixed", "ground_level"
+background_motion: null       # "static", "slight_wind", "moving_vehicle_background"
+
+# ── Lighting ──────────────────────────────────────────────────────────────────
+lighting_condition: null      # "daylight", "indoor_artificial", "dusk", "low_light", "night"
+time_of_day: null             # "day", "evening", "night", "unknown"
+estimated_lux_range: null     # e.g. "200-500" (rough estimate, not measured)
+
+# ── People and activity ───────────────────────────────────────────────────────
+num_persons_approx: null      # rough count of distinct persons visible
+max_simultaneous_persons: null
+activity_categories: []       # e.g. ["person_walking", "vehicle_moving", "person_carrying"]
+occlusion_present: null       # true/false
+fast_motion_present: null     # true/false
+stationary_persons_present: null   # true/false (loitering, standing)
+
+# ── TCE validation purpose ────────────────────────────────────────────────────
+validation_purpose: null      # e.g. "multi_person_tracking", "roi_crossing", "low_light_detection"
+validation_conditions_covered: []   # subset of conditions from README.md table
+
+# ── Download and preparation status ──────────────────────────────────────────
+validation_status: "NOT_YET_DOWNLOADED"
+# Allowed values:
+#   NOT_YET_DOWNLOADED     — video not yet downloaded
+#   DOWNLOADED             — video in raw/ directory
+#   SELECTED_CLIP_READY    — specific clip extracted to selected/
+#   PROCESSED              — TCE pipeline has run on this video
+#   VALIDATED              — results reviewed and classified
+
+# ── Ground truth ──────────────────────────────────────────────────────────────
+ground_truth_available: false
+ground_truth_format: null     # e.g. "VIRAT annotations v2", "manual_labels"
+ground_truth_path: null       # relative path to annotation file
+
+# ── TCE results (fill after running the pipeline) ─────────────────────────────
+tce_results:
+  run_date: null
+  job_id: null
+  model_profile: null          # "fast", "balanced", "accuracy"
+  detection_model: null
+  pose_model: null
+  adaptive_skip_enabled: null
+  processing_time_seconds: null
+  real_time_factor: null       # processing_time / video_duration
+  total_detections: null
+  unique_tracks: null
+  events_generated: null
+  events_by_type: {}
+  low_light_ratio: null
+  unusable_ratio: null
+  effective_sampling_ratio: null
+  failures: []                 # list of FAIL-NNN references
+  notes: null
+
+# ── Classification (fill after reviewing results) ──────────────────────────────
+classification:
+  adaptive_skip: null          # "PROVEN" / "PARTIALLY_VALIDATED" / "NOT_YET_VALIDATED"
+  detection: null
+  tracking: null
+  pose_events: null
+  roi_crossing: null
+  low_light: null
+  evidence_generation: null

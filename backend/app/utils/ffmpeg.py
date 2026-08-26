@@ -743,3 +743,137 @@ def extract_thumbnail(
         )
 
     return str(output_path)
+
+
+def extract_frames_by_indices(
+    video_path: str | Path,
+    output_dir: str | Path,
+    frame_indices: list[int],
+    output_format: str = "jpg",
+    quality: int = 2,
+    batch_size: int = 200,
+) -> "FrameExtractionResult":
+    """
+    Extract specific frame indices from a video using FFmpeg's select filter.
+
+    This is the adaptive-skip extraction path. Rather than extracting every Nth
+    frame (fixed skip rate), this function extracts ONLY the frames selected by
+    AdaptiveSkipAnalyzer.select_frames().
+
+    Algorithm:
+      - For batches of ≤ batch_size indices: builds
+        select='eq(n\\,10)+eq(n\\,25)+...' filter string
+      - For large frame sets (> batch_size), splits into multiple FFmpeg calls
+        to avoid shell command-line length limits
+      - Frames are named frame_{frame_number:08d}.jpg matching the original
+        frame number in the video (not the extraction sequence number)
+
+    Args:
+        video_path:    Path to the source video.
+        output_dir:    Directory to write extracted frames.
+        frame_indices: Sorted list of 0-based frame indices to extract.
+        output_format: Image format (default: jpg).
+        quality:       JPEG quality 1-31 (lower = better).
+        batch_size:    Max indices per FFmpeg call (avoids arg length limits).
+
+    Returns:
+        FrameExtractionResult with paths to all extracted frames.
+
+    Status: IMPLEMENTED. Not yet validated on videos with >10,000 frames.
+    """
+    video_path = Path(video_path)
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if not frame_indices:
+        return FrameExtractionResult(
+            output_dir=str(output_dir),
+            total_frames_extracted=0,
+            frame_paths=[],
+            extraction_time_ms=0,
+            config_used=FrameExtractionConfig(frame_skip_rate=1),
+        )
+
+    start_time = time.perf_counter()
+    frame_indices = sorted(set(frame_indices))
+    all_frame_paths: list[str] = []
+
+    # Process in batches to keep select= filter string manageable
+    for batch_start in range(0, len(frame_indices), batch_size):
+        batch = frame_indices[batch_start: batch_start + batch_size]
+
+        # Build select filter: eq(n,10)+eq(n,25)+...
+        # Each term selects one specific frame by its 0-based index
+        select_expr = "+".join(f"eq(n\\,{idx})" for idx in batch)
+        vf = f"select='{select_expr}',setpts=N/FRAME_RATE/TB"
+
+        # Use a temporary subdirectory per batch to avoid filename collisions
+        batch_dir = output_dir / f"_batch_{batch_start:06d}"
+        batch_dir.mkdir(parents=True, exist_ok=True)
+        batch_pattern = str(batch_dir / f"frame_%08d.{output_format}")
+
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", str(video_path),
+            "-vf", vf,
+            "-vsync", "vfr",
+            "-q:v", str(quality),
+            batch_pattern,
+        ]
+
+        logger.debug(
+            "[extract_frames_by_indices] batch %d–%d: %d frames",
+            batch_start, batch_start + len(batch) - 1, len(batch),
+        )
+
+        try:
+            proc = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=3600,
+            )
+        except subprocess.TimeoutExpired:
+            raise FFmpegError("Frame extraction by indices timed out", -1, "")
+        except FileNotFoundError:
+            raise FFmpegNotFoundError("ffmpeg not found on PATH")
+
+        if proc.returncode != 0:
+            stderr = proc.stderr.strip()
+            if "Invalid data" in stderr or "moov atom not found" in stderr:
+                raise VideoCorruptedError(f"Cannot extract frames: {stderr}")
+            raise FFmpegError(
+                f"Frame extraction by indices failed for batch {batch_start}",
+                returncode=proc.returncode,
+                stderr=stderr,
+            )
+
+        # Rename extracted files to reflect original frame numbers
+        # FFmpeg names them frame_00000001.jpg, frame_00000002.jpg etc.
+        # We rename to frame_XXXXXXXX.jpg matching the original video frame number
+        extracted = sorted(batch_dir.glob(f"frame_*.{output_format}"))
+        for seq_path, orig_idx in zip(extracted, batch):
+            dest_name = f"frame_{orig_idx:08d}.{output_format}"
+            dest_path = output_dir / dest_name
+            seq_path.rename(dest_path)
+            all_frame_paths.append(str(dest_path))
+
+        # Remove now-empty batch subdir
+        try:
+            batch_dir.rmdir()
+        except OSError:
+            pass  # May have leftover files if extraction partially failed
+
+    extraction_time_ms = int((time.perf_counter() - start_time) * 1000)
+    all_frame_paths = sorted(all_frame_paths)
+
+    logger.info(
+        "[extract_frames_by_indices] Extracted %d frames from %s in %dms",
+        len(all_frame_paths), video_path.name, extraction_time_ms,
+    )
+
+    return FrameExtractionResult(
+        output_dir=str(output_dir),
+        total_frames_extracted=len(all_frame_paths),
+        frame_paths=all_frame_paths,
+        extraction_time_ms=extraction_time_ms,
+        config_used=FrameExtractionConfig(frame_skip_rate=1),  # adaptive — no single skip rate
+    )
+

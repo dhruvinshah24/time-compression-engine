@@ -84,12 +84,48 @@ async def run(context: PipelineContext) -> StageResult:
             logs=logs,
         )
 
+    # ── Step 2b: Classify processing profile ──────────────────────────────
+    # Duration-based profiles control frame sampling, chunking, and logging.
+    # frame_skip_rate from settings always wins; profile only applies defaults.
+    dur_s = meta.duration_seconds
+    if dur_s <= 30:
+        processing_profile = "QUICK_TEST"
+        default_skip = 2          # Very dense sampling for short clips
+    elif dur_s <= 300:            # ≤ 5 min
+        processing_profile = "SHORT"
+        default_skip = 3
+    elif dur_s <= 600:            # ≤ 10 min
+        processing_profile = "STANDARD"
+        default_skip = 5
+    elif dur_s <= 3600:           # ≤ 1 hour
+        processing_profile = "LONG"
+        default_skip = 10
+    else:                         # > 1 hour
+        processing_profile = "EXTENDED"
+        default_skip = 15
+
+    # Settings override takes priority
+    settings_skip = context.settings.get("frame_skip_rate")
+    if settings_skip is not None:
+        frame_skip_rate = int(settings_skip)
+        skip_source = "settings"
+    else:
+        frame_skip_rate = default_skip
+        skip_source = f"profile:{processing_profile}"
+
+    context.metadata["processing_profile"] = processing_profile
+    context.metadata["fps"] = getattr(meta, "fps", 25.0)
+
     is_long_video = meta.duration_seconds > LONG_VIDEO_THRESHOLD_S
-    estimated_frames = max(1, meta.frame_count // frame_skip_rate)
+    estimated_frames = max(1, meta.frame_count // max(frame_skip_rate, 1))
     logs.append(
         f"[{STAGE_NAME}] Video: {meta.duration_seconds:.1f}s, "
         f"{meta.frame_count} total frames, "
         f"~{estimated_frames} frames to extract"
+    )
+    logs.append(
+        f"[{STAGE_NAME}] Profile: {processing_profile} | "
+        f"frame_skip_rate: {frame_skip_rate} (source: {skip_source})"
     )
 
     # ── Step 3: Configure extraction ──────────────────────────────────────
@@ -206,6 +242,7 @@ async def run(context: PipelineContext) -> StageResult:
         metrics={
             "frames_extracted": len(all_frame_paths),
             "frame_skip_rate": frame_skip_rate,
+            "processing_profile": processing_profile,
             "extraction_speed_fps": round(extraction_fps, 2),
             "extraction_time_ms": total_extraction_ms,
             "frames_dir": str(frames_dir),

@@ -1,4 +1,4 @@
-"""Main FastAPI application."""
+"""Main FastAPI application — v1.0.1."""
 import os
 import sys
 import shutil
@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -46,7 +47,9 @@ _patch_ffmpeg_path()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    # Startup — ensure outputs directory exists
+    outputs_dir = Path("outputs")
+    outputs_dir.mkdir(parents=True, exist_ok=True)
     yield
     # Shutdown
 
@@ -70,3 +73,10 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# ── Static file serving for outputs (thumbnails, clips, annotated frames) ──
+# This makes /outputs/jobs/{job_id}/thumbnails/{file}.jpg accessible in browser.
+# MUST be mounted AFTER API router to avoid shadowing API routes.
+outputs_dir = Path("outputs")
+outputs_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/outputs", StaticFiles(directory=str(outputs_dir)), name="outputs")

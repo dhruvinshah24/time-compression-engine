@@ -657,6 +657,105 @@ async def run(context: PipelineContext) -> StageResult:
         logs.append(traceback.format_exc()[:400])
         warnings.append(f"Narrative enrichment failed: {exc}")
 
+    # ── Pass 8: ROI / Virtual Zone Crossing ────────────────────────────────
+    roi_events_total = 0
+    try:
+        roi_zones_cfg: list[dict] = context.settings.get("roi_zones", [])
+
+        if roi_zones_cfg:
+            from app.utils.roi_manager import ROIManager
+
+            roi_mgr = ROIManager()
+            roi_mgr.load_zones(roi_zones_cfg)
+
+            for track in confirmed_tracks:
+                if not track.observations:
+                    continue
+                if (track.class_name or "").lower() not in {
+                    "person", "man", "woman", "child", "baby", "crowd"
+                }:
+                    continue
+
+                track_label = context.metadata.get("track_to_label", {}).get(
+                    track.track_id, f"Track-{track.track_id}"
+                )
+                motion_profile = motion_profiles.get(track.track_id)
+
+                for obs in track.observations:
+                    bbox = getattr(obs, "bbox", None)
+                    if bbox is None or len(bbox) < 4:
+                        continue
+
+                    x1, y1, x2, y2 = bbox
+                    if any(v > 1.5 for v in [x1, y1, x2, y2]):
+                        x1 /= max(frame_w, 1)
+                        y1 /= max(frame_h, 1)
+                        x2 /= max(frame_w, 1)
+                        y2 /= max(frame_h, 1)
+
+                    cx = (x1 + x2) / 2.0
+                    cy = (y1 + y2) / 2.0
+                    conf = getattr(obs, "confidence", 1.0)
+
+                    zone_events = roi_mgr.check_point(
+                        track_id=str(track.track_id),
+                        cx=cx, cy=cy,
+                        frame_number=obs.frame_number,
+                        timestamp_ms=obs.timestamp_ms,
+                        confidence=conf,
+                    )
+
+                    for ze in zone_events:
+                        deps = [f"track_{track.track_id}", f"roi_{ze.zone_id}"]
+                        if motion_profile:
+                            deps.append(f"motion_profile_{track.track_id}")
+
+                        evt = Event(
+                            event_id=str(uuid.uuid4()),
+                            event_type=ze.event_type,
+                            track_id=track.track_id,
+                            class_name="person",
+                            rule_name=f"roi_{ze.zone_id}",
+                            confidence=round(min(ze.confidence + 0.05, 1.0), 3),
+                            evidence={
+                                "person_label": track_label,
+                                "zone_id": ze.zone_id,
+                                "zone_name": ze.zone_name,
+                                "zone_type": ze.zone_type.value,
+                                "direction": ze.direction,
+                                "centroid_x": ze.centroid_x,
+                                "centroid_y": ze.centroid_y,
+                                "track_confidence": conf,
+                                "description": (
+                                    f"{track_label} {ze.direction} "
+                                    f"{ze.zone_name} at "
+                                    f"{int(ze.timestamp_ms // 60000):02d}:"
+                                    f"{int((ze.timestamp_ms % 60000) // 1000):02d}"
+                                ),
+                                **ze.evidence,
+                            },
+                            start_frame=ze.frame_number,
+                            end_frame=ze.frame_number,
+                            start_ms=ze.timestamp_ms,
+                            end_ms=ze.timestamp_ms,
+                            dependencies=deps,
+                        )
+                        all_events.append(evt)
+                        roi_events_total += 1
+
+            logs.append(
+                f"[{STAGE_NAME}] Pass 8 (ROI): {roi_events_total} zone-crossing events "
+                f"from {len(roi_zones_cfg)} zone(s)"
+            )
+        else:
+            logs.append(f"[{STAGE_NAME}] Pass 8 (ROI): no zones configured — skipped")
+
+    except Exception as exc:
+        import traceback
+        logs.append(f"[{STAGE_NAME}] Pass 8 (ROI) failed (non-fatal): {exc}")
+        logs.append(traceback.format_exc()[:400])
+        warnings.append(f"ROI zone analysis failed: {exc}")
+
     # ── Assemble final result ──────────────────────────────────────────────
     all_events.sort(key=lambda e: e.start_ms)
 
@@ -693,6 +792,7 @@ async def run(context: PipelineContext) -> StageResult:
     metrics["interaction_events"] = interaction_events_total
     metrics["security_events"] = security_events_total
     metrics["narrative_events"] = len(narrative_events) if 'narrative_events' in dir() else 0
+    metrics["roi_events"] = roi_events_total
     metrics["unique_persons"] = len(set(context.metadata.get("track_to_label", {}).values()))
     save_stage_metrics(context.job_id, STAGE_NAME, metrics)
 
@@ -700,7 +800,7 @@ async def run(context: PipelineContext) -> StageResult:
     logs.append(
         f"[{STAGE_NAME}] Total: {len(all_events)} events "
         f"(rules={len(result.events)}, light={len(lighting_events_raw)}, "
-        f"pose={pose_events_total}, state_machine={sm_events_total})"
+        f"pose={pose_events_total}, state_machine={sm_events_total}, roi={roi_events_total})"
     )
     logs.append(f"[{STAGE_NAME}] Event types: {merged_result.events_by_type()}")
     logs.append(f"[{STAGE_NAME}] Completed in {duration_ms}ms")

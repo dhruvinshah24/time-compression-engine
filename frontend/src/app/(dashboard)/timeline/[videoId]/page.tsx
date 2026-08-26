@@ -9,12 +9,14 @@ import {
   Keyboard, Monitor, Camera, ShoppingBag,
   Briefcase, Wallet, Lock, Shield, ChevronDown, ChevronRight,
   Eye, Tag, Layers, Star, TrendingUp, Map,
-  BarChart3, Circle, Minus,
+  BarChart3, Circle, Minus, PlayCircle,
 } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api/client';
+import EventPreviewModal from '@/components/EventPreviewModal';
+
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface DetectedObject {
@@ -301,7 +303,10 @@ function ObjectCard({ obj, index }: { obj: DetectedObject; index: number }) {
 }
 
 // ── Event Row ─────────────────────────────────────────────────────────────────
-function EventRow({ evt, index, total, durationSeconds }: { evt: EventRecord; index: number; total: number; durationSeconds: number }) {
+function EventRow({ evt, index, total, durationSeconds, onPreview }: {
+  evt: EventRecord; index: number; total: number; durationSeconds: number;
+  onPreview?: (eventId: string) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const cfg = getEventConfig(getEventType(evt));
   const Icon = cfg.icon;
@@ -314,6 +319,7 @@ function EventRow({ evt, index, total, durationSeconds }: { evt: EventRecord; in
   const cropUrl     = evt.crop_url || (evidence.crop_url as string) || null;
   const displayName = evt.display_name || (evidence.description as string) || null;
   const direction   = evt.direction || (evidence.direction as string) || (evidence.entry_direction as string) || null;
+  const eventId     = evt.event_id ?? evt.id;
 
   // Person color palette: stable color per person number
   const PERSON_COLORS = [
@@ -427,6 +433,16 @@ function EventRow({ evt, index, total, durationSeconds }: { evt: EventRecord; in
             {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </div>
         )}
+        {/* Preview button — opens before/event/after modal */}
+        {eventId && onPreview && (
+          <button
+            onClick={e => { e.stopPropagation(); onPreview(eventId); }}
+            className="ml-1 p-1.5 rounded-lg hover:bg-indigo-500/20 text-white/20 hover:text-indigo-400 transition-all flex-shrink-0"
+            title="Preview event frames"
+          >
+            <PlayCircle size={14} />
+          </button>
+        )}
       </div>
 
       {/* Evidence panel */}
@@ -458,10 +474,11 @@ function EventRow({ evt, index, total, durationSeconds }: { evt: EventRecord; in
 
 // ── Category Section ──────────────────────────────────────────────────────────
 function CategorySection({
-  title, events, icon: Icon, color, defaultOpen, durationSeconds,
+  title, events, icon: Icon, color, defaultOpen, durationSeconds, onPreview,
 }: {
   title: string; events: EventRecord[]; icon: React.ElementType;
   color: string; defaultOpen?: boolean; durationSeconds: number;
+  onPreview?: (eventId: string) => void;
 }) {
   const [open, setOpen] = useState(defaultOpen ?? false);
   const sorted = [...events].sort((a, b) => getEventTime(a) - getEventTime(b));
@@ -500,6 +517,7 @@ function CategorySection({
                   key={evt.event_id ?? evt.id ?? i}
                   evt={evt} index={i} total={sorted.length}
                   durationSeconds={durationSeconds}
+                  onPreview={onPreview}
                 />
               ))}
             </div>
@@ -533,6 +551,7 @@ export default function TimelinePage() {
   const [error, setError] = useState<string | null>(null);
   const [objectSearch, setObjectSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [previewEventId, setPreviewEventId] = useState<string | null>(null);
 
   const fetchTimeline = useCallback(async () => {
     try {
@@ -635,6 +654,7 @@ export default function TimelinePage() {
   });
 
   return (
+    <>
     <div className="min-h-screen bg-[#08080f] text-white">
       {/* Background glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -782,6 +802,7 @@ export default function TimelinePage() {
               color="text-indigo-400"
               defaultOpen={true}
               durationSeconds={durationSeconds}
+              onPreview={setPreviewEventId}
             />
             <CategorySection
               title="Lighting Changes"
@@ -790,6 +811,7 @@ export default function TimelinePage() {
               color="text-yellow-400"
               defaultOpen={lightingEvts.length > 0}
               durationSeconds={durationSeconds}
+              onPreview={setPreviewEventId}
             />
             <CategorySection
               title="Object Interactions"
@@ -798,6 +820,7 @@ export default function TimelinePage() {
               color="text-fuchsia-400"
               defaultOpen={interactionEvts.length > 0}
               durationSeconds={durationSeconds}
+              onPreview={setPreviewEventId}
             />
             {otherEvts.length > 0 && (
               <CategorySection
@@ -807,6 +830,7 @@ export default function TimelinePage() {
                 color="text-slate-400"
                 defaultOpen={false}
                 durationSeconds={durationSeconds}
+                onPreview={setPreviewEventId}
               />
             )}
 
@@ -888,7 +912,7 @@ export default function TimelinePage() {
             <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-500/5 border border-indigo-500/15 mt-4">
               <TrendingUp size={13} className="text-indigo-400 flex-shrink-0" />
               <p className="text-[11px] text-indigo-300/70">
-                Powered by <span className="font-semibold text-indigo-300">YOLO-World</span> — open-vocabulary detection · 200+ custom classes
+                YOLO11x detection · Quality analyzer · Low-light preprocessing · ROI zone detection
               </p>
             </div>
           </div>
@@ -902,5 +926,14 @@ export default function TimelinePage() {
 
       </div>
     </div>
+
+    {/* Event Preview Modal */}
+    {previewEventId && (
+      <EventPreviewModal
+        eventId={previewEventId}
+        onClose={() => setPreviewEventId(null)}
+      />
+    )}
+    </>
   );
 }

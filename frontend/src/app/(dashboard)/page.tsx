@@ -570,8 +570,13 @@ export default function DashboardPage() {
       <div className="flex items-center justify-center gap-3 py-2 border-t border-white/[0.05] mt-4">
         <Brain size={12} className="text-indigo-400" />
         <p className="text-xs text-white/20">
-          Powered by <span className="text-indigo-300/70 font-medium">YOLO-World L</span> · 194-class detection ·
-          <span className="text-violet-300/70 font-medium"> YOLOv8-Pose</span> · Activity State Machine
+        <p className="text-xs text-white/20">
+          Active model: <span className="text-indigo-300/70 font-medium">{activeModel}</span> ·
+          {deviceInfo?.cuda_available
+            ? <span className="text-green-400/70 font-medium"> CUDA ({deviceInfo?.gpu_name?.replace('NVIDIA ', '').replace(' Laptop GPU', '') ?? 'GPU'}) </span>
+            : <span className="text-amber-400/70 font-medium"> CPU mode </span>
+          }
+          · Quality analyzer · Low-light preprocessing · ROI zone detection
         </p>
       </div>
     </div>

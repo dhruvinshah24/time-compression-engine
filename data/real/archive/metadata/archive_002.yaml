@@ -1,0 +1,33 @@
+video_id: archive_002
+title: "1950s Night Driving - LAPD Driver Education Film"
+source_url: "https://archive.org/details/53224NightDriving"
+download_url: "https://archive.org/download/53224NightDriving/53224%20Night%20Driving.mp4"
+local_file: "videos/53224_Night_Driving.mp4"
+license: "Public Domain"
+license_url: "http://creativecommons.org/licenses/publicdomain/"
+collection: "Prelinger Archives"
+date_produced: "1950s"
+date_downloaded: "2026-09-05"
+
+file_size_mb: 35.5
+format: mp4
+resolution_approx: "SD"
+duration_approx_s: null
+
+scene_type: outdoor_street_night
+camera_type: vehicle_mounted_and_fixed
+lighting: nighttime_artificial
+people_visible: true
+people_count_approx: multiple
+activities: ["walking", "crossing street at night"]
+occlusion: partial
+motion_type: walking_normal
+
+notes: |
+  LAPD 1950s driver education film filmed on Los Angeles streets at night.
+  Contains real pedestrians in low-light / artificial street lighting.
+  Good for testing low-light detection and preprocessing.
+  Film grain and low-quality video transfer may affect detection.
+  NOT modern CCTV quality — results reflect historical video quality.
+ground_truth_available: false
+annotation_status: none

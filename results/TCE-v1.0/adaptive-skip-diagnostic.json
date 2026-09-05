@@ -1,0 +1,78 @@
+{
+  "measured_at": "2026-09-05T22:52:54",
+  "video": "fast_motion_60s.mp4",
+  "burst_region": {
+    "start": 500,
+    "end": 750
+  },
+  "phase4_reference": {
+    "fixed_skip_1": {
+      "frames_selected": 1500,
+      "burst_retention_pct": 100.0
+    },
+    "fixed_skip_5": {
+      "frames_selected": 300,
+      "burst_retention_pct": 20.3
+    },
+    "adaptive_mog2_baseline": {
+      "frames_selected": 174,
+      "burst_retention_pct": 16.3
+    }
+  },
+  "variants": [
+    {
+      "variant": "baseline",
+      "total_frames": 1500,
+      "frames_selected": 177,
+      "selection_ratio": 11.8,
+      "burst_frames_total": 251,
+      "burst_frames_selected": 29,
+      "burst_retention_pct": 11.6,
+      "overhead_s": 9.88,
+      "overhead_ratio": 0.165,
+      "params": {
+        "warmup": 25,
+        "static_skip": 10,
+        "ema_alpha": 0.25,
+        "protection_threshold": 0.08,
+        "protection_window": 15
+      }
+    },
+    {
+      "variant": "conservative",
+      "total_frames": 1500,
+      "frames_selected": 199,
+      "selection_ratio": 13.3,
+      "burst_frames_total": 251,
+      "burst_frames_selected": 34,
+      "burst_retention_pct": 13.5,
+      "overhead_s": 9.37,
+      "overhead_ratio": 0.156,
+      "params": {
+        "warmup": 10,
+        "static_skip": 8,
+        "ema_alpha": 0.3,
+        "protection_threshold": 0.05,
+        "protection_window": 25
+      }
+    },
+    {
+      "variant": "aggressive",
+      "total_frames": 1500,
+      "frames_selected": 111,
+      "selection_ratio": 7.4,
+      "burst_frames_total": 251,
+      "burst_frames_selected": 23,
+      "burst_retention_pct": 9.2,
+      "overhead_s": 10.27,
+      "overhead_ratio": 0.171,
+      "params": {
+        "warmup": 5,
+        "static_skip": 15,
+        "ema_alpha": 0.2,
+        "protection_threshold": 0.12,
+        "protection_window": 10
+      }
+    }
+  ]
+}

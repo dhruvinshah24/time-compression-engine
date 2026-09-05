@@ -93,3 +93,7 @@ datasets/benchmarks/**
 .vscode/
 *.swp
 *.swo
+
+data/real/archive/videos/
+data/real/synthetic/
+

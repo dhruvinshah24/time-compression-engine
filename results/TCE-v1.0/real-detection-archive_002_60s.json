@@ -1,0 +1,78 @@
+{
+  "video_id": "archive_002_60s",
+  "source_file": "53224_Night_Driving.mp4",
+  "clip_s": 60,
+  "git_commit": "b654937",
+  "measured_at": "2026-09-05T23:02:23",
+  "config": {
+    "model": "yolo11n.pt",
+    "profile": "fast",
+    "skip_rate": 5,
+    "low_light": true,
+    "roi_zones": []
+  },
+  "hardware": {
+    "gpu_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 5050 Laptop GPU",
+    "gpu_vram_total_mb": 8151,
+    "pytorch_version": "2.13.0+cu132",
+    "cuda_version": "13.2"
+  },
+  "video": {
+    "frames_written": 1438,
+    "fps": 23.98,
+    "width": 640,
+    "height": 360,
+    "duration_s": 60.0
+  },
+  "detection": {
+    "model": "yolo11n.pt",
+    "skip_rate": 5,
+    "total_video_frames": 1438,
+    "frames_processed": 288,
+    "frames_skipped": 1150,
+    "total_person_detections": 75,
+    "frames_with_persons": 65,
+    "frames_with_persons_pct": 22.6,
+    "max_persons_single_frame": 2,
+    "avg_persons_per_frame": 0.26,
+    "detection_fps": 77.6,
+    "processing_time_s": 3.71,
+    "rtf": 0.062,
+    "vram_delta_mb": 10
+  },
+  "quality": {
+    "frames_sampled": 144,
+    "quality_distribution": {
+      "NORMAL": {
+        "count": 66,
+        "pct": 45.8
+      },
+      "LOW_LIGHT": {
+        "count": 55,
+        "pct": 38.2
+      },
+      "VERY_LOW_LIGHT": {
+        "count": 8,
+        "pct": 5.6
+      },
+      "UNUSABLE": {
+        "count": 15,
+        "pct": 10.4
+      }
+    },
+    "avg_luminance": 54.09,
+    "min_luminance": 0.88,
+    "max_luminance": 117.74
+  },
+  "evaluation": {
+    "ground_truth_available": false,
+    "precision": null,
+    "recall": null,
+    "f1": null,
+    "detection_quality_class": "PARTIAL",
+    "total_detections": 75,
+    "max_simultaneous": 2,
+    "notes": "Persons detected in 22.6% of frames. Moderate detection rate."
+  }
+}

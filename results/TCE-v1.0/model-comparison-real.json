@@ -1,0 +1,48 @@
+{
+  "measured_at": "2026-09-05T23:10:25",
+  "clip": {
+    "file": "WhenYouA1948_512kb.mp4",
+    "duration_s": 60,
+    "frames": 1798,
+    "fps": 29.97
+  },
+  "models": [
+    {
+      "model": "yolo11n.pt",
+      "frames_processed": 360,
+      "total_detections": 661,
+      "frames_with_persons": 229,
+      "frames_with_persons_pct": 63.6,
+      "max_simultaneous": 7,
+      "detection_fps": 44.5,
+      "processing_time_s": 8.1,
+      "rtf": 0.135,
+      "vram_delta_mb": 58
+    },
+    {
+      "model": "yolo11l.pt",
+      "frames_processed": 360,
+      "total_detections": 820,
+      "frames_with_persons": 250,
+      "frames_with_persons_pct": 69.4,
+      "max_simultaneous": 6,
+      "detection_fps": 41.4,
+      "processing_time_s": 8.69,
+      "rtf": 0.145,
+      "vram_delta_mb": 98
+    },
+    {
+      "model": "yolo11x.pt",
+      "frames_processed": 360,
+      "total_detections": 796,
+      "frames_with_persons": 253,
+      "frames_with_persons_pct": 70.3,
+      "max_simultaneous": 6,
+      "detection_fps": 32.9,
+      "processing_time_s": 10.95,
+      "rtf": 0.183,
+      "vram_delta_mb": 222
+    }
+  ],
+  "note": "Winner selected by evidence only. More detections not automatically better \u2014 may include false positives."
+}

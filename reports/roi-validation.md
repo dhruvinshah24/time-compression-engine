@@ -1,14 +1,14 @@
 # ROI Validation — Phase 4 Exp-E
 
-Measured: 2026-08-26 18:11  
+Measured: 2026-08-26 18:51  
 
 ## Geometry Tests
 
-**3/4 tests passed**
+**4/4 tests passed**
 
 | Test | Result | Expected Events | Got Events | Event Types |
 |---|---|---|---|---|
-| point_inside_zone_generates_entry | FAIL | 1 | 0 | none |
+| point_inside_zone_generates_entry | PASS | 1 | 1 | restricted_zone_entry |
 | point_outside_zone_no_event | PASS | 0 | 0 | none |
 | entry_then_exit_generates_two_events | PASS | 2 | 2 | restricted_zone_entry, restricted_zone_exit |
 | approach_without_crossing_no_entry | PASS | 0 | 0 | none |

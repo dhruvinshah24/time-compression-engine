@@ -1,0 +1,40 @@
+video_id: archive_001
+title: "When You Are a Pedestrian"
+source_url: "https://archive.org/details/WhenYouA1948"
+download_url: "https://archive.org/download/WhenYouA1948/WhenYouA1948_512kb.mp4"
+local_file: "videos/WhenYouA1948_512kb.mp4"
+license: "Public Domain"
+license_url: "http://creativecommons.org/licenses/publicdomain/"
+collection: "Prelinger Archives"
+date_produced: "1948"
+date_downloaded: "2026-09-05"
+
+# Video properties (before download — from archive.org metadata)
+file_size_mb: 40.0
+format: mp4
+resolution_approx: "480p (512kb encode)"
+duration_approx_s: null  # to be measured after download
+
+# Scene characteristics
+scene_type: outdoor_street
+camera_type: fixed_and_panning
+lighting: daytime_outdoor
+people_visible: true
+people_count_approx: multiple
+activities: ["walking", "crossing street", "standing at curb"]
+occlusion: partial
+motion_type: walking_normal
+
+# Notes for TCE validation
+notes: |
+  1948 public safety film produced by Oakland, California. Filmed on real
+  streets with real pedestrians demonstrating safe crossing behaviour.
+  Contains multiple scenes of people walking, crossing streets, and interacting
+  with traffic. Good baseline test for:
+  - Daytime outdoor person detection
+  - Multiple simultaneous pedestrians
+  - Walking motion patterns
+  NOT suitable for: low-light testing, modern camera quality validation.
+  The film-to-video conversion may affect detection quality (grain, contrast).
+ground_truth_available: false
+annotation_status: none

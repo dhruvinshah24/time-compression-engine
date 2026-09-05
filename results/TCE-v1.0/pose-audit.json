@@ -1,0 +1,180 @@
+{
+  "measured_at": "2026-09-05T23:07:22",
+  "audit": {
+    "config": {
+      "track_id": "audit_track",
+      "_window_size": 20,
+      "_hysteresis": 2,
+      "_current_state": "UNKNOWN",
+      "_consecutive_in_candidate": 0,
+      "_candidate_state": "UNKNOWN",
+      "_state_start_frame": 0,
+      "_state_start_ms": 0.0,
+      "_feature_window": "deque([], maxlen=20)",
+      "_prev_centroid_x": null
+    },
+    "init_params": {
+      "track_id": "<class 'inspect._empty'>",
+      "window_size": "20",
+      "min_frames_crawling": "5",
+      "min_frames_crouching": "3",
+      "min_frames_running": "4",
+      "min_frames_fallen": "2",
+      "min_frames_sitting": "8",
+      "hysteresis_frames": "2"
+    },
+    "public_methods": [
+      "flush",
+      "update"
+    ],
+    "threshold_lines_from_source": [
+      "horiz_disp = 0.0",
+      "pose_frame.body_height_ratio,",
+      "pose_frame.bbox_aspect_ratio,",
+      "body_height=pose_frame.body_height_ratio,",
+      "aspect_ratio=pose_frame.bbox_aspect_ratio,"
+    ],
+    "pose_event_fields": {
+      "event_type": "?",
+      "track_id": "?",
+      "start_frame": "?",
+      "end_frame": "?",
+      "start_ms": "?",
+      "end_ms": "?",
+      "confidence": "?",
+      "pose_confidence": "?",
+      "temporal_confidence": "?",
+      "supporting_frames": "?",
+      "state_sequence": "?",
+      "reason": "?",
+      "evidence": "?"
+    },
+    "sample_pipeline_event": {
+      "event_type": "person_crouching_sustained",
+      "track_id": "test2",
+      "start_frame": 1,
+      "end_frame": 9,
+      "start_ms": 40.0,
+      "end_ms": 360.0,
+      "confidence": 0.3,
+      "rule_name": "temporal_pose_analysis",
+      "evidence": {
+        "avg_body_height_ratio": 0.15,
+        "avg_lateral_disp": 0.0,
+        "state": "CROUCHING",
+        "classification_note": "IMPLEMENTED \u2014 thresholds not calibrated against real footage. Treat confidence as relative, not absolute.",
+        "pose_confidence": 0.0,
+        "temporal_confidence": 1.0,
+        "supporting_frames": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "state_sequence": [],
+        "reason": "9 frames with CROUCHING posture; avg body height=15.00%; avg lateral displacement=0.000%/frame",
+        "data_source": "IMPLEMENTED \u2014 NOT YET VALIDATED on real footage"
+      }
+    },
+    "event_type_emitted": "person_crouching_sustained"
+  },
+  "sequences": {
+    "standing_30s": {
+      "frames": 750,
+      "duration_s": 30.0,
+      "events": 0,
+      "event_types": [],
+      "state_changes": [
+        {
+          "frame": 0,
+          "state": "UNKNOWN"
+        },
+        {
+          "frame": 1,
+          "state": "STANDING"
+        }
+      ]
+    },
+    "crouching_10s": {
+      "frames": 250,
+      "duration_s": 10.0,
+      "events": 0,
+      "event_types": [],
+      "state_changes": [
+        {
+          "frame": 0,
+          "state": "UNKNOWN"
+        },
+        {
+          "frame": 1,
+          "state": "STANDING"
+        }
+      ]
+    },
+    "crawling_10s": {
+      "frames": 250,
+      "duration_s": 10.0,
+      "events": 1,
+      "event_types": [
+        "person_crouching_sustained"
+      ],
+      "state_changes": [
+        {
+          "frame": 0,
+          "state": "UNKNOWN"
+        },
+        {
+          "frame": 1,
+          "state": "CROUCHING"
+        }
+      ]
+    },
+    "transition_full": {
+      "frames": 650,
+      "duration_s": 26.0,
+      "events": 1,
+      "event_types": [
+        "person_crouching_sustained"
+      ],
+      "state_changes": [
+        {
+          "frame": 0,
+          "state": "UNKNOWN"
+        },
+        {
+          "frame": 1,
+          "state": "STANDING"
+        },
+        {
+          "frame": 202,
+          "state": "LOWERING"
+        },
+        {
+          "frame": 204,
+          "state": "STANDING"
+        },
+        {
+          "frame": 326,
+          "state": "CROUCHING"
+        },
+        {
+          "frame": 526,
+          "state": "STANDING"
+        }
+      ]
+    }
+  },
+  "capabilities": {
+    "STANDING": "IMPLEMENTED",
+    "CROUCHING": "IMPLEMENTED",
+    "CRAWLING": "IMPLEMENTED",
+    "STATE_TRANSITIONS": "PARTIALLY_VALIDATED",
+    "FALLEN": "IMPLEMENTED \u2014 NOT YET VALIDATED on suitable footage",
+    "RUNNING": "IMPLEMENTED \u2014 NOT YET VALIDATED (requires real running footage)"
+  }
+}

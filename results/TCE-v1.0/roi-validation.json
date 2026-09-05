@@ -1,13 +1,15 @@
 {
-  "measured_at": "2026-08-26T18:11:11",
+  "measured_at": "2026-08-26T18:51:30",
   "geometry": {
     "tests": [
       {
         "name": "point_inside_zone_generates_entry",
-        "passed": false,
+        "passed": true,
         "expect_events": 1,
-        "got_events": 0,
-        "event_types": []
+        "got_events": 1,
+        "event_types": [
+          "restricted_zone_entry"
+        ]
       },
       {
         "name": "point_outside_zone_no_event",
@@ -34,8 +36,8 @@
         "event_types": []
       }
     ],
-    "passed": 3,
-    "failed": 1,
+    "passed": 4,
+    "failed": 0,
     "total": 4
   },
   "corpus_video": {

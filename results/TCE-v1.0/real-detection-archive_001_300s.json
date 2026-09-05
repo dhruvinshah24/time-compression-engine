@@ -1,0 +1,78 @@
+{
+  "video_id": "archive_001_300s",
+  "source_file": "WhenYouA1948_512kb.mp4",
+  "clip_s": 300,
+  "git_commit": "b654937",
+  "measured_at": "2026-09-05T23:02:54",
+  "config": {
+    "model": "yolo11n.pt",
+    "profile": "fast",
+    "skip_rate": 5,
+    "low_light": true,
+    "roi_zones": []
+  },
+  "hardware": {
+    "gpu_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 5050 Laptop GPU",
+    "gpu_vram_total_mb": 8151,
+    "pytorch_version": "2.13.0+cu132",
+    "cuda_version": "13.2"
+  },
+  "video": {
+    "frames_written": 8991,
+    "fps": 29.97,
+    "width": 320,
+    "height": 240,
+    "duration_s": 300.0
+  },
+  "detection": {
+    "model": "yolo11n.pt",
+    "skip_rate": 5,
+    "total_video_frames": 8991,
+    "frames_processed": 1799,
+    "frames_skipped": 7192,
+    "total_person_detections": 3658,
+    "frames_with_persons": 1033,
+    "frames_with_persons_pct": 57.4,
+    "max_persons_single_frame": 15,
+    "avg_persons_per_frame": 2.03,
+    "detection_fps": 73.7,
+    "processing_time_s": 24.41,
+    "rtf": 0.081,
+    "vram_delta_mb": 10
+  },
+  "quality": {
+    "frames_sampled": 900,
+    "quality_distribution": {
+      "NORMAL": {
+        "count": 812,
+        "pct": 90.2
+      },
+      "LOW_LIGHT": {
+        "count": 71,
+        "pct": 7.9
+      },
+      "VERY_LOW_LIGHT": {
+        "count": 4,
+        "pct": 0.4
+      },
+      "UNUSABLE": {
+        "count": 13,
+        "pct": 1.4
+      }
+    },
+    "avg_luminance": 94.76,
+    "min_luminance": 10.4,
+    "max_luminance": 187.47
+  },
+  "evaluation": {
+    "ground_truth_available": false,
+    "precision": null,
+    "recall": null,
+    "f1": null,
+    "detection_quality_class": "CONSISTENT",
+    "total_detections": 3658,
+    "max_simultaneous": 15,
+    "notes": "Persons detected in 57.4% of frames. Consistent detection."
+  }
+}

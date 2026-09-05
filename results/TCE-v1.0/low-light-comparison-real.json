@@ -1,0 +1,35 @@
+{
+  "measured_at": "2026-09-05T23:12:29",
+  "clip": {
+    "file": "53224_Night_Driving.mp4",
+    "duration_s": 120,
+    "frames": 2877,
+    "fps": 23.98,
+    "resolution": "640x360"
+  },
+  "without_preprocessing": {
+    "use_preprocessing": false,
+    "frames_processed": 576,
+    "total_detections": 246,
+    "frames_with_persons": 125,
+    "frames_with_persons_pct": 21.7,
+    "max_simultaneous": 10,
+    "processing_time_s": 10.55,
+    "rtf": 0.088,
+    "avg_preprocessing_overhead_ms": 0.0
+  },
+  "with_preprocessing": {
+    "use_preprocessing": true,
+    "frames_processed": 576,
+    "total_detections": 240,
+    "frames_with_persons": 128,
+    "frames_with_persons_pct": 22.2,
+    "max_simultaneous": 9,
+    "processing_time_s": 10.88,
+    "rtf": 0.091,
+    "avg_preprocessing_overhead_ms": 5.57
+  },
+  "detection_delta": -6,
+  "detection_delta_pct": -2.4,
+  "conclusion": "REDUCED \u2014 preprocessing reduced detections on this night footage"
+}

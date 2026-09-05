@@ -1,0 +1,59 @@
+{
+  "phase": "Phase 6",
+  "git_commit": "1ad97dd",
+  "generated": "2026-09-05",
+  "prior_failures": {
+    "FAIL-001": "OPEN — quality classifier on synthetic (correct behavior on real)",
+    "FAIL-002": "FIXED — cold-start ROI entry event",
+    "FAIL-003": "INVALIDATED — test script math error",
+    "FAIL-004": "OPEN — yolo11m false positives on synthetic shapes",
+    "FAIL-005": "OPEN (root cause identified) — adaptive skip EMA lag on synthetic"
+  },
+  "failures": [
+    {
+      "failure_id": "FAIL-006",
+      "category": "TRACKING_FAILURE",
+      "severity": "MAJOR",
+      "stage": "S05",
+      "description": "min_confirmation_frames threshold too high for real footage. archive_001 60s: 1/23 person tracks confirmed. archive_002 120s: 0/41 person tracks confirmed. Starves S06, S07 activity, and narrative completeness.",
+      "reproduction": "Run pipeline on 60s real clip. Count confirmed vs total person tracks.",
+      "root_cause": "min_confirmation_frames calibrated for synthetic test data. Real footage has temporal gaps (skip=5), occlusion, and edge-of-frame appearances causing short track durations.",
+      "status": "OPEN",
+      "fix": "Reduce min_confirmation_frames or use frame-count-relative threshold. Add regression test.",
+      "evidence": "phase6-pipeline-run-archive_001_60s.json: confirmed_tracks=1 of 23 person tracks"
+    },
+    {
+      "failure_id": "FAIL-007",
+      "category": "POSE_FAILURE",
+      "severity": "MAJOR",
+      "stage": "S07",
+      "description": "TemporalPoseAnalyzer raises AttributeError on all real footage runs. 'object of type TrackBBox has no len()'. All temporal pose events suppressed silently.",
+      "reproduction": "Run any pipeline on real footage. Check S07 warnings: 'Temporal pose analysis failed'.",
+      "root_cause": "TemporalPoseAnalyzer calls len() on TrackBBox dataclass expecting a sequence. TrackBBox is a structured object, not iterable by length.",
+      "status": "OPEN",
+      "fix": "Fix TemporalPoseAnalyzer to use correct TrackBBox attribute access, or provide adapter. Add regression test.",
+      "evidence": "All 3 runs: S07 warning 'Temporal pose analysis failed: object of type TrackBBox has no len()'"
+    },
+    {
+      "failure_id": "FAIL-008",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "S09",
+      "description": "0 COMPLETE story segments in all tested runs (60s, 300s, 120s night). All segments PARTIAL, ENTRY_ONLY, EXIT_ONLY, or MINIMAL.",
+      "reproduction": "Run pipeline. Check S09 warning: 'No COMPLETE story segments found'.",
+      "root_cause": "Combination: few confirmed tracks + short clips + COMPLETE requires entry+action+exit for same track. FAIL-006 (low confirmation) directly causes this.",
+      "status": "OPEN — likely improves if FAIL-006 fixed",
+      "evidence": "phase6-pipeline-run-archive_001_300s.json: story_segments=40, complete=0"
+    },
+    {
+      "failure_id": "FAIL-009",
+      "category": "MEASUREMENT_ERROR",
+      "severity": "INFORMATIONAL",
+      "stage": "measurement_script",
+      "description": "run_full_pipeline.py funnel builder read em.get('events',[]) but S12 manifest stores events under 'kept_events'. Reported exported_events=0. Actual: 20 (60s), 32 (300s), 19 (archive_002).",
+      "reproduction": "Check funnel JSON before fix.",
+      "root_cause": "Measurement script bug — not a pipeline defect. S12 manifest key is 'kept_events', not 'events'.",
+      "status": "SCRIPT BUG — pipeline correct"
+    }
+  ]
+}

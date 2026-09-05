@@ -1,0 +1,18 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-300S-1BF8B9",
+  "stage": "s03_scene_detect",
+  "timestamp_utc": "2026-09-05T18:15:13Z",
+  "metrics": {
+    "total_frames_analyzed": 1799,
+    "scene_boundaries_detected": 109,
+    "scene_segments": 110,
+    "hard_cuts_detected": 0,
+    "duplicate_frames": 969,
+    "keyframes_selected": 793,
+    "duplicate_rate": 0.5386325736520289,
+    "reduction_ratio": 2.2686002522068094,
+    "avg_composite_score": 0.04201010743515196,
+    "processing_time_ms": 8265,
+    "processing_fps": 217.66485178463398
+  }
+}

@@ -1,0 +1,634 @@
+{
+  "video_id": "archive_002",
+  "clip_s": 120,
+  "clip_info": {
+    "source": "C:\\Users\\dhruv\\.gemini\\antigravity\\scratch\\time-compression-engine\\data\\real\\archive\\videos\\53224_Night_Driving.mp4",
+    "frames_written": 2877,
+    "fps": 23.98,
+    "width": 640,
+    "height": 360,
+    "duration_s": 119.97,
+    "resolution": "640x360"
+  },
+  "config": {
+    "git_commit": "1ad97dd",
+    "model_profile": "balanced",
+    "detection_model": "yolo11l",
+    "pose_model": "yolov8n-pose",
+    "frame_skip_rate": 5,
+    "detection_threshold": 0.25,
+    "low_light_enabled": true,
+    "note": "Configuration frozen per Phase 6 directive. Not tuned during run."
+  },
+  "job_id": "PHASE6-ARCHIVE_002-120S-04AE84",
+  "stage_log": {
+    "s01_upload": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 112,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "file_size_bytes": 15570768,
+        "duration_seconds": 119.974979,
+        "fps": 23.98,
+        "frame_count": 2877,
+        "resolution": "640x360",
+        "codec": "mpeg4",
+        "has_audio": false,
+        "is_long_video": false
+      },
+      "metadata_snapshot": {
+        "fps": 23.98,
+        "frame_skip_rate": null,
+        "total_detections_s04": "N/A",
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s02_extract": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 598,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "frames_extracted": 576,
+        "frame_skip_rate": 5,
+        "processing_profile": "SHORT",
+        "extraction_speed_fps": 966.44,
+        "extraction_time_ms": 596,
+        "frames_dir": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_phase6_archive_002_eosd5m3r\\outputs\\frames\\PHASE6-ARCHIVE_002-120S-04AE84",
+        "estimated_frames": 575,
+        "frame_reduction_ratio": 4.99,
+        "chunked_extraction": false,
+        "adaptive_skip_enabled": false,
+        "skip_source": "settings",
+        "adaptive_skip_stats": null
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 576,
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "total_detections_s04": "N/A",
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s03_scene_detect": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 2895,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_frames_analyzed": 576,
+        "scene_boundaries_detected": 22,
+        "scene_segments": 23,
+        "hard_cuts_detected": 0,
+        "duplicate_frames": 395,
+        "keyframes_selected": 166,
+        "duplicate_rate": 0.6857638888888888,
+        "reduction_ratio": 3.4698795180722892,
+        "avg_composite_score": 0.021197041363365483,
+        "processing_time_ms": 2893,
+        "processing_fps": 199.1012789491877
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 576,
+        "scene_segments": "N/A",
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "total_detections_s04": "N/A",
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s04_object_detect": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 8425,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_frames_processed": 163,
+        "total_detections": 557,
+        "frames_with_detections": 140,
+        "detection_rate": 0.8588957055214724,
+        "avg_inference_time_ms": 44.17,
+        "model_name": "yolo11l",
+        "detections_by_class": {
+          "book": 4,
+          "person": 98,
+          "table": 4,
+          "knife": 2,
+          "chair": 10,
+          "suitcase": 1,
+          "laptop": 6,
+          "tv_monitor": 3,
+          "bicycle": 1,
+          "car": 283,
+          "bus": 29,
+          "truck": 103,
+          "motorcycle": 3,
+          "cat": 1,
+          "traffic_light": 9
+        },
+        "quality_dominant": "low_light",
+        "quality_mean_luminance": 51.26,
+        "quality_mean_blur": 560.31,
+        "quality_low_light_ratio": 0.675,
+        "quality_unusable_ratio": 0.018,
+        "quality_preprocessing": "clahe",
+        "skipped_unusable_frames": 3
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 163,
+        "scene_segments": "N/A",
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "frames_processed_by_detector": 163,
+        "frames_with_detections": 140,
+        "total_detections": 557,
+        "total_detections_note": "raw count, all classes",
+        "total_detections_s04": 557,
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s05_track": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 451,
+      "warnings": [
+        "All tracks were tentative (never confirmed). Consider reducing min_confirmation_frames."
+      ],
+      "errors": [],
+      "metrics": {
+        "total_frames_processed": 163,
+        "total_tracks_created": 181,
+        "active_tracks": 0,
+        "ended_tracks": 181,
+        "confirmed_tracks": 0,
+        "avg_track_length_frames": 3.08,
+        "avg_track_confidence": 0.496,
+        "classes_tracked": {
+          "book": 3,
+          "person": 41,
+          "table": 1,
+          "knife": 2,
+          "chair": 3,
+          "suitcase": 1,
+          "laptop": 2,
+          "tv_monitor": 3,
+          "bicycle": 1,
+          "car": 64,
+          "bus": 15,
+          "truck": 39,
+          "motorcycle": 3,
+          "cat": 1,
+          "traffic_light": 2
+        },
+        "total_input_detections": 557,
+        "unique_persons_identified": 0,
+        "tracks_with_activity": 0
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 163,
+        "scene_segments": "N/A",
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "frames_processed_by_detector": 163,
+        "frames_with_detections": 140,
+        "total_detections": 557,
+        "total_detections_note": "raw count, all classes",
+        "total_detections_s04": 557,
+        "total_tracks": 181,
+        "person_tracks": 41,
+        "confirmed_tracks": 0,
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s06_motion_analyze": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 1,
+      "warnings": [
+        "No motion profiles generated. Either no confirmed tracks, or all tracks had < 2 observations."
+      ],
+      "errors": [],
+      "metrics": {
+        "tracks_analyzed": 0,
+        "stationary_tracks": 0,
+        "moving_tracks": 0,
+        "camera_motion_frames": 0,
+        "speed_class_distribution": {}
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 163,
+        "scene_segments": "N/A",
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "frames_processed_by_detector": 163,
+        "frames_with_detections": 140,
+        "total_detections": 557,
+        "total_detections_note": "raw count, all classes",
+        "total_detections_s04": 557,
+        "total_tracks": 181,
+        "person_tracks": 41,
+        "confirmed_tracks": 0,
+        "motion_profiles": 0,
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s07_event_understand": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 2345,
+      "warnings": [
+        "Temporal pose analysis failed: object of type 'TrackBBox' has no len()"
+      ],
+      "errors": [],
+      "metrics": {
+        "total_events": 19,
+        "tracks_analyzed": 96,
+        "rules_evaluated": 1056,
+        "camera_motion_frames_skipped": 0,
+        "events_by_type": {
+          "light_turned_on": 2,
+          "light_turned_off": 2,
+          "person_reaching_up": 2,
+          "person_entered_scene": 6,
+          "person_left_scene": 6,
+          "person_walking": 1
+        },
+        "lighting_events_detected": 6,
+        "pose_events_detected": 8,
+        "temporal_pose_events": 0,
+        "state_machine_events": 43,
+        "state_machine_tracks": 21,
+        "interaction_events": 0,
+        "security_events": 0,
+        "narrative_events": 0,
+        "roi_events": 0,
+        "unique_persons": 0
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 163,
+        "scene_segments": "N/A",
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "frames_processed_by_detector": 163,
+        "frames_with_detections": 140,
+        "total_detections": 557,
+        "total_detections_note": "raw count, all classes",
+        "total_detections_s04": 557,
+        "total_tracks": 181,
+        "person_tracks": 41,
+        "confirmed_tracks": 0,
+        "motion_profiles": 0,
+        "semantic_events": 19,
+        "event_type_counts": {
+          "light_turned_on": 2,
+          "light_turned_off": 2,
+          "person_reaching_up": 2,
+          "person_entered_scene": 6,
+          "person_left_scene": 6,
+          "person_walking": 1
+        },
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s08_confidence_fuse": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 2,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_fused": 19,
+        "total_discarded": 0,
+        "avg_fused_confidence": 0.6397,
+        "min_fused_confidence": 0.4969,
+        "max_fused_confidence": 0.7782,
+        "dimension_means": {
+          "detection": 0.6533,
+          "motion": 0.5,
+          "rule": 0.75,
+          "track_stability": 0.4579,
+          "scene_reliability": 1.0
+        },
+        "fusion_strategy": "weighted_linear",
+        "weights": {
+          "detection": 0.3,
+          "motion": 0.25,
+          "rule": 0.2,
+          "track_stability": 0.15,
+          "scene_reliability": 0.1
+        }
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 163,
+        "scene_segments": "N/A",
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "frames_processed_by_detector": 163,
+        "frames_with_detections": 140,
+        "total_detections": 557,
+        "total_detections_note": "raw count, all classes",
+        "total_detections_s04": 557,
+        "total_tracks": 181,
+        "person_tracks": 41,
+        "confirmed_tracks": 0,
+        "motion_profiles": 0,
+        "semantic_events": 19,
+        "event_type_counts": {
+          "light_turned_on": 2,
+          "light_turned_off": 2,
+          "person_reaching_up": 2,
+          "person_entered_scene": 6,
+          "person_left_scene": 6,
+          "person_walking": 1
+        },
+        "fused_events": 19,
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s09_story_build": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 2,
+      "warnings": [
+        "No COMPLETE story segments found. All events may be partial arcs (no entry+action+exit chains detected)."
+      ],
+      "errors": [],
+      "metrics": {
+        "total_segments": 9,
+        "complete_segments": 0,
+        "partial_segments": 6,
+        "total_events_covered": 19,
+        "avg_narrative_score": 0.5324,
+        "max_narrative_score": 0.7513,
+        "graph": {
+          "total_nodes": 19,
+          "total_edges": 16,
+          "edges_by_type": {
+            "same_track_temporal": 10,
+            "co_occurrence": 6
+          },
+          "isolated_nodes": 0,
+          "hub_node_ids": [
+            "020757f5-6342-4e47-92c2-d8b2c6371df4",
+            "1551d993-9781-48fa-8843-61c330a12bd1",
+            "ecf1cbb2-f8ae-4326-a530-c526b6db2a75"
+          ]
+        }
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 163,
+        "scene_segments": "N/A",
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "frames_processed_by_detector": 163,
+        "frames_with_detections": 140,
+        "total_detections": 557,
+        "total_detections_note": "raw count, all classes",
+        "total_detections_s04": 557,
+        "total_tracks": 181,
+        "person_tracks": 41,
+        "confirmed_tracks": 0,
+        "motion_profiles": 0,
+        "semantic_events": 19,
+        "event_type_counts": {
+          "light_turned_on": 2,
+          "light_turned_off": 2,
+          "person_reaching_up": 2,
+          "person_entered_scene": 6,
+          "person_left_scene": 6,
+          "person_walking": 1
+        },
+        "fused_events": 19,
+        "story_segments": 9,
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s10_rank": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 2,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_ranked": 9,
+        "avg_importance_score": 0.5361,
+        "avg_narrative_score": 0.5324,
+        "top_segment_id": "seg_3_52d67e4f",
+        "top_combined_rank": 0.6959,
+        "w_importance": 0.4,
+        "w_narrative": 0.6
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 163,
+        "scene_segments": "N/A",
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "frames_processed_by_detector": 163,
+        "frames_with_detections": 140,
+        "total_detections": 557,
+        "total_detections_note": "raw count, all classes",
+        "total_detections_s04": 557,
+        "total_tracks": 181,
+        "person_tracks": 41,
+        "confirmed_tracks": 0,
+        "motion_profiles": 0,
+        "semantic_events": 19,
+        "event_type_counts": {
+          "light_turned_on": 2,
+          "light_turned_off": 2,
+          "person_reaching_up": 2,
+          "person_entered_scene": 6,
+          "person_left_scene": 6,
+          "person_walking": 1
+        },
+        "fused_events": 19,
+        "story_segments": 9,
+        "ranked_segments": 9,
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s11_summarize": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 1,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_events": 19,
+        "kept_events": 19,
+        "discarded_events": 0,
+        "compression_ratio_achieved": 1.0,
+        "kept_segments": 9,
+        "discarded_segments": 0,
+        "story_completeness_retained": 1.0,
+        "broken_narratives": 0,
+        "avg_narrative_chain_length": 2.1111
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 163,
+        "scene_segments": "N/A",
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "frames_processed_by_detector": 163,
+        "frames_with_detections": 140,
+        "total_detections": 557,
+        "total_detections_note": "raw count, all classes",
+        "total_detections_s04": 557,
+        "total_tracks": 181,
+        "person_tracks": 41,
+        "confirmed_tracks": 0,
+        "motion_profiles": 0,
+        "semantic_events": 19,
+        "event_type_counts": {
+          "light_turned_on": 2,
+          "light_turned_off": 2,
+          "person_reaching_up": 2,
+          "person_entered_scene": 6,
+          "person_left_scene": 6,
+          "person_walking": 1
+        },
+        "fused_events": 19,
+        "story_segments": 9,
+        "ranked_segments": 9,
+        "kept_segments": 19,
+        "kept_event_ids_count": 19,
+        "thumbnails_generated": "N/A"
+      }
+    },
+    "s12_export": {
+      "executed": true,
+      "success": true,
+      "elapsed_ms": 4032,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "kept_events": 19,
+        "total_clips": 19,
+        "clips_generated": 19,
+        "total_clip_duration_ms": 17931.609674728938,
+        "thumbnails_generated": 19,
+        "narrative_validation_passed": true,
+        "validation_errors": 0,
+        "validation_warnings": 2,
+        "complete_chains_intact": 0,
+        "decision_manifest_entries": 9,
+        "ffmpeg_available": true
+      },
+      "metadata_snapshot": {
+        "frame_paths_count": 163,
+        "scene_segments": "N/A",
+        "fps": 23.98,
+        "frame_skip_rate": 5,
+        "frames_processed_by_detector": 163,
+        "frames_with_detections": 140,
+        "total_detections": 557,
+        "total_detections_note": "raw count, all classes",
+        "total_detections_s04": 557,
+        "total_tracks": 181,
+        "person_tracks": 41,
+        "confirmed_tracks": 0,
+        "motion_profiles": 0,
+        "semantic_events": 19,
+        "event_type_counts": {
+          "light_turned_on": 2,
+          "light_turned_off": 2,
+          "person_reaching_up": 2,
+          "person_entered_scene": 6,
+          "person_left_scene": 6,
+          "person_walking": 1
+        },
+        "fused_events": 19,
+        "story_segments": 9,
+        "ranked_segments": 9,
+        "kept_segments": 19,
+        "kept_event_ids_count": 19,
+        "thumbnails_generated": 19,
+        "exported_events": 0,
+        "export_manifest_path": "N/A"
+      }
+    },
+    "_total_pipeline_ms": 18949
+  },
+  "funnel": {
+    "video_id": "archive_002",
+    "clip_duration_s": 119.97,
+    "resolution": "640x360",
+    "fps": 23.98,
+    "git_commit": "1ad97dd",
+    "config": {
+      "git_commit": "1ad97dd",
+      "model_profile": "balanced",
+      "detection_model": "yolo11l",
+      "pose_model": "yolov8n-pose",
+      "frame_skip_rate": 5,
+      "detection_threshold": 0.25,
+      "low_light_enabled": true,
+      "note": "Configuration frozen per Phase 6 directive. Not tuned during run."
+    },
+    "funnel": {
+      "input_frames": 2876,
+      "selected_frames": 163,
+      "scene_segments": "N/A",
+      "frames_with_detections": 140,
+      "total_detections_all_class": 557,
+      "total_detections_note": "all classes (not only persons)",
+      "total_tracks": 181,
+      "person_tracks": 41,
+      "confirmed_tracks": 0,
+      "motion_profiles": 0,
+      "semantic_events": 19,
+      "event_types": [
+        "light_turned_off",
+        "light_turned_on",
+        "person_entered_scene",
+        "person_left_scene",
+        "person_reaching_up",
+        "person_walking"
+      ],
+      "fused_events": 19,
+      "story_segments": 9,
+      "kept_segments": 19,
+      "exported_events": 0
+    },
+    "performance": {
+      "total_pipeline_ms": 18949,
+      "total_pipeline_s": 18.9,
+      "video_duration_s": 119.97,
+      "rtf": 0.158,
+      "real_time": true
+    },
+    "stage_timings_ms": {
+      "s01_upload": 112,
+      "s02_extract": 598,
+      "s03_scene_detect": 2895,
+      "s04_object_detect": 8425,
+      "s05_track": 451,
+      "s06_motion_analyze": 1,
+      "s07_event_understand": 2345,
+      "s08_confidence_fuse": 2,
+      "s09_story_build": 2,
+      "s10_rank": 2,
+      "s11_summarize": 1,
+      "s12_export": 4032
+    },
+    "stage_success": {
+      "s01_upload": true,
+      "s02_extract": true,
+      "s03_scene_detect": true,
+      "s04_object_detect": true,
+      "s05_track": true,
+      "s06_motion_analyze": true,
+      "s07_event_understand": true,
+      "s08_confidence_fuse": true,
+      "s09_story_build": true,
+      "s10_rank": true,
+      "s11_summarize": true,
+      "s12_export": true
+    }
+  }
+}

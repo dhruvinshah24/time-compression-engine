@@ -1,0 +1,27 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-60S-C65B2C",
+  "stage": "s09_story_build",
+  "timestamp_utc": "2026-09-05T18:05:02Z",
+  "metrics": {
+    "total_segments": 10,
+    "complete_segments": 0,
+    "partial_segments": 4,
+    "total_events_covered": 20,
+    "avg_narrative_score": 0.5411,
+    "max_narrative_score": 0.7977,
+    "graph": {
+      "total_nodes": 20,
+      "total_edges": 34,
+      "edges_by_type": {
+        "same_track_temporal": 10,
+        "co_occurrence": 24
+      },
+      "isolated_nodes": 0,
+      "hub_node_ids": [
+        "17058cb9-f734-4c30-95f7-f221298073bf",
+        "f0ffe794-1a85-46dc-b73f-faefa8e97707",
+        "28ae45b7-ea39-433e-a855-4e54a7575e00"
+      ]
+    }
+  }
+}

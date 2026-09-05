@@ -1,0 +1,77 @@
+{
+  "video_id": "archive_002",
+  "clip_duration_s": 119.97,
+  "resolution": "640x360",
+  "fps": 23.98,
+  "git_commit": "1ad97dd",
+  "config": {
+    "git_commit": "1ad97dd",
+    "model_profile": "balanced",
+    "detection_model": "yolo11l",
+    "pose_model": "yolov8n-pose",
+    "frame_skip_rate": 5,
+    "detection_threshold": 0.25,
+    "low_light_enabled": true,
+    "note": "Configuration frozen per Phase 6 directive. Not tuned during run."
+  },
+  "funnel": {
+    "input_frames": 2876,
+    "selected_frames": 163,
+    "scene_segments": "N/A",
+    "frames_with_detections": 140,
+    "total_detections_all_class": 557,
+    "total_detections_note": "all classes (not only persons)",
+    "total_tracks": 181,
+    "person_tracks": 41,
+    "confirmed_tracks": 0,
+    "motion_profiles": 0,
+    "semantic_events": 19,
+    "event_types": [
+      "light_turned_off",
+      "light_turned_on",
+      "person_entered_scene",
+      "person_left_scene",
+      "person_reaching_up",
+      "person_walking"
+    ],
+    "fused_events": 19,
+    "story_segments": 9,
+    "kept_segments": 19,
+    "exported_events": 0
+  },
+  "performance": {
+    "total_pipeline_ms": 18949,
+    "total_pipeline_s": 18.9,
+    "video_duration_s": 119.97,
+    "rtf": 0.158,
+    "real_time": true
+  },
+  "stage_timings_ms": {
+    "s01_upload": 112,
+    "s02_extract": 598,
+    "s03_scene_detect": 2895,
+    "s04_object_detect": 8425,
+    "s05_track": 451,
+    "s06_motion_analyze": 1,
+    "s07_event_understand": 2345,
+    "s08_confidence_fuse": 2,
+    "s09_story_build": 2,
+    "s10_rank": 2,
+    "s11_summarize": 1,
+    "s12_export": 4032
+  },
+  "stage_success": {
+    "s01_upload": true,
+    "s02_extract": true,
+    "s03_scene_detect": true,
+    "s04_object_detect": true,
+    "s05_track": true,
+    "s06_motion_analyze": true,
+    "s07_event_understand": true,
+    "s08_confidence_fuse": true,
+    "s09_story_build": true,
+    "s10_rank": true,
+    "s11_summarize": true,
+    "s12_export": true
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-60S-B9BBDB",
+  "stage": "s07_event_understand",
+  "timestamp_utc": "2026-09-05T18:02:51Z",
+  "metrics": {
+    "total_events": 24,
+    "tracks_analyzed": 28,
+    "rules_evaluated": 308,
+    "camera_motion_frames_skipped": 0,
+    "events_by_type": {
+      "person_reaching_up": 3,
+      "group_gathering": 1,
+      "person_entered_scene": 7,
+      "person_walking": 1,
+      "light_turned_off": 2,
+      "light_turned_on": 2,
+      "person_picked_up_book": 1,
+      "person_left_scene": 4,
+      "walking_upstairs": 1,
+      "walking_downstairs": 2
+    },
+    "lighting_events_detected": 6,
+    "pose_events_detected": 13,
+    "temporal_pose_events": 0,
+    "state_machine_events": 27,
+    "state_machine_tracks": 13,
+    "interaction_events": 1,
+    "security_events": 1,
+    "narrative_events": 3,
+    "roi_events": 0,
+    "unique_persons": 2
+  }
+}

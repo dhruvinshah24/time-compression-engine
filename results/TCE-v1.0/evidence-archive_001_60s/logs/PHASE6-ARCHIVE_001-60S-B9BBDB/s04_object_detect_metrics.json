@@ -1,0 +1,36 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-60S-B9BBDB",
+  "stage": "s04_object_detect",
+  "timestamp_utc": "2026-09-05T18:02:49Z",
+  "metrics": {
+    "total_frames_processed": 142,
+    "total_detections": 412,
+    "frames_with_detections": 129,
+    "detection_rate": 0.9084507042253521,
+    "avg_inference_time_ms": 52.13,
+    "model_name": "yolo11x",
+    "detections_by_class": {
+      "person": 268,
+      "tv_monitor": 15,
+      "bed": 9,
+      "truck": 36,
+      "car": 31,
+      "dog": 1,
+      "bus": 4,
+      "handbag": 5,
+      "suitcase": 16,
+      "traffic_light": 1,
+      "bench": 1,
+      "book": 4,
+      "tie": 10,
+      "umbrella": 11
+    },
+    "quality_dominant": "normal",
+    "quality_mean_luminance": 91.56,
+    "quality_mean_blur": 285.89,
+    "quality_low_light_ratio": 0.091,
+    "quality_unusable_ratio": 0.028,
+    "quality_preprocessing": "off",
+    "skipped_unusable_frames": 1
+  }
+}

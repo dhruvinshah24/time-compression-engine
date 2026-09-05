@@ -1,0 +1,37 @@
+{
+  "job_id": "PHASE6-ARCHIVE_002-120S-04AE84",
+  "stage": "s04_object_detect",
+  "timestamp_utc": "2026-09-05T18:16:27Z",
+  "metrics": {
+    "total_frames_processed": 163,
+    "total_detections": 557,
+    "frames_with_detections": 140,
+    "detection_rate": 0.8588957055214724,
+    "avg_inference_time_ms": 44.17,
+    "model_name": "yolo11l",
+    "detections_by_class": {
+      "book": 4,
+      "person": 98,
+      "table": 4,
+      "knife": 2,
+      "chair": 10,
+      "suitcase": 1,
+      "laptop": 6,
+      "tv_monitor": 3,
+      "bicycle": 1,
+      "car": 283,
+      "bus": 29,
+      "truck": 103,
+      "motorcycle": 3,
+      "cat": 1,
+      "traffic_light": 9
+    },
+    "quality_dominant": "low_light",
+    "quality_mean_luminance": 51.26,
+    "quality_mean_blur": 560.31,
+    "quality_low_light_ratio": 0.675,
+    "quality_unusable_ratio": 0.018,
+    "quality_preprocessing": "clahe",
+    "skipped_unusable_frames": 3
+  }
+}

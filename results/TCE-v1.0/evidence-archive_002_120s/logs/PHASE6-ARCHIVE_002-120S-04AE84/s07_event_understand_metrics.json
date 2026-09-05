@@ -1,0 +1,29 @@
+{
+  "job_id": "PHASE6-ARCHIVE_002-120S-04AE84",
+  "stage": "s07_event_understand",
+  "timestamp_utc": "2026-09-05T18:16:30Z",
+  "metrics": {
+    "total_events": 19,
+    "tracks_analyzed": 96,
+    "rules_evaluated": 1056,
+    "camera_motion_frames_skipped": 0,
+    "events_by_type": {
+      "light_turned_on": 2,
+      "light_turned_off": 2,
+      "person_reaching_up": 2,
+      "person_entered_scene": 6,
+      "person_left_scene": 6,
+      "person_walking": 1
+    },
+    "lighting_events_detected": 6,
+    "pose_events_detected": 8,
+    "temporal_pose_events": 0,
+    "state_machine_events": 43,
+    "state_machine_tracks": 21,
+    "interaction_events": 0,
+    "security_events": 0,
+    "narrative_events": 0,
+    "roi_events": 0,
+    "unique_persons": 0
+  }
+}

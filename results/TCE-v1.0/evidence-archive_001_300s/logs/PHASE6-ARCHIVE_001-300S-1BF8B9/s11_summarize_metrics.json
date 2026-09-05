@@ -1,0 +1,16 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-300S-1BF8B9",
+  "stage": "s11_summarize",
+  "timestamp_utc": "2026-09-05T18:15:50Z",
+  "metrics": {
+    "total_events": 82,
+    "kept_events": 32,
+    "discarded_events": 50,
+    "compression_ratio_achieved": 0.3902,
+    "kept_segments": 7,
+    "discarded_segments": 33,
+    "story_completeness_retained": 1.0,
+    "broken_narratives": 0,
+    "avg_narrative_chain_length": 4.5714
+  }
+}

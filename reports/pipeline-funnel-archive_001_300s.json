@@ -1,0 +1,78 @@
+{
+  "video_id": "archive_001",
+  "clip_duration_s": 300.0,
+  "resolution": "320x240",
+  "fps": 29.97,
+  "git_commit": "1ad97dd",
+  "config": {
+    "git_commit": "1ad97dd",
+    "model_profile": "balanced",
+    "detection_model": "yolo11l",
+    "pose_model": "yolov8n-pose",
+    "frame_skip_rate": 5,
+    "detection_threshold": 0.25,
+    "low_light_enabled": true,
+    "note": "Configuration frozen per Phase 6 directive. Not tuned during run."
+  },
+  "funnel": {
+    "input_frames": 8991,
+    "selected_frames": 780,
+    "scene_segments": "N/A",
+    "frames_with_detections": 678,
+    "total_detections_all_class": 3366,
+    "total_detections_note": "all classes (not only persons)",
+    "total_tracks": 546,
+    "person_tracks": 249,
+    "confirmed_tracks": 5,
+    "motion_profiles": 5,
+    "semantic_events": 32,
+    "event_types": [
+      "group_gathering",
+      "light_turned_off",
+      "light_turned_on",
+      "person_entered_scene",
+      "person_left_scene",
+      "person_sitting",
+      "person_standing_up"
+    ],
+    "fused_events": 82,
+    "story_segments": 40,
+    "kept_segments": 32,
+    "exported_events": 0
+  },
+  "performance": {
+    "total_pipeline_ms": 53059,
+    "total_pipeline_s": 53.1,
+    "video_duration_s": 300.0,
+    "rtf": 0.177,
+    "real_time": true
+  },
+  "stage_timings_ms": {
+    "s01_upload": 106,
+    "s02_extract": 1433,
+    "s03_scene_detect": 8269,
+    "s04_object_detect": 24927,
+    "s05_track": 628,
+    "s06_motion_analyze": 3,
+    "s07_event_understand": 11442,
+    "s08_confidence_fuse": 4,
+    "s09_story_build": 3,
+    "s10_rank": 2,
+    "s11_summarize": 1,
+    "s12_export": 6154
+  },
+  "stage_success": {
+    "s01_upload": true,
+    "s02_extract": true,
+    "s03_scene_detect": true,
+    "s04_object_detect": true,
+    "s05_track": true,
+    "s06_motion_analyze": true,
+    "s07_event_understand": true,
+    "s08_confidence_fuse": true,
+    "s09_story_build": true,
+    "s10_rank": true,
+    "s11_summarize": true,
+    "s12_export": true
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "job_id": "PHASE6-ARCHIVE_002-120S-04AE84",
+  "stage": "s05_track",
+  "timestamp_utc": "2026-09-05T18:16:27Z",
+  "metrics": {
+    "total_frames_processed": 163,
+    "total_tracks_created": 181,
+    "active_tracks": 0,
+    "ended_tracks": 181,
+    "confirmed_tracks": 0,
+    "avg_track_length_frames": 3.08,
+    "avg_track_confidence": 0.496,
+    "classes_tracked": {
+      "book": 3,
+      "person": 41,
+      "table": 1,
+      "knife": 2,
+      "chair": 3,
+      "suitcase": 1,
+      "laptop": 2,
+      "tv_monitor": 3,
+      "bicycle": 1,
+      "car": 64,
+      "bus": 15,
+      "truck": 39,
+      "motorcycle": 3,
+      "cat": 1,
+      "traffic_light": 2
+    },
+    "total_input_detections": 557,
+    "unique_persons_identified": 0,
+    "tracks_with_activity": 0
+  }
+}

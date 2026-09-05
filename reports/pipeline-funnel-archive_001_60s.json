@@ -1,0 +1,80 @@
+{
+  "video_id": "archive_001",
+  "clip_duration_s": 59.99,
+  "resolution": "320x240",
+  "fps": 29.97,
+  "git_commit": "1ad97dd",
+  "config": {
+    "git_commit": "1ad97dd",
+    "model_profile": "balanced",
+    "detection_model": "yolo11l",
+    "pose_model": "yolov8n-pose",
+    "frame_skip_rate": 5,
+    "detection_threshold": 0.25,
+    "low_light_enabled": true,
+    "note": "Configuration frozen per Phase 6 directive. Not tuned during run."
+  },
+  "funnel": {
+    "input_frames": 1797,
+    "selected_frames": 142,
+    "scene_segments": "N/A",
+    "frames_with_detections": 126,
+    "total_detections_all_class": 360,
+    "total_detections_note": "all classes (not only persons)",
+    "total_tracks": 67,
+    "person_tracks": 23,
+    "confirmed_tracks": 1,
+    "motion_profiles": 1,
+    "semantic_events": 20,
+    "event_types": [
+      "group_gathering",
+      "light_turned_off",
+      "light_turned_on",
+      "person_entered_scene",
+      "person_left_scene",
+      "person_picked_up_book",
+      "person_reaching_up",
+      "person_walking",
+      "running"
+    ],
+    "fused_events": 20,
+    "story_segments": 10,
+    "kept_segments": 20,
+    "exported_events": 0
+  },
+  "performance": {
+    "total_pipeline_ms": 15797,
+    "total_pipeline_s": 15.8,
+    "video_duration_s": 59.99,
+    "rtf": 0.263,
+    "real_time": true
+  },
+  "stage_timings_ms": {
+    "s01_upload": 96,
+    "s02_extract": 332,
+    "s03_scene_detect": 1766,
+    "s04_object_detect": 7384,
+    "s05_track": 526,
+    "s06_motion_analyze": 2,
+    "s07_event_understand": 2143,
+    "s08_confidence_fuse": 1,
+    "s09_story_build": 2,
+    "s10_rank": 1,
+    "s11_summarize": 2,
+    "s12_export": 3462
+  },
+  "stage_success": {
+    "s01_upload": true,
+    "s02_extract": true,
+    "s03_scene_detect": true,
+    "s04_object_detect": true,
+    "s05_track": true,
+    "s06_motion_analyze": true,
+    "s07_event_understand": true,
+    "s08_confidence_fuse": true,
+    "s09_story_build": true,
+    "s10_rank": true,
+    "s11_summarize": true,
+    "s12_export": true
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-60S-B9BBDB",
+  "stage": "s12_export",
+  "timestamp_utc": "2026-09-05T18:02:53Z",
+  "metrics": {
+    "kept_events": 9,
+    "total_clips": 9,
+    "clips_generated": 9,
+    "total_clip_duration_ms": 36269.602936269606,
+    "thumbnails_generated": 9,
+    "narrative_validation_passed": true,
+    "validation_errors": 0,
+    "validation_warnings": 0,
+    "complete_chains_intact": 0,
+    "decision_manifest_entries": 11,
+    "ffmpeg_available": true
+  }
+}

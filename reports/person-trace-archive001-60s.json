@@ -1,0 +1,736 @@
+{
+  "config": {
+    "git_commit": "1ad97dd",
+    "model_profile": "balanced",
+    "detection_model": "yolo11l",
+    "pose_model": "yolov8n-pose",
+    "frame_skip_rate": 5,
+    "detection_threshold": 0.25
+  },
+  "target_track_id": 15,
+  "detection": {
+    "total_observations": 49,
+    "first_frame": 187,
+    "last_frame": 359,
+    "first_timestamp_s": 31.2,
+    "last_timestamp_s": 59.89,
+    "sample_detections": [
+      {
+        "frame": 187,
+        "timestamp_s": 31.2,
+        "confidence": 0.0,
+        "bbox": {
+          "x1": 0.803125,
+          "y1": 0.1875,
+          "x2": 0.996875,
+          "y2": 0.9958333333333333,
+          "confidence": 0.48686206340789795,
+          "class_id": 0,
+          "class_name": "person"
+        }
+      },
+      {
+        "frame": 188,
+        "timestamp_s": 31.36,
+        "confidence": 0.0,
+        "bbox": {
+          "x1": 0.81875,
+          "y1": 0.1875,
+          "x2": 0.996875,
+          "y2": 0.9625,
+          "confidence": 0.6967117190361023,
+          "class_id": 0,
+          "class_name": "person"
+        }
+      },
+      {
+        "frame": 189,
+        "timestamp_s": 31.53,
+        "confidence": 0.0,
+        "bbox": {
+          "x1": 0.834375,
+          "y1": 0.15416666666666667,
+          "x2": 0.996875,
+          "y2": 0.9958333333333333,
+          "confidence": 0.8999441266059875,
+          "class_id": 0,
+          "class_name": "person"
+        }
+      },
+      {
+        "frame": 190,
+        "timestamp_s": 31.7,
+        "confidence": 0.0,
+        "bbox": {
+          "x1": 0.86875,
+          "y1": 0.14583333333333334,
+          "x2": 0.996875,
+          "y2": 0.9958333333333333,
+          "confidence": 0.8715360760688782,
+          "class_id": 0,
+          "class_name": "person"
+        }
+      },
+      {
+        "frame": 192,
+        "timestamp_s": 32.03,
+        "confidence": 0.0,
+        "bbox": {
+          "x1": 0.79375,
+          "y1": 0.1375,
+          "x2": 0.996875,
+          "y2": 0.9958333333333333,
+          "confidence": 0.8210713267326355,
+          "class_id": 0,
+          "class_name": "person"
+        }
+      }
+    ]
+  },
+  "track": {
+    "track_id": 15,
+    "class_name": "person",
+    "is_confirmed": true,
+    "person_label": "Person 1",
+    "activity": null,
+    "state": "active",
+    "age": "?",
+    "frames_tracked": 49,
+    "continuity_note": "Track ID assigned by IoU tracker. ReID label assigned in S05."
+  },
+  "motion": {
+    "track_id": 15,
+    "class_name": "person",
+    "observations": [
+      {
+        "frame_number": 188,
+        "timestamp_ms": 31364.6980313647,
+        "dx": 0.0078125,
+        "dy": -0.01666666666666672,
+        "speed": 0.00011033079031265711,
+        "speed_per_second": 0.1103307903126571,
+        "angle_degrees": 64.8851651138555,
+        "approach_signal": "receding",
+        "bbox_area": 0.13804687499999999
+      },
+      {
+        "frame_number": 189,
+        "timestamp_ms": 31531.53153153153,
+        "dx": 0.0078125,
+        "dy": 0.0,
+        "speed": 4.682812500000068e-05,
+        "speed_per_second": 0.04682812500000068,
+        "angle_degrees": -0.0,
+        "approach_signal": "stable",
+        "bbox_area": 0.1367708333333333
+      },
+      {
+        "frame_number": 190,
+        "timestamp_ms": 31698.365031698366,
+        "dx": 0.017187500000000133,
+        "dy": -0.004166666666666652,
+        "speed": 0.0001060059307468956,
+        "speed_per_second": 0.1060059307468956,
+        "angle_degrees": 13.626994859891392,
+        "approach_signal": "receding",
+        "bbox_area": 0.10890624999999994
+      },
+      {
+        "frame_number": 192,
+        "timestamp_ms": 32032.03203203203,
+        "dx": -0.03750000000000009,
+        "dy": -0.004166666666666652,
+        "speed": 0.00011307912191249166,
+        "speed_per_second": 0.11307912191249167,
+        "angle_degrees": 173.65980825409014,
+        "approach_signal": "approaching",
+        "bbox_area": 0.17434895833333336
+      },
+      {
+        "frame_number": 193,
+        "timestamp_ms": 32198.865532198866,
+        "dx": 0.012499999999999956,
+        "dy": -0.006249999999999978,
+        "speed": 8.376869660708496e-05,
+        "speed_per_second": 0.08376869660708497,
+        "angle_degrees": 26.56505117707799,
+        "approach_signal": "receding",
+        "bbox_area": 0.1536328125
+      },
+      {
+        "frame_number": 194,
+        "timestamp_ms": 32365.6990323657,
+        "dx": 0.009375000000000133,
+        "dy": 0.002083333333333326,
+        "speed": 5.7564530705222816e-05,
+        "speed_per_second": 0.05756453070522281,
+        "angle_degrees": -12.528807709151296,
+        "approach_signal": "receding",
+        "bbox_area": 0.13812499999999994
+      },
+      {
+        "frame_number": 195,
+        "timestamp_ms": 32532.532532532532,
+        "dx": -0.03750000000000009,
+        "dy": 0.0625,
+        "speed": 0.00043688407072129076,
+        "speed_per_second": 0.43688407072129076,
+        "angle_degrees": -120.96375653207359,
+        "approach_signal": "approaching",
+        "bbox_area": 0.173828125
+      },
+      {
+        "frame_number": 196,
+        "timestamp_ms": 32699.366032699367,
+        "dx": -0.0234375,
+        "dy": -0.033333333333333326,
+        "speed": 0.00024424557236343044,
+        "speed_per_second": 0.24424557236343045,
+        "angle_degrees": 125.11201118442222,
+        "approach_signal": "approaching",
+        "bbox_area": 0.21218750000000006
+      },
+      {
+        "frame_number": 216,
+        "timestamp_ms": 36036.036036036036,
+        "dx": 0.0015625000000000222,
+        "dy": 0.01041666666666663,
+        "speed": 3.1568007293344484e-06,
+        "speed_per_second": 0.0031568007293344483,
+        "angle_degrees": -81.46923439005172,
+        "approach_signal": "stable",
+        "bbox_area": 0.2143880208333333
+      },
+      {
+        "frame_number": 217,
+        "timestamp_ms": 36202.869536202874,
+        "dx": -0.0031249999999999334,
+        "dy": 0.022916666666666696,
+        "speed": 0.00013863374817414198,
+        "speed_per_second": 0.13863374817414198,
+        "angle_degrees": -97.76516601842516,
+        "approach_signal": "stable",
+        "bbox_area": 0.2109114583333333
+      },
+      {
+        "frame_number": 221,
+        "timestamp_ms": 36870.203536870205,
+        "dx": 0.004687499999999956,
+        "dy": -0.043749999999999956,
+        "speed": 6.593459865228951e-05,
+        "speed_per_second": 0.06593459865228951,
+        "angle_degrees": 83.88449643371465,
+        "approach_signal": "approaching",
+        "bbox_area": 0.2257291666666666
+      },
+      {
+        "frame_number": 242,
+        "timestamp_ms": 40373.70704037371,
+        "dx": -0.015625,
+        "dy": -0.012500000000000067,
+        "speed": 5.711358136781633e-06,
+        "speed_per_second": 0.0057113581367816335,
+        "angle_degrees": 141.34019174590978,
+        "approach_signal": "approaching",
+        "bbox_area": 0.2615885416666666
+      },
+      {
+        "frame_number": 243,
+        "timestamp_ms": 40540.54054054054,
+        "dx": 0.034375000000000044,
+        "dy": -0.014583333333333282,
+        "speed": 0.00022381906100757821,
+        "speed_per_second": 0.2238190610075782,
+        "angle_degrees": 22.98871680208054,
+        "approach_signal": "receding",
+        "bbox_area": 0.2097916666666666
+      },
+      {
+        "frame_number": 253,
+        "timestamp_ms": 42208.87554220888,
+        "dx": -0.018750000000000044,
+        "dy": -0.1604166666666667,
+        "speed": 9.68083319793547e-05,
+        "speed_per_second": 0.0968083319793547,
+        "angle_degrees": 96.66665989090139,
+        "approach_signal": "stable",
+        "bbox_area": 0.21656249999999994
+      },
+      {
+        "frame_number": 263,
+        "timestamp_ms": 43877.21054387721,
+        "dx": -0.05625000000000002,
+        "dy": 0.00833333333333336,
+        "speed": 3.408424179973062e-05,
+        "speed_per_second": 0.03408424179973062,
+        "angle_degrees": -171.5730309785193,
+        "approach_signal": "approaching",
+        "bbox_area": 0.28901041666666666
+      },
+      {
+        "frame_number": 264,
+        "timestamp_ms": 44044.04404404404,
+        "dx": 0.009375000000000022,
+        "dy": -0.006249999999999978,
+        "speed": 6.753648232853587e-05,
+        "speed_per_second": 0.06753648232853587,
+        "angle_degrees": 33.690067525979636,
+        "approach_signal": "receding",
+        "bbox_area": 0.27187500000000003
+      },
+      {
+        "frame_number": 265,
+        "timestamp_ms": 44210.87754421088,
+        "dx": 0.0078125,
+        "dy": -0.002083333333333326,
+        "speed": 4.846453287988534e-05,
+        "speed_per_second": 0.04846453287988534,
+        "angle_degrees": 14.931417178137504,
+        "approach_signal": "stable",
+        "bbox_area": 0.2633723958333333
+      },
+      {
+        "frame_number": 267,
+        "timestamp_ms": 44544.544544544544,
+        "dx": -0.0015625000000000222,
+        "dy": 0.01041666666666663,
+        "speed": 3.156800729334493e-05,
+        "speed_per_second": 0.031568007293344934,
+        "angle_degrees": -98.53076560994829,
+        "approach_signal": "stable",
+        "bbox_area": 0.27015624999999993
+      },
+      {
+        "frame_number": 269,
+        "timestamp_ms": 44878.21154487821,
+        "dx": 0.004687500000000067,
+        "dy": -0.004166666666666652,
+        "speed": 1.879617653783358e-05,
+        "speed_per_second": 0.01879617653783358,
+        "angle_degrees": 41.6335393365697,
+        "approach_signal": "stable",
+        "bbox_area": 0.26015625
+      },
+      {
+        "frame_number": 271,
+        "timestamp_ms": 45211.87854521188,
+        "dx": -0.0078125,
+        "dy": -0.012500000000000011,
+        "speed": 4.417756476995852e-05,
+        "speed_per_second": 0.04417756476995852,
+        "angle_degrees": 122.00538320808347,
+        "approach_signal": "stable",
+        "bbox_area": 0.26125000000000004
+      },
+      {
+        "frame_number": 272,
+        "timestamp_ms": 45378.712045378714,
+        "dx": -0.0031250000000000444,
+        "dy": 0.012500000000000011,
+        "speed": 7.723092224985205e-05,
+        "speed_per_second": 0.07723092224985205,
+        "angle_degrees": -104.03624346792667,
+        "approach_signal": "approaching",
+        "bbox_area": 0.27656249999999993
+      },
+      {
+        "frame_number": 276,
+        "timestamp_ms": 46046.046046046045,
+        "dx": 0.035937499999999956,
+        "dy": 0.0,
+        "speed": 5.385234375000013e-05,
+        "speed_per_second": 0.05385234375000013,
+        "angle_degrees": -0.0,
+        "approach_signal": "receding",
+        "bbox_area": 0.22265625
+      },
+      {
+        "frame_number": 279,
+        "timestamp_ms": 46546.546546546546,
+        "dx": 0.0,
+        "dy": 0.0,
+        "speed": 0.0,
+        "speed_per_second": 0.0,
+        "angle_degrees": -0.0,
+        "approach_signal": "stable",
+        "bbox_area": 0.22265625
+      },
+      {
+        "frame_number": 280,
+        "timestamp_ms": 46713.380046713384,
+        "dx": -0.035937499999999956,
+        "dy": -0.002083333333333326,
+        "speed": 0.00021577102793039152,
+        "speed_per_second": 0.21577102793039152,
+        "angle_degrees": 176.68221883166518,
+        "approach_signal": "approaching",
+        "bbox_area": 0.27809895833333326
+      },
+      {
+        "frame_number": 281,
+        "timestamp_ms": 46880.213546880215,
+        "dx": 0.028124999999999956,
+        "dy": 0.002083333333333326,
+        "speed": 0.0001690431173038797,
+        "speed_per_second": 0.1690431173038797,
+        "angle_degrees": -4.236394799058832,
+        "approach_signal": "receding",
+        "bbox_area": 0.23697916666666666
+      },
+      {
+        "frame_number": 284,
+        "timestamp_ms": 47380.714047380716,
+        "dx": 0.004687499999999956,
+        "dy": -0.002083333333333326,
+        "speed": 1.0248967649993984e-05,
+        "speed_per_second": 0.010248967649993983,
+        "angle_degrees": 23.96248897457831,
+        "approach_signal": "stable",
+        "bbox_area": 0.2286067708333333
+      },
+      {
+        "frame_number": 310,
+        "timestamp_ms": 51718.38505171839,
+        "dx": 0.0,
+        "dy": 0.002083333333333326,
+        "speed": 4.802884615384595e-07,
+        "speed_per_second": 0.0004802884615384595,
+        "angle_degrees": -90.0,
+        "approach_signal": "stable",
+        "bbox_area": 0.22734374999999998
+      },
+      {
+        "frame_number": 312,
+        "timestamp_ms": 52052.05205205205,
+        "dx": -0.0390625,
+        "dy": 0.10833333333333328,
+        "speed": 0.0003451366594464445,
+        "speed_per_second": 0.3451366594464445,
+        "angle_degrees": -109.8281337713078,
+        "approach_signal": "approaching",
+        "bbox_area": 0.37171875
+      },
+      {
+        "frame_number": 315,
+        "timestamp_ms": 52552.55255255255,
+        "dx": 0.042187500000000044,
+        "dy": -0.10833333333333328,
+        "speed": 0.00023228325803400165,
+        "speed_per_second": 0.23228325803400166,
+        "angle_degrees": 68.7229132934223,
+        "approach_signal": "receding",
+        "bbox_area": 0.22265625
+      },
+      {
+        "frame_number": 317,
+        "timestamp_ms": 52886.21955288622,
+        "dx": -0.04843749999999991,
+        "dy": 0.11041666666666661,
+        "speed": 0.00036135955975761944,
+        "speed_per_second": 0.36135955975761946,
+        "angle_degrees": -113.68606411286663,
+        "approach_signal": "approaching",
+        "bbox_area": 0.38226562499999994
+      },
+      {
+        "frame_number": 320,
+        "timestamp_ms": 53386.72005338672,
+        "dx": 0.006249999999999867,
+        "dy": -0.002083333333333326,
+        "speed": 1.3162980760450621e-05,
+        "speed_per_second": 0.01316298076045062,
+        "angle_degrees": 18.434948822922316,
+        "approach_signal": "stable",
+        "bbox_area": 0.37171875
+      },
+      {
+        "frame_number": 321,
+        "timestamp_ms": 53553.55355355355,
+        "dx": 0.004687500000000067,
+        "dy": 0.002083333333333326,
+        "speed": 3.0746902949983006e-05,
+        "speed_per_second": 0.030746902949983005,
+        "angle_degrees": -23.962488974577806,
+        "approach_signal": "stable",
+        "bbox_area": 0.3610286458333333
+      },
+      {
+        "frame_number": 322,
+        "timestamp_ms": 53720.38705372039,
+        "dx": 0.026562499999999933,
+        "dy": -0.11249999999999993,
+        "speed": 0.0006928663802416106,
+        "speed_per_second": 0.6928663802416106,
+        "angle_degrees": 76.71513351509783,
+        "approach_signal": "receding",
+        "bbox_area": 0.24039062499999997
+      },
+      {
+        "frame_number": 323,
+        "timestamp_ms": 53887.22055388722,
+        "dx": 0.02187500000000009,
+        "dy": 0.0,
+        "speed": 0.00013111875000000245,
+        "speed_per_second": 0.13111875000000245,
+        "angle_degrees": -0.0,
+        "approach_signal": "receding",
+        "bbox_area": 0.20510416666666662
+      },
+      {
+        "frame_number": 327,
+        "timestamp_ms": 54554.554554554554,
+        "dx": -0.004687499999999956,
+        "dy": -0.004166666666666707,
+        "speed": 9.398088268916824e-06,
+        "speed_per_second": 0.009398088268916823,
+        "angle_degrees": 138.36646066342928,
+        "approach_signal": "stable",
+        "bbox_area": 0.2073567708333333
+      },
+      {
+        "frame_number": 329,
+        "timestamp_ms": 54888.22155488822,
+        "dx": -0.012500000000000067,
+        "dy": 0.006250000000000033,
+        "speed": 4.1884348303542855e-05,
+        "speed_per_second": 0.04188434830354285,
+        "angle_degrees": -153.434948822922,
+        "approach_signal": "approaching",
+        "bbox_area": 0.23460937499999995
+      },
+      {
+        "frame_number": 332,
+        "timestamp_ms": 55388.722055388724,
+        "dx": -0.14687499999999998,
+        "dy": 0.1020833333333333,
+        "speed": 0.0003573755336761492,
+        "speed_per_second": 0.3573755336761492,
+        "angle_degrees": -145.19932949871253,
+        "approach_signal": "approaching",
+        "bbox_area": 0.5955859374999999
+      },
+      {
+        "frame_number": 333,
+        "timestamp_ms": 55555.555555555555,
+        "dx": 0.020312499999999956,
+        "dy": -0.12291666666666667,
+        "speed": 0.0007467548492333557,
+        "speed_per_second": 0.7467548492333557,
+        "angle_degrees": 80.61643482761345,
+        "approach_signal": "receding",
+        "bbox_area": 0.41250000000000003
+      },
+      {
+        "frame_number": 335,
+        "timestamp_ms": 55889.222555889224,
+        "dx": -0.0015624999999999112,
+        "dy": 0.006250000000000033,
+        "speed": 1.9307730562462593e-05,
+        "speed_per_second": 0.019307730562462593,
+        "angle_degrees": -104.03624346792564,
+        "approach_signal": "receding",
+        "bbox_area": 0.3623046875
+      },
+      {
+        "frame_number": 336,
+        "timestamp_ms": 56056.056056056055,
+        "dx": -0.028125000000000067,
+        "dy": 0.002083333333333326,
+        "speed": 0.00016904311730388038,
+        "speed_per_second": 0.16904311730388039,
+        "angle_degrees": -175.76360520094119,
+        "approach_signal": "approaching",
+        "bbox_area": 0.39187500000000003
+      },
+      {
+        "frame_number": 337,
+        "timestamp_ms": 56222.88955622289,
+        "dx": 0.07343750000000004,
+        "dy": -0.002083333333333326,
+        "speed": 0.0004403614670363196,
+        "speed_per_second": 0.4403614670363196,
+        "angle_degrees": 1.6249763575247593,
+        "approach_signal": "receding",
+        "bbox_area": 0.24429687500000002
+      },
+      {
+        "frame_number": 342,
+        "timestamp_ms": 57057.057057057056,
+        "dx": -0.029687499999999978,
+        "dy": -0.010416666666666685,
+        "speed": 3.771659143057124e-05,
+        "speed_per_second": 0.03771659143057124,
+        "angle_degrees": 160.66519146217354,
+        "approach_signal": "stable",
+        "bbox_area": 0.25546875
+      },
+      {
+        "frame_number": 345,
+        "timestamp_ms": 57557.55755755756,
+        "dx": 0.0015624999999999112,
+        "dy": 0.0,
+        "speed": 3.1218749999998226e-06,
+        "speed_per_second": 0.0031218749999998227,
+        "angle_degrees": -0.0,
+        "approach_signal": "stable",
+        "bbox_area": 0.25312500000000004
+      },
+      {
+        "frame_number": 354,
+        "timestamp_ms": 59059.05905905906,
+        "dx": -0.1421874999999999,
+        "dy": 0.002083333333333326,
+        "speed": 9.470703928967272e-05,
+        "speed_per_second": 0.09470703928967272,
+        "angle_degrees": -179.1605614662877,
+        "approach_signal": "receding",
+        "bbox_area": 0.23925781250000006
+      },
+      {
+        "frame_number": 356,
+        "timestamp_ms": 59392.72605939273,
+        "dx": 0.021874999999999978,
+        "dy": 0.04791666666666666,
+        "speed": 0.00015786318978613332,
+        "speed_per_second": 0.1578631897861333,
+        "angle_degrees": -65.46227152342223,
+        "approach_signal": "approaching",
+        "bbox_area": 0.28640625000000003
+      },
+      {
+        "frame_number": 357,
+        "timestamp_ms": 59559.55955955956,
+        "dx": 0.04218749999999993,
+        "dy": -0.04999999999999999,
+        "speed": 0.0003921278811383091,
+        "speed_per_second": 0.3921278811383091,
+        "angle_degrees": 49.84400037508072,
+        "approach_signal": "approaching",
+        "bbox_area": 0.3375
+      },
+      {
+        "frame_number": 358,
+        "timestamp_ms": 59726.3930597264,
+        "dx": 0.02968750000000009,
+        "dy": 0.006249999999999978,
+        "speed": 0.00018184754391663882,
+        "speed_per_second": 0.18184754391663882,
+        "angle_degrees": -11.8886580396279,
+        "approach_signal": "approaching",
+        "bbox_area": 0.3645703125
+      },
+      {
+        "frame_number": 359,
+        "timestamp_ms": 59893.22655989323,
+        "dx": 0.0390625,
+        "dy": 0.0020833333333333814,
+        "speed": 0.00023447338853618813,
+        "speed_per_second": 0.23447338853618813,
+        "angle_degrees": -3.0528825147924983,
+        "approach_signal": "stable",
+        "bbox_area": 0.3641666666666667
+      }
+    ],
+    "dominant_speed_class": "walking",
+    "dominant_direction": "E",
+    "max_speed_per_second": 0.7467548492333557,
+    "avg_speed_per_second": 0.14993086551407817,
+    "is_stationary": false,
+    "has_approach_phase": true,
+    "has_recede_phase": true,
+    "total_displacement": 0.2741008817986139,
+    "motion_confidence": 0.7572455882718073
+  },
+  "semantic_events": [
+    {
+      "event_id": "7722ab03-63a5-4aaf-862b-bfcf3b33f874",
+      "event_type": "running",
+      "timestamp_s": null,
+      "confidence": 0.787,
+      "rule": "?",
+      "evidence": {
+        "person_label": "Person 1",
+        "description": "Person 1 is running",
+        "crop_path": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_trace__07j7wu1\\outputs\\crops\\person_1_t15_f189.jpg",
+        "entry_direction": "right",
+        "exit_direction": "right",
+        "duration_s": 28.7,
+        "mean_speed": 0.25464,
+        "max_speed": 1.07213,
+        "mean_vy": -0.02602,
+        "mean_abs_vx": 0.15102,
+        "vy_std": 0.29032,
+        "mean_height": 0.7904,
+        "obs_count": 49,
+        "cycling_conf": 0.0,
+        "stair_conf": 0.0,
+        "entry_dir": "right",
+        "exit_dir": "right",
+        "reason": "high_velocity",
+        "confidence_vector": {
+          "fused": 0.787,
+          "components": {
+            "detection": 0.6588,
+            "motion": 0.7572,
+            "rule": 0.75,
+            "track_stability": 1.0,
+            "scene_reliability": 1.0
+          },
+          "detection": 0.6588,
+          "motion": 0.7572,
+          "rule": 0.75,
+          "track_stability": 1.0,
+          "scene_reliability": 1.0,
+          "weights_used": {
+            "detection": 0.3,
+            "motion": 0.25,
+            "rule": 0.2,
+            "track_stability": 0.15,
+            "scene_reliability": 0.1
+          },
+          "strategy": "weighted_linear"
+        },
+        "thumbnail_path": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_trace__07j7wu1\\outputs\\TRACE-2B00C444\\thumbnails\\7722ab03-63a5-4aaf-862b-bfcf3b33f874_thumb.jpg",
+        "before_frame_path": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_trace__07j7wu1\\outputs\\TRACE-2B00C444\\thumbnails\\7722ab03-63a5-4aaf-862b-bfcf3b33f874_before.jpg",
+        "event_frame_path": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_trace__07j7wu1\\outputs\\TRACE-2B00C444\\thumbnails\\7722ab03-63a5-4aaf-862b-bfcf3b33f874_event.jpg",
+        "after_frame_path": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_trace__07j7wu1\\outputs\\TRACE-2B00C444\\thumbnails\\7722ab03-63a5-4aaf-862b-bfcf3b33f874_after.jpg",
+        "clip_path": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_trace__07j7wu1\\outputs\\TRACE-2B00C444\\clips\\clip_014_running.mp4"
+      }
+    }
+  ],
+  "fused_events": [
+    {
+      "event_id": "7722ab03-63a5-4aaf-862b-bfcf3b33f874",
+      "event_type": "running",
+      "fused_confidence": null,
+      "dimensions": {},
+      "fusion_strategy": null
+    }
+  ],
+  "story_segments": [
+    {
+      "segment_id": "seg_15_e2f420e9",
+      "completeness": "minimal",
+      "importance": null,
+      "narrative": 0.5148,
+      "event_count": 1
+    }
+  ],
+  "ranking": [],
+  "compression": {
+    "track_event_ids": [
+      "7722ab03-63a5-4aaf-862b-bfcf3b33f874"
+    ],
+    "kept_event_count": 1,
+    "discard_count": 0,
+    "decision": "KEPT"
+  },
+  "export": {
+    "exported_event_count": 0,
+    "events": [],
+    "note": "0 exported events means S12 stored thumbnails but no clip manifest entries for this track."
+  },
+  "chain_breaks": [
+    "BREAK: Compression\u2192Export \u2014 kept events not in export manifest"
+  ]
+}

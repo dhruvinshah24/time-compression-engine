@@ -1,0 +1,33 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-60S-C65B2C",
+  "stage": "s05_track",
+  "timestamp_utc": "2026-09-05T18:05:00Z",
+  "metrics": {
+    "total_frames_processed": 142,
+    "total_tracks_created": 67,
+    "active_tracks": 1,
+    "ended_tracks": 66,
+    "confirmed_tracks": 1,
+    "avg_track_length_frames": 5.37,
+    "avg_track_confidence": 0.4484,
+    "classes_tracked": {
+      "person": 23,
+      "truck": 11,
+      "car": 11,
+      "bus": 1,
+      "handbag": 2,
+      "dog": 1,
+      "suitcase": 3,
+      "bed": 2,
+      "book": 2,
+      "traffic_light": 2,
+      "stop_sign": 1,
+      "tie": 4,
+      "umbrella": 3,
+      "banana": 1
+    },
+    "total_input_detections": 360,
+    "unique_persons_identified": 1,
+    "tracks_with_activity": 1
+  }
+}

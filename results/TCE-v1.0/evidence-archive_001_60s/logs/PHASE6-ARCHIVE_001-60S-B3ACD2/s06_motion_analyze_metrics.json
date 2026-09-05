@@ -1,0 +1,17 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-60S-B3ACD2",
+  "stage": "s06_motion_analyze",
+  "timestamp_utc": "2026-09-05T18:41:19Z",
+  "metrics": {
+    "tracks_analyzed": 28,
+    "stationary_tracks": 2,
+    "moving_tracks": 26,
+    "camera_motion_frames": 11,
+    "speed_class_distribution": {
+      "slow": 12,
+      "stationary": 2,
+      "fast": 3,
+      "walking": 11
+    }
+  }
+}

@@ -3,7 +3,7 @@
 **Git commit:** `1ad97dd`  
 **Model:** yolo11l  
 **Resolution:** 320x240 @ 30.0fps  
-**Measured:** 2026-09-05 23:35  
+**Measured:** 2026-09-06 00:11  
 
 ## Pipeline Funnel
 
@@ -22,55 +22,52 @@
        ↓
   PERSON TRACKS                          23
        ↓
-  CONFIRMED TRACKS                       1
+  CONFIRMED TRACKS                       28
        ↓
-  MOTION PROFILES                        1
+  MOTION PROFILES                        28
        ↓
-  SEMANTIC EVENTS                        20
+  SEMANTIC EVENTS                        13
        ↓
-  FUSED EVENTS                           20
+  FUSED EVENTS                           33
        ↓
-  STORY SEGMENTS                         10
+  STORY SEGMENTS                         15
        ↓
-  KEPT SEGMENTS                          20
+  KEPT SEGMENTS                          13
        ↓
   EXPORTED EVENTS                        0
 ```
 
 ## Event Types Generated
 
-- `group_gathering`
-- `light_turned_off`
-- `light_turned_on`
+- `cycling`
 - `person_entered_scene`
 - `person_left_scene`
-- `person_picked_up_book`
 - `person_reaching_up`
-- `person_walking`
 - `running`
+- `walking_upstairs`
 
 ## Performance
 
 | Metric | Value |
 |---|---|
 | Video duration | 59.99s |
-| Total pipeline | 15.8s |
-| RTF | 0.263x |
+| Total pipeline | 15.2s |
+| RTF | 0.254x |
 | Real-time | True |
 
 ## Stage Timings
 
 | Stage | Duration (ms) | Success |
 |---|---|---|
-| s01_upload | 96 | True |
-| s02_extract | 332 | True |
-| s03_scene_detect | 1766 | True |
-| s04_object_detect | 7384 | True |
-| s05_track | 526 | True |
-| s06_motion_analyze | 2 | True |
-| s07_event_understand | 2143 | True |
-| s08_confidence_fuse | 1 | True |
-| s09_story_build | 2 | True |
-| s10_rank | 1 | True |
-| s11_summarize | 2 | True |
-| s12_export | 3462 | True |
+| s01_upload | 101 | True |
+| s02_extract | 314 | True |
+| s03_scene_detect | 1606 | True |
+| s04_object_detect | 7128 | True |
+| s05_track | 719 | True |
+| s06_motion_analyze | 4 | True |
+| s07_event_understand | 2179 | True |
+| s08_confidence_fuse | 2 | True |
+| s09_story_build | 3 | True |
+| s10_rank | 2 | True |
+| s11_summarize | 1 | True |
+| s12_export | 3102 | True |

@@ -135,7 +135,17 @@ class Track:
 
     @property
     def is_confirmed(self) -> bool:
-        return self.state in (TrackState.ACTIVE, TrackState.LOST)
+        """True if this track was ever promoted from TENTATIVE to ACTIVE.
+
+        Uses confirmed_at_frame (set when the track crosses min_confirmation_frames)
+        rather than the live state. This is the correct production semantics:
+        a track that was confirmed during video processing remains a genuine
+        stable track even after finalize() ends it.
+
+        Without this, finalize() converts all LOST tracks to ENDED, making
+        previously-confirmed tracks report is_confirmed=False.
+        """
+        return self.confirmed_at_frame is not None
 
     def update(
         self,

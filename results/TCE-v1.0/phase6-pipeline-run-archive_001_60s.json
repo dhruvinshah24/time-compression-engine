@@ -20,12 +20,12 @@
     "low_light_enabled": true,
     "note": "Configuration frozen per Phase 6 directive. Not tuned during run."
   },
-  "job_id": "PHASE6-ARCHIVE_001-60S-C65B2C",
+  "job_id": "PHASE6-ARCHIVE_001-60S-B3ACD2",
   "stage_log": {
     "s01_upload": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 96,
+      "elapsed_ms": 101,
       "warnings": [],
       "errors": [],
       "metrics": {
@@ -48,16 +48,16 @@
     "s02_extract": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 332,
+      "elapsed_ms": 314,
       "warnings": [],
       "errors": [],
       "metrics": {
         "frames_extracted": 360,
         "frame_skip_rate": 5,
         "processing_profile": "SHORT",
-        "extraction_speed_fps": 1087.61,
-        "extraction_time_ms": 331,
-        "frames_dir": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_phase6_archive_001_cg1ciwxv\\outputs\\frames\\PHASE6-ARCHIVE_001-60S-C65B2C",
+        "extraction_speed_fps": 1153.85,
+        "extraction_time_ms": 312,
+        "frames_dir": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_phase6_archive_001_mzb5hv16\\outputs\\frames\\PHASE6-ARCHIVE_001-60S-B3ACD2",
         "estimated_frames": 359,
         "frame_reduction_ratio": 4.99,
         "chunked_extraction": false,
@@ -76,7 +76,7 @@
     "s03_scene_detect": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 1766,
+      "elapsed_ms": 1606,
       "warnings": [],
       "errors": [],
       "metrics": {
@@ -89,8 +89,8 @@
         "duplicate_rate": 0.5777777777777777,
         "reduction_ratio": 2.5174825174825175,
         "avg_composite_score": 0.04095297837322445,
-        "processing_time_ms": 1764,
-        "processing_fps": 204.08163265306123
+        "processing_time_ms": 1603,
+        "processing_fps": 224.5789145352464
       },
       "metadata_snapshot": {
         "frame_paths_count": 360,
@@ -104,7 +104,7 @@
     "s04_object_detect": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 7384,
+      "elapsed_ms": 7128,
       "warnings": [],
       "errors": [],
       "metrics": {
@@ -112,7 +112,7 @@
         "total_detections": 360,
         "frames_with_detections": 126,
         "detection_rate": 0.8873239436619719,
-        "avg_inference_time_ms": 47.94,
+        "avg_inference_time_ms": 46.45,
         "model_name": "yolo11l",
         "detections_by_class": {
           "person": 252,
@@ -154,7 +154,7 @@
     "s05_track": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 526,
+      "elapsed_ms": 719,
       "warnings": [],
       "errors": [],
       "metrics": {
@@ -162,7 +162,7 @@
         "total_tracks_created": 67,
         "active_tracks": 1,
         "ended_tracks": 66,
-        "confirmed_tracks": 1,
+        "confirmed_tracks": 28,
         "avg_track_length_frames": 5.37,
         "avg_track_confidence": 0.4484,
         "classes_tracked": {
@@ -182,8 +182,8 @@
           "banana": 1
         },
         "total_input_detections": 360,
-        "unique_persons_identified": 1,
-        "tracks_with_activity": 1
+        "unique_persons_identified": 4,
+        "tracks_with_activity": 13
       },
       "metadata_snapshot": {
         "frame_paths_count": 142,
@@ -197,23 +197,28 @@
         "total_detections_s04": 360,
         "total_tracks": 67,
         "person_tracks": 23,
-        "confirmed_tracks": 1,
+        "confirmed_tracks": 28,
         "thumbnails_generated": "N/A"
       }
     },
     "s06_motion_analyze": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 2,
-      "warnings": [],
+      "elapsed_ms": 4,
+      "warnings": [
+        "Camera motion detected in 11 frames. Events in these frames may be caused by camera movement, not scene activity."
+      ],
       "errors": [],
       "metrics": {
-        "tracks_analyzed": 1,
-        "stationary_tracks": 0,
-        "moving_tracks": 1,
-        "camera_motion_frames": 0,
+        "tracks_analyzed": 28,
+        "stationary_tracks": 2,
+        "moving_tracks": 26,
+        "camera_motion_frames": 11,
         "speed_class_distribution": {
-          "walking": 1
+          "slow": 12,
+          "stationary": 2,
+          "fast": 3,
+          "walking": 11
         }
       },
       "metadata_snapshot": {
@@ -228,21 +233,19 @@
         "total_detections_s04": 360,
         "total_tracks": 67,
         "person_tracks": 23,
-        "confirmed_tracks": 1,
-        "motion_profiles": 1,
+        "confirmed_tracks": 28,
+        "motion_profiles": 28,
         "thumbnails_generated": "N/A"
       }
     },
     "s07_event_understand": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 2143,
-      "warnings": [
-        "Temporal pose analysis failed: object of type 'TrackBBox' has no len()"
-      ],
+      "elapsed_ms": 2179,
+      "warnings": [],
       "errors": [],
       "metrics": {
-        "total_events": 20,
+        "total_events": 33,
         "tracks_analyzed": 28,
         "rules_evaluated": 308,
         "camera_motion_frames_skipped": 0,
@@ -250,23 +253,28 @@
           "person_reaching_up": 3,
           "group_gathering": 1,
           "person_entered_scene": 5,
+          "cycling": 7,
           "light_turned_off": 2,
           "person_walking": 1,
           "light_turned_on": 2,
           "person_picked_up_book": 1,
           "person_left_scene": 4,
-          "running": 1
+          "vehicle_approaching": 1,
+          "vehicle_receding": 1,
+          "walking_upstairs": 2,
+          "running": 2,
+          "walking_downstairs": 1
         },
         "lighting_events_detected": 6,
         "pose_events_detected": 13,
-        "temporal_pose_events": 0,
+        "temporal_pose_events": 10,
         "state_machine_events": 27,
         "state_machine_tracks": 13,
         "interaction_events": 1,
         "security_events": 1,
-        "narrative_events": 1,
+        "narrative_events": 12,
         "roi_events": 0,
-        "unique_persons": 1
+        "unique_persons": 4
       },
       "metadata_snapshot": {
         "frame_paths_count": 142,
@@ -280,19 +288,24 @@
         "total_detections_s04": 360,
         "total_tracks": 67,
         "person_tracks": 23,
-        "confirmed_tracks": 1,
-        "motion_profiles": 1,
-        "semantic_events": 20,
+        "confirmed_tracks": 28,
+        "motion_profiles": 28,
+        "semantic_events": 33,
         "event_type_counts": {
           "person_reaching_up": 3,
           "group_gathering": 1,
           "person_entered_scene": 5,
+          "cycling": 7,
           "light_turned_off": 2,
           "person_walking": 1,
           "light_turned_on": 2,
           "person_picked_up_book": 1,
           "person_left_scene": 4,
-          "running": 1
+          "vehicle_approaching": 1,
+          "vehicle_receding": 1,
+          "walking_upstairs": 2,
+          "running": 2,
+          "walking_downstairs": 1
         },
         "thumbnails_generated": "N/A"
       }
@@ -300,21 +313,21 @@
     "s08_confidence_fuse": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 1,
+      "elapsed_ms": 2,
       "warnings": [],
       "errors": [],
       "metrics": {
-        "total_fused": 20,
+        "total_fused": 33,
         "total_discarded": 0,
-        "avg_fused_confidence": 0.722,
-        "min_fused_confidence": 0.4963,
-        "max_fused_confidence": 0.7943,
+        "avg_fused_confidence": 0.7603,
+        "min_fused_confidence": 0.4368,
+        "max_fused_confidence": 0.8798,
         "dimension_means": {
-          "detection": 0.7385,
-          "motion": 0.5129,
-          "rule": 0.75,
-          "track_stability": 0.815,
-          "scene_reliability": 1.0
+          "detection": 0.7019,
+          "motion": 0.7007,
+          "rule": 0.7539,
+          "track_stability": 0.8545,
+          "scene_reliability": 0.9557
         },
         "fusion_strategy": "weighted_linear",
         "weights": {
@@ -337,51 +350,56 @@
         "total_detections_s04": 360,
         "total_tracks": 67,
         "person_tracks": 23,
-        "confirmed_tracks": 1,
-        "motion_profiles": 1,
-        "semantic_events": 20,
+        "confirmed_tracks": 28,
+        "motion_profiles": 28,
+        "semantic_events": 33,
         "event_type_counts": {
           "person_reaching_up": 3,
           "group_gathering": 1,
           "person_entered_scene": 5,
+          "cycling": 7,
           "light_turned_off": 2,
           "person_walking": 1,
           "light_turned_on": 2,
           "person_picked_up_book": 1,
           "person_left_scene": 4,
-          "running": 1
+          "vehicle_approaching": 1,
+          "vehicle_receding": 1,
+          "walking_upstairs": 2,
+          "running": 2,
+          "walking_downstairs": 1
         },
-        "fused_events": 20,
+        "fused_events": 33,
         "thumbnails_generated": "N/A"
       }
     },
     "s09_story_build": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 2,
+      "elapsed_ms": 3,
       "warnings": [
         "No COMPLETE story segments found. All events may be partial arcs (no entry+action+exit chains detected)."
       ],
       "errors": [],
       "metrics": {
-        "total_segments": 10,
+        "total_segments": 15,
         "complete_segments": 0,
-        "partial_segments": 4,
-        "total_events_covered": 20,
-        "avg_narrative_score": 0.5411,
-        "max_narrative_score": 0.7977,
+        "partial_segments": 7,
+        "total_events_covered": 33,
+        "avg_narrative_score": 0.5909,
+        "max_narrative_score": 0.8303,
         "graph": {
-          "total_nodes": 20,
-          "total_edges": 34,
+          "total_nodes": 33,
+          "total_edges": 154,
           "edges_by_type": {
-            "same_track_temporal": 10,
-            "co_occurrence": 24
+            "same_track_temporal": 18,
+            "co_occurrence": 136
           },
           "isolated_nodes": 0,
           "hub_node_ids": [
-            "17058cb9-f734-4c30-95f7-f221298073bf",
-            "f0ffe794-1a85-46dc-b73f-faefa8e97707",
-            "28ae45b7-ea39-433e-a855-4e54a7575e00"
+            "5e16f940-7421-4180-b39c-1bb5639336fb",
+            "29533646-59bc-4e31-a4cc-e336e7ae8ac0",
+            "3681e0ad-2e14-46ed-ab28-677264efc518"
           ]
         }
       },
@@ -397,37 +415,42 @@
         "total_detections_s04": 360,
         "total_tracks": 67,
         "person_tracks": 23,
-        "confirmed_tracks": 1,
-        "motion_profiles": 1,
-        "semantic_events": 20,
+        "confirmed_tracks": 28,
+        "motion_profiles": 28,
+        "semantic_events": 33,
         "event_type_counts": {
           "person_reaching_up": 3,
           "group_gathering": 1,
           "person_entered_scene": 5,
+          "cycling": 7,
           "light_turned_off": 2,
           "person_walking": 1,
           "light_turned_on": 2,
           "person_picked_up_book": 1,
           "person_left_scene": 4,
-          "running": 1
+          "vehicle_approaching": 1,
+          "vehicle_receding": 1,
+          "walking_upstairs": 2,
+          "running": 2,
+          "walking_downstairs": 1
         },
-        "fused_events": 20,
-        "story_segments": 10,
+        "fused_events": 33,
+        "story_segments": 15,
         "thumbnails_generated": "N/A"
       }
     },
     "s10_rank": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 1,
+      "elapsed_ms": 2,
       "warnings": [],
       "errors": [],
       "metrics": {
-        "total_ranked": 10,
-        "avg_importance_score": 0.5856,
-        "avg_narrative_score": 0.5411,
-        "top_segment_id": "seg_1_17eba572",
-        "top_combined_rank": 0.7265,
+        "total_ranked": 15,
+        "avg_importance_score": 0.6522,
+        "avg_narrative_score": 0.5909,
+        "top_segment_id": "seg_1_25fad0e0",
+        "top_combined_rank": 0.762,
         "w_importance": 0.4,
         "w_narrative": 0.6
       },
@@ -443,42 +466,47 @@
         "total_detections_s04": 360,
         "total_tracks": 67,
         "person_tracks": 23,
-        "confirmed_tracks": 1,
-        "motion_profiles": 1,
-        "semantic_events": 20,
+        "confirmed_tracks": 28,
+        "motion_profiles": 28,
+        "semantic_events": 33,
         "event_type_counts": {
           "person_reaching_up": 3,
           "group_gathering": 1,
           "person_entered_scene": 5,
+          "cycling": 7,
           "light_turned_off": 2,
           "person_walking": 1,
           "light_turned_on": 2,
           "person_picked_up_book": 1,
           "person_left_scene": 4,
-          "running": 1
+          "vehicle_approaching": 1,
+          "vehicle_receding": 1,
+          "walking_upstairs": 2,
+          "running": 2,
+          "walking_downstairs": 1
         },
-        "fused_events": 20,
-        "story_segments": 10,
-        "ranked_segments": 10,
+        "fused_events": 33,
+        "story_segments": 15,
+        "ranked_segments": 15,
         "thumbnails_generated": "N/A"
       }
     },
     "s11_summarize": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 2,
+      "elapsed_ms": 1,
       "warnings": [],
       "errors": [],
       "metrics": {
-        "total_events": 20,
-        "kept_events": 20,
-        "discarded_events": 0,
-        "compression_ratio_achieved": 1.0,
-        "kept_segments": 10,
-        "discarded_segments": 0,
+        "total_events": 33,
+        "kept_events": 13,
+        "discarded_events": 20,
+        "compression_ratio_achieved": 0.3939,
+        "kept_segments": 4,
+        "discarded_segments": 11,
         "story_completeness_retained": 1.0,
         "broken_narratives": 0,
-        "avg_narrative_chain_length": 2.0
+        "avg_narrative_chain_length": 3.25
       },
       "metadata_snapshot": {
         "frame_paths_count": 142,
@@ -492,45 +520,42 @@
         "total_detections_s04": 360,
         "total_tracks": 67,
         "person_tracks": 23,
-        "confirmed_tracks": 1,
-        "motion_profiles": 1,
-        "semantic_events": 20,
+        "confirmed_tracks": 28,
+        "motion_profiles": 28,
+        "semantic_events": 13,
         "event_type_counts": {
-          "group_gathering": 1,
           "person_reaching_up": 3,
-          "person_entered_scene": 5,
-          "light_turned_off": 2,
-          "person_walking": 1,
-          "light_turned_on": 2,
-          "person_picked_up_book": 1,
-          "person_left_scene": 4,
+          "person_entered_scene": 3,
+          "cycling": 2,
+          "person_left_scene": 3,
+          "walking_upstairs": 1,
           "running": 1
         },
-        "fused_events": 20,
-        "story_segments": 10,
-        "ranked_segments": 10,
-        "kept_segments": 20,
-        "kept_event_ids_count": 20,
+        "fused_events": 33,
+        "story_segments": 15,
+        "ranked_segments": 15,
+        "kept_segments": 13,
+        "kept_event_ids_count": 13,
         "thumbnails_generated": "N/A"
       }
     },
     "s12_export": {
       "executed": true,
       "success": true,
-      "elapsed_ms": 3462,
+      "elapsed_ms": 3102,
       "warnings": [],
       "errors": [],
       "metrics": {
-        "kept_events": 20,
-        "total_clips": 20,
-        "clips_generated": 20,
-        "total_clip_duration_ms": 55555.55555555556,
-        "thumbnails_generated": 20,
+        "kept_events": 13,
+        "total_clips": 13,
+        "clips_generated": 13,
+        "total_clip_duration_ms": 65632.2989656323,
+        "thumbnails_generated": 13,
         "narrative_validation_passed": true,
         "validation_errors": 0,
-        "validation_warnings": 3,
+        "validation_warnings": 0,
         "complete_chains_intact": 0,
-        "decision_manifest_entries": 10,
+        "decision_manifest_entries": 15,
         "ffmpeg_available": true
       },
       "metadata_snapshot": {
@@ -545,31 +570,28 @@
         "total_detections_s04": 360,
         "total_tracks": 67,
         "person_tracks": 23,
-        "confirmed_tracks": 1,
-        "motion_profiles": 1,
-        "semantic_events": 20,
+        "confirmed_tracks": 28,
+        "motion_profiles": 28,
+        "semantic_events": 13,
         "event_type_counts": {
-          "group_gathering": 1,
           "person_reaching_up": 3,
-          "person_entered_scene": 5,
-          "light_turned_off": 2,
-          "person_walking": 1,
-          "light_turned_on": 2,
-          "person_picked_up_book": 1,
-          "person_left_scene": 4,
+          "person_entered_scene": 3,
+          "cycling": 2,
+          "person_left_scene": 3,
+          "walking_upstairs": 1,
           "running": 1
         },
-        "fused_events": 20,
-        "story_segments": 10,
-        "ranked_segments": 10,
-        "kept_segments": 20,
-        "kept_event_ids_count": 20,
-        "thumbnails_generated": 20,
+        "fused_events": 33,
+        "story_segments": 15,
+        "ranked_segments": 15,
+        "kept_segments": 13,
+        "kept_event_ids_count": 13,
+        "thumbnails_generated": 13,
         "exported_events": 0,
         "export_manifest_path": "N/A"
       }
     },
-    "_total_pipeline_ms": 15797
+    "_total_pipeline_ms": 15243
   },
   "funnel": {
     "video_id": "archive_001",
@@ -596,45 +618,42 @@
       "total_detections_note": "all classes (not only persons)",
       "total_tracks": 67,
       "person_tracks": 23,
-      "confirmed_tracks": 1,
-      "motion_profiles": 1,
-      "semantic_events": 20,
+      "confirmed_tracks": 28,
+      "motion_profiles": 28,
+      "semantic_events": 13,
       "event_types": [
-        "group_gathering",
-        "light_turned_off",
-        "light_turned_on",
+        "cycling",
         "person_entered_scene",
         "person_left_scene",
-        "person_picked_up_book",
         "person_reaching_up",
-        "person_walking",
-        "running"
+        "running",
+        "walking_upstairs"
       ],
-      "fused_events": 20,
-      "story_segments": 10,
-      "kept_segments": 20,
+      "fused_events": 33,
+      "story_segments": 15,
+      "kept_segments": 13,
       "exported_events": 0
     },
     "performance": {
-      "total_pipeline_ms": 15797,
-      "total_pipeline_s": 15.8,
+      "total_pipeline_ms": 15243,
+      "total_pipeline_s": 15.2,
       "video_duration_s": 59.99,
-      "rtf": 0.263,
+      "rtf": 0.254,
       "real_time": true
     },
     "stage_timings_ms": {
-      "s01_upload": 96,
-      "s02_extract": 332,
-      "s03_scene_detect": 1766,
-      "s04_object_detect": 7384,
-      "s05_track": 526,
-      "s06_motion_analyze": 2,
-      "s07_event_understand": 2143,
-      "s08_confidence_fuse": 1,
-      "s09_story_build": 2,
-      "s10_rank": 1,
-      "s11_summarize": 2,
-      "s12_export": 3462
+      "s01_upload": 101,
+      "s02_extract": 314,
+      "s03_scene_detect": 1606,
+      "s04_object_detect": 7128,
+      "s05_track": 719,
+      "s06_motion_analyze": 4,
+      "s07_event_understand": 2179,
+      "s08_confidence_fuse": 2,
+      "s09_story_build": 3,
+      "s10_rank": 2,
+      "s11_summarize": 1,
+      "s12_export": 3102
     },
     "stage_success": {
       "s01_upload": true,

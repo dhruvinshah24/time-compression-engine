@@ -402,9 +402,18 @@ async def run(context: PipelineContext) -> StageResult:
 
                 for obs in track.observations:
                     bbox = getattr(obs, "bbox", None)
-                    if bbox is None or len(bbox) < 4:
+                    if bbox is None:
                         continue
-                    x1, y1, x2, y2 = bbox
+                    # TrackBBox is a dataclass with fields x1,y1,x2,y2 — not iterable.
+                    # Extract coordinates directly from the dataclass fields.
+                    from app.engines.perception.tracker.track import TrackBBox as _TrackBBox
+                    if isinstance(bbox, _TrackBBox):
+                        x1, y1, x2, y2 = bbox.x1, bbox.y1, bbox.x2, bbox.y2
+                    elif hasattr(bbox, "__len__") and len(bbox) >= 4:
+                        # Legacy fallback: bare tuple/list (should not occur in production)
+                        x1, y1, x2, y2 = bbox[0], bbox[1], bbox[2], bbox[3]
+                    else:
+                        continue  # unknown bbox format — skip this observation
                     # Normalise if pixel coords
                     if any(v > 1.5 for v in [x1, y1, x2, y2]):
                         x1 /= max(frame_w, 1)

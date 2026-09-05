@@ -1,0 +1,14 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-60S-B3ACD2",
+  "stage": "s10_rank",
+  "timestamp_utc": "2026-09-05T18:41:21Z",
+  "metrics": {
+    "total_ranked": 15,
+    "avg_importance_score": 0.6522,
+    "avg_narrative_score": 0.5909,
+    "top_segment_id": "seg_1_25fad0e0",
+    "top_combined_rank": 0.762,
+    "w_importance": 0.4,
+    "w_narrative": 0.6
+  }
+}

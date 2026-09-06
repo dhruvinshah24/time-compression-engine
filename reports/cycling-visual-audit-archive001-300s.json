@@ -1,0 +1,112 @@
+{
+  "phase": "Phase 6D.1",
+  "dataset": "archive_001",
+  "clip_s": 300,
+  "purpose": "Visual audit of 5 representative cycling events to determine whether ActivityClassifier cycling label is genuine or over-triggered",
+  "date": "2026-09-06",
+  "source_run": "PHASE6-ARCHIVE_001-300S-12F00C (Phase 6B evidence frames)",
+  "note": "Frame numbers are extracted-frame indices (frame_skip=5). Frames inspected are before/event/after (frame_ref-1, frame_ref, frame_ref+1).",
+  "audited_tracks": [
+    {
+      "track_id": 1,
+      "timestamp": "00:01",
+      "timestamp_s": 1.0,
+      "event_confidence": 0.870,
+      "mean_speed": 0.0347,
+      "cycling_conf_score": 0.65,
+      "frame_ref": 34,
+      "frames_inspected": [
+        "frame_00000033.jpg",
+        "frame_00000034.jpg",
+        "frame_00000035.jpg"
+      ],
+      "classification": "NOT_CYCLING",
+      "visual_justification": "Title card animation: 'When YOU are a Pedestrian'. All three frames show the film's animated title screen — a graphic silhouette of a traffic officer and animated child figures. No real person, no bicycle. YOLO detected silhouetted animated figures as persons. Signal 2 velocity over-trigger on animated title card graphics.",
+      "no_bicycle_present": true,
+      "subject_type": "animated_title_card"
+    },
+    {
+      "track_id": 62,
+      "timestamp": "00:55",
+      "timestamp_s": 55.0,
+      "event_confidence": 0.725,
+      "mean_speed": 0.50712,
+      "cycling_conf_score": 0.719,
+      "frame_ref": 350,
+      "frames_inspected": [
+        "frame_00000349.jpg",
+        "frame_00000350.jpg",
+        "frame_00000351.jpg"
+      ],
+      "classification": "NOT_CYCLING",
+      "visual_justification": "Indoor hospital scene. A doctor and nurse attend to a patient lying in a bed. The nurse is leaning over the patient and making arm movements across the patient's body. High mean_speed (0.507) is caused by the nurse's arm movement across the frame — not locomotion at all. No bicycle present. Indoors. Signal 2 firing on arm-motion velocity.",
+      "no_bicycle_present": true,
+      "subject_type": "indoor_medical_scene"
+    },
+    {
+      "track_id": 234,
+      "timestamp": "02:41",
+      "timestamp_s": 161.0,
+      "event_confidence": 0.813,
+      "mean_speed": 0.40165,
+      "cycling_conf_score": 0.70,
+      "frame_ref": 987,
+      "frames_inspected": [
+        "frame_00000986.jpg",
+        "frame_00000987.jpg",
+        "frame_00000988.jpg"
+      ],
+      "classification": "NOT_CYCLING",
+      "visual_justification": "Outdoor pedestrian scene. A single man in a long overcoat is walking on a sidewalk beside a building. Upright walking posture, both feet visible, no bicycle. Three consecutive frames show him taking walking steps across the frame. No bicycle present. This is a pedestrian classified as cycling by Signal 2 (walking pace exceeded 0.018 threshold at 320x240 resolution).",
+      "no_bicycle_present": true,
+      "subject_type": "pedestrian_walking"
+    },
+    {
+      "track_id": 285,
+      "timestamp": "03:53",
+      "timestamp_s": 233.0,
+      "event_confidence": 0.731,
+      "mean_speed": 0.21728,
+      "cycling_conf_score": 0.782,
+      "frame_ref": 1404,
+      "frames_inspected": [
+        "frame_00001403.jpg",
+        "frame_00001404.jpg",
+        "frame_00001405.jpg"
+      ],
+      "classification": "NOT_CYCLING",
+      "visual_justification": "Outdoor street intersection. Multiple pedestrians in overcoats and hats crossing a city street. A tram/bus is visible upper left. All subjects are clearly walking upright on foot. No bicycle or cyclist visible anywhere in frame. This is a classic pedestrian crossing scene. Signal 2 firing on walking-pace horizontal movement.",
+      "no_bicycle_present": true,
+      "subject_type": "pedestrians_crossing_street"
+    },
+    {
+      "track_id": 532,
+      "timestamp": "04:52",
+      "timestamp_s": 292.0,
+      "event_confidence": 0.786,
+      "mean_speed": 0.04642,
+      "cycling_conf_score": 0.729,
+      "frame_ref": 1766,
+      "frames_inspected": [
+        "frame_00001765.jpg",
+        "frame_00001766.jpg",
+        "frame_00001767.jpg"
+      ],
+      "classification": "NOT_CYCLING",
+      "visual_justification": "Outdoor residential/suburban street scene. Multiple children and one adult near a 1940s automobile parked at a crosswalk. Children are running or walking — one child in foreground appears to be jogging. No bicycle or cyclist anywhere in the three-frame sequence. Signal 2 triggered on children's movement pattern near a vehicle. This is a pedestrian safety demonstration scene.",
+      "no_bicycle_present": true,
+      "subject_type": "children_pedestrians"
+    }
+  ],
+  "summary": {
+    "genuine_cycling": 0,
+    "not_cycling": 5,
+    "ambiguous": 0,
+    "not_verifiable": 0,
+    "total_inspected": 5
+  },
+  "decision": "INVESTIGATE_CYCLING_CLASSIFIER_FIRST",
+  "decision_rationale": "All 5 sampled cycling events are NOT_CYCLING. The subjects are: animated title card, medical staff making arm movements, a man walking on sidewalk, pedestrians crossing a street, children near a car. No bicycle appears in any of the 15 inspected frames. This is conclusive evidence that ActivityClassifier Signal 2 (velocity + height stability) is over-triggering severely at 320x240 resolution with frame_skip=5. The 0.018 normalized/s threshold is too low for this footage configuration.",
+  "root_cause_confirmed": "CYCLE_HORIZ_THRESHOLD = 0.018 calibrated for 848px indoor footage fires on any movement >= ~1px/frame at 320x240. Stable bbox height (height_std < 0.03) is met by nearly all small/distant detection boxes. The combination causes near-universal misclassification of pedestrians as cyclists.",
+  "caveat": "5 samples are insufficient to claim a precise false-positive rate across the full 300s run. However 5/5 NOT_CYCLING from a distributed sample across 300s is strong evidence of systematic over-triggering."
+}

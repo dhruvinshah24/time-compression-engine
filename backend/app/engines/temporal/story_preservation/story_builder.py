@@ -58,6 +58,9 @@ _ACTION_EVENTS: frozenset[str] = frozenset({
     EventType.PERSON_STANDING, EventType.PERSON_LOITERING,
     EventType.VEHICLE_APPROACHING, EventType.VEHICLE_RECEDING,
     EventType.VEHICLE_STATIONARY,
+    # Phase 6D: ActivityClassifier / narrative_builder emits "cycling" (not "person_running").
+    # Confirmed missing via Phase 6C diagnostic — tracks with entry+cycling+exit were PARTIAL.
+    "cycling",
 })
 
 

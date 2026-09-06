@@ -1,0 +1,364 @@
+{
+  "phase": "Phase 6D",
+  "job_id": "PHASE6D-ARCHIVE_001-300S-7BC0AD",
+  "git_commit": "6D-fix-cycling-action",
+  "fix_applied": "Added \"cycling\" to StoryBuilder._ACTION_EVENTS",
+  "metrics": {
+    "job_id": "PHASE6D-ARCHIVE_001-300S-7BC0AD",
+    "total_runtime_s": 99.1,
+    "rtf": 0.33,
+    "total_detections": 3366,
+    "total_tracks": 546,
+    "person_tracks": 249,
+    "confirmed_person_tracks": 154,
+    "motion_profiles": 277,
+    "s07_events": 92,
+    "fused_events": 232,
+    "story_segments": 148,
+    "complete_stories": 10,
+    "partial_stories": 30,
+    "kept_events": 0,
+    "exported_clips": 92,
+    "events_by_type": {
+      "person_reaching_up": 9,
+      "group_gathering": 1,
+      "cycling": 21,
+      "person_entered_scene": 14,
+      "person_sitting": 3,
+      "light_turned_off": 8,
+      "person_standing_up": 2,
+      "light_turned_on": 10,
+      "person_picked_up_book": 1,
+      "person_placed_handbag": 1,
+      "person_left_scene": 14,
+      "vehicle_approaching": 3,
+      "vehicle_receding": 3,
+      "person_crouching_sustained": 2
+    }
+  },
+  "phase6b_reference": {
+    "detections": 3366,
+    "person_tracks": 249,
+    "confirmed_person_tracks": 154,
+    "motion_profiles": 277,
+    "s07_events": 232,
+    "fused_events": 232,
+    "story_segments": 148,
+    "complete_stories": 0,
+    "partial_stories": 21,
+    "kept_events": 92,
+    "exported_clips": 92,
+    "runtime_s": 77.8,
+    "rtf": 0.259
+  },
+  "complete_story_verification": [
+    {
+      "segment_id": "seg_1_d66bf577",
+      "track_ids": [
+        1
+      ],
+      "event_count": 12,
+      "event_types": [
+        "person_reaching_up",
+        "person_entered_scene",
+        "cycling",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_left_scene",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up"
+      ],
+      "has_entry": true,
+      "has_action": true,
+      "has_exit": true,
+      "temporal_ok": true,
+      "evidence_ok": true,
+      "cycling_events": 1,
+      "narrative_score": 0.5701,
+      "is_coherent": false,
+      "phase6b_classification": "PARTIAL",
+      "phase6d_classification": "COMPLETE"
+    },
+    {
+      "segment_id": "seg_14_c67e3439",
+      "track_ids": [
+        14
+      ],
+      "event_count": 3,
+      "event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "has_entry": true,
+      "has_action": true,
+      "has_exit": true,
+      "temporal_ok": true,
+      "evidence_ok": true,
+      "cycling_events": 1,
+      "narrative_score": 0.8565,
+      "is_coherent": true,
+      "phase6b_classification": "PARTIAL",
+      "phase6d_classification": "COMPLETE"
+    },
+    {
+      "segment_id": "seg_56_41657ebc",
+      "track_ids": [
+        56
+      ],
+      "event_count": 3,
+      "event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "has_entry": true,
+      "has_action": true,
+      "has_exit": true,
+      "temporal_ok": true,
+      "evidence_ok": true,
+      "cycling_events": 1,
+      "narrative_score": 0.8388,
+      "is_coherent": true,
+      "phase6b_classification": "PARTIAL",
+      "phase6d_classification": "COMPLETE"
+    },
+    {
+      "segment_id": "seg_75_3da0a55b",
+      "track_ids": [
+        75
+      ],
+      "event_count": 4,
+      "event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_sitting",
+        "person_left_scene"
+      ],
+      "has_entry": true,
+      "has_action": true,
+      "has_exit": true,
+      "temporal_ok": true,
+      "evidence_ok": true,
+      "cycling_events": 1,
+      "narrative_score": 0.7946,
+      "is_coherent": true,
+      "phase6b_classification": "PARTIAL",
+      "phase6d_classification": "COMPLETE"
+    },
+    {
+      "segment_id": "seg_160_d9c4548d",
+      "track_ids": [
+        160
+      ],
+      "event_count": 3,
+      "event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "has_entry": true,
+      "has_action": true,
+      "has_exit": true,
+      "temporal_ok": true,
+      "evidence_ok": true,
+      "cycling_events": 1,
+      "narrative_score": 0.8435,
+      "is_coherent": true,
+      "phase6b_classification": "PARTIAL",
+      "phase6d_classification": "COMPLETE"
+    },
+    {
+      "segment_id": "seg_177_8e4943de",
+      "track_ids": [
+        177
+      ],
+      "event_count": 3,
+      "event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "has_entry": true,
+      "has_action": true,
+      "has_exit": true,
+      "temporal_ok": true,
+      "evidence_ok": true,
+      "cycling_events": 1,
+      "narrative_score": 0.8419,
+      "is_coherent": true,
+      "phase6b_classification": "PARTIAL",
+      "phase6d_classification": "COMPLETE"
+    },
+    {
+      "segment_id": "seg_234_9c7e7103",
+      "track_ids": [
+        234
+      ],
+      "event_count": 3,
+      "event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "has_entry": true,
+      "has_action": true,
+      "has_exit": true,
+      "temporal_ok": true,
+      "evidence_ok": true,
+      "cycling_events": 1,
+      "narrative_score": 0.8452,
+      "is_coherent": true,
+      "phase6b_classification": "PARTIAL",
+      "phase6d_classification": "COMPLETE"
+    },
+    {
+      "segment_id": "seg_252_a1e9a197",
+      "track_ids": [
+        252
+      ],
+      "event_count": 3,
+      "event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "has_entry": true,
+      "has_action": true,
+      "has_exit": true,
+      "temporal_ok": true,
+      "evidence_ok": true,
+      "cycling_events": 1,
+      "narrative_score": 0.8228,
+      "is_coherent": true,
+      "phase6b_classification": "PARTIAL",
+      "phase6d_classification": "COMPLETE"
+    },
+    {
+      "segment_id": "seg_273_aa409432",
+      "track_ids": [
+        273
+      ],
+      "event_count": 3,
+      "event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "has_entry": true,
+      "has_action": true,
+      "has_exit": true,
+      "temporal_ok": true,
+      "evidence_ok": true,
+      "cycling_events": 1,
+      "narrative_score": 0.8562,
+      "is_coherent": true,
+      "phase6b_classification": "PARTIAL",
+      "phase6d_classification": "COMPLETE"
+    },
+    {
+      "segment_id": "seg_366_1dfff1d7",
+      "track_ids": [
+        366
+      ],
+      "event_count": 3,
+      "event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "has_entry": true,
+      "has_action": true,
+      "has_exit": true,
+      "temporal_ok": true,
+      "evidence_ok": true,
+      "cycling_events": 1,
+      "narrative_score": 0.7176,
+      "is_coherent": true,
+      "phase6b_classification": "PARTIAL",
+      "phase6d_classification": "COMPLETE"
+    }
+  ],
+  "cycling_audit_sample": [
+    {
+      "timestamp_fmt": "00:01",
+      "track_id": 1,
+      "person_label": "Person 1",
+      "confidence": 0.87,
+      "mean_speed": 0.0347,
+      "cycling_conf": 0.65,
+      "reason": "bicycle_proximity_or_velocity",
+      "obs_count": 16,
+      "track_duration_s": 12.0,
+      "frame_ref": 34,
+      "crop_path": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_6d_jlh1odrv\\outputs\\crops\\person_1_t544_f1777.jpg",
+      "manual_classification": "NOT VERIFIABLE",
+      "note": "Footage not watched in Phase 6D. Requires human review of frames."
+    },
+    {
+      "timestamp_fmt": "00:55",
+      "track_id": 62,
+      "person_label": "Person 3",
+      "confidence": 0.725,
+      "mean_speed": 0.50712,
+      "cycling_conf": 0.719,
+      "reason": "bicycle_proximity_or_velocity",
+      "obs_count": 17,
+      "track_duration_s": 5.2,
+      "frame_ref": 350,
+      "crop_path": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_6d_jlh1odrv\\outputs\\crops\\person_3_t527_f1715.jpg",
+      "manual_classification": "NOT VERIFIABLE",
+      "note": "Footage not watched in Phase 6D. Requires human review of frames."
+    },
+    {
+      "timestamp_fmt": "02:41",
+      "track_id": 234,
+      "person_label": "Person 3",
+      "confidence": 0.813,
+      "mean_speed": 0.40165,
+      "cycling_conf": 0.7,
+      "reason": "bicycle_proximity_or_velocity",
+      "obs_count": 8,
+      "track_duration_s": 5.2,
+      "frame_ref": 987,
+      "crop_path": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_6d_jlh1odrv\\outputs\\crops\\person_3_t527_f1715.jpg",
+      "manual_classification": "NOT VERIFIABLE",
+      "note": "Footage not watched in Phase 6D. Requires human review of frames."
+    },
+    {
+      "timestamp_fmt": "03:53",
+      "track_id": 285,
+      "person_label": "Person 9",
+      "confidence": 0.731,
+      "mean_speed": 0.21728,
+      "cycling_conf": 0.782,
+      "reason": "bicycle_proximity_or_velocity",
+      "obs_count": 4,
+      "track_duration_s": 0.8,
+      "frame_ref": 1404,
+      "crop_path": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_6d_jlh1odrv\\outputs\\crops\\person_9_t536_f1769.jpg",
+      "manual_classification": "NOT VERIFIABLE",
+      "note": "Footage not watched in Phase 6D. Requires human review of frames."
+    },
+    {
+      "timestamp_fmt": "04:52",
+      "track_id": 532,
+      "person_label": "Person 26",
+      "confidence": 0.786,
+      "mean_speed": 0.04642,
+      "cycling_conf": 0.729,
+      "reason": "bicycle_proximity_or_velocity",
+      "obs_count": 13,
+      "track_duration_s": 3.5,
+      "frame_ref": 1766,
+      "crop_path": null,
+      "manual_classification": "NOT VERIFIABLE",
+      "note": "Footage not watched in Phase 6D. Requires human review of frames."
+    }
+  ],
+  "obs003_continuity_issues": 1
+}

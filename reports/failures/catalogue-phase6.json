@@ -140,5 +140,33 @@
         "status": "OBSERVED \u2014 not investigated"
       }
     ]
+  },
+  "phase6d": {
+    "date": "2026-09-06",
+    "git_commit": "post-6C-cycling-fix",
+    "FAIL-008": {
+      "status": "FIXED",
+      "fix": "Added cycling to StoryBuilder._ACTION_EVENTS (story_builder.py, 1 line)",
+      "root_cause": "ActivityClassifier emits event_type=cycling; _ACTION_EVENTS did not contain cycling; entry+cycling+exit = PARTIAL instead of COMPLETE",
+      "regression_tests": "backend/tests/unit/test_fail008_cycling_story_fix.py (18 tests)",
+      "controlled_rerun": "archive_001, 300s, yolo11l, balanced, skip=5, thresh=0.25",
+      "complete_stories_before": 0,
+      "complete_stories_after": 10,
+      "all_10_verified": true,
+      "verification": "All 10 complete segments have correct entry+action+exit, same track, temporal order, non-null evidence"
+    },
+    "OBS-003": {
+      "status": "OPEN (unrelated to FAIL-008)",
+      "description": "Track 1: person_left_scene at ~00:13, then 5 person_reaching_up events follow. ContinuityChecker flags as violations. Narrative score penalized. Low severity.",
+      "action": "Deferred to future phase"
+    },
+    "OBS-001_cycling": {
+      "status": "ROOT CAUSE IDENTIFIED, NOT CONFIRMED",
+      "description": "CYCLE_HORIZ_THRESHOLD=0.018 normalised/s = ~1px/frame at 320x240 frame_skip=5. Calibrated for 848px indoor footage. 83.8% of confirmed person tracks classified as cycling in 300s run.",
+      "action": "Footage inspection required before cycling threshold change. Frame refs provided for inspection."
+    },
+    "tests_total": 580,
+    "tests_new": 18,
+    "test_failures": 0
   }
 }

@@ -1,13 +1,13 @@
 {
-  "phase": "Phase 6A",
+  "phase": "Phase 6B",
   "git_commit": "PENDING",
   "generated": "2026-09-06",
   "prior_failures": {
-    "FAIL-001": "OPEN — quality classifier on synthetic (correct behavior on real)",
-    "FAIL-002": "FIXED — cold-start ROI entry event (Phase 5)",
-    "FAIL-003": "INVALIDATED — test script math error (Phase 5)",
-    "FAIL-004": "OPEN — yolo11m false positives on synthetic shapes",
-    "FAIL-005": "OPEN (root cause identified) — adaptive skip EMA lag on synthetic"
+    "FAIL-001": "OPEN \u00e2\u20ac\u201d quality classifier on synthetic (correct behavior on real)",
+    "FAIL-002": "FIXED \u00e2\u20ac\u201d cold-start ROI entry event (Phase 5)",
+    "FAIL-003": "INVALIDATED \u00e2\u20ac\u201d test script math error (Phase 5)",
+    "FAIL-004": "OPEN \u00e2\u20ac\u201d yolo11m false positives on synthetic shapes",
+    "FAIL-005": "OPEN (root cause identified) \u00e2\u20ac\u201d adaptive skip EMA lag on synthetic"
   },
   "failures": [
     {
@@ -45,7 +45,7 @@
       "evidence": "S07 warning absent in after-run. 0 warnings in S07 (was 1). Temporal pose analyzer ran on 13 confirmed tracks without error.",
       "regression_tests": "backend/tests/unit/test_fail007_trackbbox_pose_integration.py (9 tests)",
       "pose_events_generated": 0,
-      "pose_events_note": "Analyzer ran correctly. 0 pose events generated because 1948 pedestrian footage does not contain crawling/crouching/fallen postures that meet the geometric thresholds. This is expected honest behavior — NOT a continued failure."
+      "pose_events_note": "Analyzer ran correctly. 0 pose events generated because 1948 pedestrian footage does not contain crawling/crouching/fallen postures that meet the geometric thresholds. This is expected honest behavior \u00e2\u20ac\u201d NOT a continued failure."
     },
     {
       "failure_id": "FAIL-008",
@@ -54,7 +54,7 @@
       "stage": "S09",
       "description": "0 COMPLETE story segments in all tested runs. After FAIL-006 fix, segments increased (10->15 in 60s run) but complete stories remain 0.",
       "root_cause": "A COMPLETE segment requires entry+action+exit for the same confirmed track. In 60s of pedestrian footage with skip=5, confirmed tracks mostly produce entry+exit pairs without a sustained action event between them. This is a real dataset/clip-length limitation, not purely a code bug.",
-      "status": "OPEN — DOWNSTREAM / DATASET LIMITATION",
+      "status": "OPEN \u00e2\u20ac\u201d DOWNSTREAM / DATASET LIMITATION",
       "note": "FAIL-006 was identified as a contributing cause. After FAIL-006 was fixed, story segments increased (10->15) but complete stories remain 0. The failure is now understood to be primarily a clip-length and footage-type limitation, not a code defect. Not marking fixed."
     },
     {
@@ -63,7 +63,7 @@
       "severity": "INFORMATIONAL",
       "stage": "measurement_script",
       "description": "run_full_pipeline.py funnel builder read em.get('events',[]) but S12 manifest stores events under 'kept_events'. Reported exported_events=0. Actual: 20 (60s Phase 6), 33 (60s Phase 6A), 32 (300s), 19 (archive_002).",
-      "status": "SCRIPT BUG — pipeline was always correct"
+      "status": "SCRIPT BUG \u00e2\u20ac\u201d pipeline was always correct"
     }
   ],
   "controlled_rerun_after_fix": {
@@ -86,5 +86,59 @@
     "evidence_files": 1342,
     "s07_warnings": 0,
     "pose_events": 0
+  },
+  "phase6b_verification": {
+    "date": "2026-09-06",
+    "git_commit": "3ba0660",
+    "dataset": "archive_001",
+    "clip_s": 300,
+    "FAIL-006": {
+      "status": "FIXED \u2014 VERIFIED AT 300s",
+      "regression_count": 0,
+      "confirmed_person_tracks": 154,
+      "confirmation_rate_pct": 61.8,
+      "note": "0 tracks had confirmed_at_frame!=None but is_confirmed==False. Fix holds for 300s run."
+    },
+    "FAIL-007": {
+      "status": "FIXED \u2014 VERIFIED AT 300s",
+      "attr_error_count": 0,
+      "temporal_pose_events": 65,
+      "pose_events_on_real_footage": {
+        "person_crouching_sustained": 4,
+        "person_crawling": 1,
+        "person_fallen": 1
+      },
+      "note": "No AttributeError. Pose analyzer ran without error. First real-footage pose events generated. Status: AMBIGUOUS \u2014 not verified against ground truth."
+    },
+    "FAIL-008": {
+      "status": "OPEN \u2014 300s run confirms persistence",
+      "complete_stories_300s": 0,
+      "story_segments_300s": 148,
+      "note": "Insufficient confirmed tracks was ruled out (154 confirmed persons). Cause is now suspected to be StoryBuilder action-category mapping or genuine absence of complete trajectories. Requires code inspection."
+    },
+    "FAIL-009": {
+      "status": "SCRIPT BUG \u2014 CONFIRMED PERSISTS",
+      "note": "run_full_pipeline.py funnel EXPORTED_EVENTS shows 0; actual generated=92. Script reads wrong manifest key. Pipeline correct."
+    },
+    "new_observations": [
+      {
+        "id": "OBS-001",
+        "category": "EVENT_ANOMALY",
+        "description": "cycling events dominate S07 output (129/232 = 55.6%). Requires frame inspection to determine if rule over-triggers or footage genuinely contains many cyclists.",
+        "status": "NOT VERIFIABLE \u2014 requires footage inspection"
+      },
+      {
+        "id": "OBS-002",
+        "category": "POSE_OBSERVATION",
+        "description": "First real-footage temporal pose events: person_crawling (1), person_crouching_sustained (4), person_fallen (1). Confidence 0.233-0.820. Classification: AMBIGUOUS / NOT VERIFIABLE.",
+        "status": "NOT VERIFIABLE \u2014 requires frame inspection"
+      },
+      {
+        "id": "OBS-003",
+        "category": "STORY_WARNING",
+        "description": "S09 continuity issue in segment seg_1_29412520. First occurrence. Not present in 60s run.",
+        "status": "OBSERVED \u2014 not investigated"
+      }
+    ]
   }
 }

@@ -23,43 +23,52 @@
     "total_detections_note": "all classes (not only persons)",
     "total_tracks": 546,
     "person_tracks": 249,
-    "confirmed_tracks": 5,
-    "motion_profiles": 5,
-    "semantic_events": 32,
+    "confirmed_tracks": 277,
+    "motion_profiles": 277,
+    "semantic_events": 92,
     "event_types": [
+      "cycling",
       "group_gathering",
       "light_turned_off",
       "light_turned_on",
+      "person_crawling",
+      "person_crouching_sustained",
       "person_entered_scene",
+      "person_fallen",
       "person_left_scene",
+      "person_picked_up_book",
+      "person_placed_handbag",
       "person_sitting",
-      "person_standing_up"
+      "person_standing_up",
+      "vehicle_approaching",
+      "vehicle_receding",
+      "vehicle_stationary"
     ],
-    "fused_events": 82,
-    "story_segments": 40,
-    "kept_segments": 32,
+    "fused_events": 232,
+    "story_segments": 148,
+    "kept_segments": 92,
     "exported_events": 0
   },
   "performance": {
-    "total_pipeline_ms": 53059,
-    "total_pipeline_s": 53.1,
+    "total_pipeline_ms": 77781,
+    "total_pipeline_s": 77.8,
     "video_duration_s": 300.0,
-    "rtf": 0.177,
+    "rtf": 0.259,
     "real_time": true
   },
   "stage_timings_ms": {
-    "s01_upload": 106,
-    "s02_extract": 1433,
-    "s03_scene_detect": 8269,
-    "s04_object_detect": 24927,
-    "s05_track": 628,
-    "s06_motion_analyze": 3,
-    "s07_event_understand": 11442,
-    "s08_confidence_fuse": 4,
-    "s09_story_build": 3,
-    "s10_rank": 2,
-    "s11_summarize": 1,
-    "s12_export": 6154
+    "s01_upload": 94,
+    "s02_extract": 1416,
+    "s03_scene_detect": 8198,
+    "s04_object_detect": 24000,
+    "s05_track": 2479,
+    "s06_motion_analyze": 29,
+    "s07_event_understand": 11123,
+    "s08_confidence_fuse": 8,
+    "s09_story_build": 12,
+    "s10_rank": 5,
+    "s11_summarize": 2,
+    "s12_export": 30332
   },
   "stage_success": {
     "s01_upload": true,
@@ -74,5 +83,58 @@
     "s10_rank": true,
     "s11_summarize": true,
     "s12_export": true
+  },
+  "actual_code_commit": "3ba0660",
+  "git_commit_note": "run_full_pipeline.py printed 1ad97dd (script internal cache); actual HEAD at run time was 3ba0660 (Phase 6A fixes applied)",
+  "phase6b": {
+    "phase": "Phase 6B",
+    "verification": {
+      "fail006_regression": 0,
+      "fail007_attr_error": false,
+      "confirmed_person_tracks": 154,
+      "person_confirmation_rate_pct": 61.8,
+      "reid_persons": 27,
+      "temporal_pose_events": 65,
+      "pose_events_on_real_footage": {
+        "person_crouching_sustained": 4,
+        "person_crawling": 1,
+        "person_fallen": 1
+      }
+    },
+    "event_breakdown_s07": {
+      "cycling": 129,
+      "person_entered_scene": 21,
+      "person_left_scene": 20,
+      "light_turned_on": 10,
+      "person_reaching_up": 9,
+      "light_turned_off": 8,
+      "vehicle_approaching": 6,
+      "vehicle_receding": 6,
+      "person_crouching_sustained": 4,
+      "person_sitting": 3,
+      "vehicle_stationary": 3,
+      "person_standing_up": 2,
+      "running": 2,
+      "walking_upstairs": 2,
+      "walking_downstairs": 2,
+      "group_gathering": 1,
+      "person_picked_up_book": 1,
+      "person_placed_handbag": 1,
+      "person_fallen": 1,
+      "person_crawling": 1
+    },
+    "compression": {
+      "input_events": 232,
+      "kept_events": 92,
+      "discarded": 140,
+      "ratio": 0.397,
+      "broken_narratives": 0
+    },
+    "observations": [
+      "OBS-001: cycling dominates (129/232 = 55.6%); requires frame inspection",
+      "OBS-002: First real-footage temporal pose events (6 events from 65 candidates)",
+      "OBS-003: S09 continuity issue in seg_1_29412520",
+      "OBS-004: S12 export cost 30.3s (39% of total runtime)"
+    ]
   }
 }

@@ -1,9 +1,10 @@
 # Pipeline Funnel — archive_001 300.0s
 
-**Git commit:** `1ad97dd`  
-**Model:** yolo11l  
-**Resolution:** 320x240 @ 30.0fps  
-**Measured:** 2026-09-05 23:45  
+**Git commit (actual HEAD):** `3ba0660` (Phase 6A fixes applied)
+**Note:** run_full_pipeline.py script shows `1ad97dd` in its header (cached at script init time). Actual HEAD at execution time was `3ba0660`.
+**Model:** yolo11l
+**Resolution:** 320x240 @ 30.0fps
+**Measured:** 2026-09-06 (Phase 6B)
 
 ## Pipeline Funnel
 
@@ -22,53 +23,63 @@
        ↓
   PERSON TRACKS                          249
        ↓
-  CONFIRMED TRACKS                       5
+  CONFIRMED TRACKS                       277
        ↓
-  MOTION PROFILES                        5
+  MOTION PROFILES                        277
        ↓
-  SEMANTIC EVENTS                        32
+  SEMANTIC EVENTS                        92
        ↓
-  FUSED EVENTS                           82
+  FUSED EVENTS                           232
        ↓
-  STORY SEGMENTS                         40
+  STORY SEGMENTS                         148
        ↓
-  KEPT SEGMENTS                          32
+  KEPT SEGMENTS                          92
        ↓
   EXPORTED EVENTS                        0
+                                         [FAIL-009: script bug — pipeline generated 92 clips]
 ```
 
 ## Event Types Generated
 
+- `cycling`
 - `group_gathering`
 - `light_turned_off`
 - `light_turned_on`
+- `person_crawling`
+- `person_crouching_sustained`
 - `person_entered_scene`
+- `person_fallen`
 - `person_left_scene`
+- `person_picked_up_book`
+- `person_placed_handbag`
 - `person_sitting`
 - `person_standing_up`
+- `vehicle_approaching`
+- `vehicle_receding`
+- `vehicle_stationary`
 
 ## Performance
 
 | Metric | Value |
 |---|---|
 | Video duration | 300.0s |
-| Total pipeline | 53.1s |
-| RTF | 0.177x |
+| Total pipeline | 77.8s |
+| RTF | 0.259x |
 | Real-time | True |
 
 ## Stage Timings
 
 | Stage | Duration (ms) | Success |
 |---|---|---|
-| s01_upload | 106 | True |
-| s02_extract | 1433 | True |
-| s03_scene_detect | 8269 | True |
-| s04_object_detect | 24927 | True |
-| s05_track | 628 | True |
-| s06_motion_analyze | 3 | True |
-| s07_event_understand | 11442 | True |
-| s08_confidence_fuse | 4 | True |
-| s09_story_build | 3 | True |
-| s10_rank | 2 | True |
-| s11_summarize | 1 | True |
-| s12_export | 6154 | True |
+| s01_upload | 94 | True |
+| s02_extract | 1416 | True |
+| s03_scene_detect | 8198 | True |
+| s04_object_detect | 24000 | True |
+| s05_track | 2479 | True |
+| s06_motion_analyze | 29 | True |
+| s07_event_understand | 11123 | True |
+| s08_confidence_fuse | 8 | True |
+| s09_story_build | 12 | True |
+| s10_rank | 5 | True |
+| s11_summarize | 2 | True |
+| s12_export | 30332 | True |

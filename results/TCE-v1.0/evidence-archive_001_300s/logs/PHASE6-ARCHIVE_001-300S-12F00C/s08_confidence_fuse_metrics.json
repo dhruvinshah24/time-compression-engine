@@ -1,0 +1,27 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-300S-12F00C",
+  "stage": "s08_confidence_fuse",
+  "timestamp_utc": "2026-09-05T18:48:51Z",
+  "metrics": {
+    "total_fused": 232,
+    "total_discarded": 0,
+    "avg_fused_confidence": 0.6948,
+    "min_fused_confidence": 0.4368,
+    "max_fused_confidence": 0.8829,
+    "dimension_means": {
+      "detection": 0.6285,
+      "motion": 0.615,
+      "rule": 0.7538,
+      "track_stability": 0.7039,
+      "scene_reliability": 0.9619
+    },
+    "fusion_strategy": "weighted_linear",
+    "weights": {
+      "detection": 0.3,
+      "motion": 0.25,
+      "rule": 0.2,
+      "track_stability": 0.15,
+      "scene_reliability": 0.1
+    }
+  }
+}

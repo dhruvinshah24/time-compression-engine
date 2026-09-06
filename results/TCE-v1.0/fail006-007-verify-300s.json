@@ -1,0 +1,48 @@
+{
+  "fail006_regression_count": 0,
+  "fail007_pose_attr_error": false,
+  "person_tracks_total": 249,
+  "confirmed_persons": 154,
+  "confirmation_rate_pct": 61.8,
+  "temporal_pose_events": 65,
+  "pose_event_types": {
+    "person_fallen": 1,
+    "person_crouching_sustained": 4,
+    "person_crawling": 1
+  },
+  "events_by_type": {
+    "person_reaching_up": 9,
+    "group_gathering": 1,
+    "person_entered_scene": 21,
+    "cycling": 129,
+    "person_sitting": 3,
+    "light_turned_off": 8,
+    "person_standing_up": 2,
+    "light_turned_on": 10,
+    "person_picked_up_book": 1,
+    "person_placed_handbag": 1,
+    "person_left_scene": 20,
+    "vehicle_approaching": 6,
+    "vehicle_receding": 6,
+    "person_fallen": 1,
+    "vehicle_stationary": 3,
+    "running": 2,
+    "walking_upstairs": 2,
+    "person_crouching_sustained": 4,
+    "walking_downstairs": 2,
+    "person_crawling": 1
+  },
+  "confirmed_distribution": {
+    "1": 0,
+    "2": 19,
+    "3-5": 54,
+    "6-10": 33,
+    "11-20": 23,
+    "21-49": 15,
+    "50+": 10
+  },
+  "state_distribution": {
+    "ended": 244,
+    "active": 5
+  }
+}

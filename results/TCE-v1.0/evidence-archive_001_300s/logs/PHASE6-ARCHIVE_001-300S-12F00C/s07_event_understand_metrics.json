@@ -1,0 +1,43 @@
+{
+  "job_id": "PHASE6-ARCHIVE_001-300S-12F00C",
+  "stage": "s07_event_understand",
+  "timestamp_utc": "2026-09-05T18:48:51Z",
+  "metrics": {
+    "total_events": 232,
+    "tracks_analyzed": 277,
+    "rules_evaluated": 3014,
+    "camera_motion_frames_skipped": 3,
+    "events_by_type": {
+      "person_reaching_up": 9,
+      "group_gathering": 1,
+      "person_entered_scene": 21,
+      "cycling": 129,
+      "person_sitting": 3,
+      "light_turned_off": 8,
+      "person_standing_up": 2,
+      "light_turned_on": 10,
+      "person_picked_up_book": 1,
+      "person_placed_handbag": 1,
+      "person_left_scene": 20,
+      "vehicle_approaching": 6,
+      "vehicle_receding": 6,
+      "person_fallen": 1,
+      "vehicle_stationary": 3,
+      "running": 2,
+      "walking_upstairs": 2,
+      "person_crouching_sustained": 4,
+      "walking_downstairs": 2,
+      "person_crawling": 1
+    },
+    "lighting_events_detected": 22,
+    "pose_events_detected": 208,
+    "temporal_pose_events": 65,
+    "state_machine_events": 316,
+    "state_machine_tracks": 154,
+    "interaction_events": 2,
+    "security_events": 2,
+    "narrative_events": 135,
+    "roi_events": 0,
+    "unique_persons": 27
+  }
+}

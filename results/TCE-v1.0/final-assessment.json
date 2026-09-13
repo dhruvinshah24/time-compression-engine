@@ -1,0 +1,41 @@
+{
+  "title": "Time Compression Engine (TCE v1.0) \u2014 Final Engineering & Research Assessment",
+  "date": "2026-09-14",
+  "git_commit": "4f74f37",
+  "baseline_validated_commit": "24e188b",
+  "classification": "READY WITH MINOR DOCUMENTATION/DEMO WORK",
+  "metrics_summary": {
+    "benchmark_footage": "archive_001 / WhenYouA1948_512kb.mp4",
+    "benchmark_duration_s": 595.23,
+    "total_frames": 17839,
+    "runtime_s": 118.4,
+    "rtf": 0.199,
+    "detections": 4375,
+    "tracks": 954,
+    "confirmed_person_tracks": 187,
+    "narrative_events": 117,
+    "fused_events": 294,
+    "story_segments": 159,
+    "complete_stories": 12,
+    "compression_ratio": 0.398,
+    "exported_clips": 117,
+    "exported_artifacts": 4327,
+    "stair_candidates_evaluated": 69,
+    "stair_candidates_suppressed": 69,
+    "remaining_false_stairs": 0,
+    "regression_tests_passed": 693,
+    "peak_vram_mb": 983
+  },
+  "validation_matrix_summary": {
+    "total_capabilities_assessed": 27,
+    "validated": 22,
+    "validated_to_10min": 1,
+    "implemented_and_exercised": 4,
+    "unvalidated": 0
+  },
+  "decisions": {
+    "status": "READY WITH MINOR DOCUMENTATION/DEMO WORK",
+    "freeze_recommended": true,
+    "further_research_phase_justified": false
+  }
+}

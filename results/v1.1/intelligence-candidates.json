@@ -1,0 +1,364 @@
+{
+  "generated_at": "2026-09-14T02:28:00+05:30",
+  "baseline_version": "v1.0.1",
+  "baseline_commit": "bc31a369e5b42dee7ced6837c32a91cd82d204e6",
+  "analysis_branch": "experiment/v1.1-intelligence-upgrade",
+  "gpu_profile": {
+    "model": "NVIDIA GeForce RTX 5050 Laptop GPU",
+    "vram_total_mb": 8150,
+    "vram_baseline_used_mb": 983,
+    "vram_headroom_mb": 7167,
+    "cuda_compute": "8.9"
+  },
+  "baseline_performance": {
+    "rtf": 0.199,
+    "benchmark_duration_s": 595.23,
+    "runtime_s": 118.4,
+    "confirmed_person_tracks": 187,
+    "total_tracks": 954,
+    "peak_vram_mb": 983
+  },
+  "intelligence_candidates": [
+    {
+      "rank": 1,
+      "id": "pose_upgrade",
+      "name": "Upgrade Pose Model (yolov8n-pose -> yolov8m-pose/RTMPose-m) + Link to MOT Tracks",
+      "targets_bottleneck": "A2 (Pose quality)",
+      "priority": "TOP_PRIORITY_1",
+      "model_candidates": [
+        "yolov8m-pose",
+        "yolo11-pose-m",
+        "RTMPose-m"
+      ],
+      "current_model": "yolov8n-pose",
+      "vram_additional_mb": 300,
+      "latency_ms_per_frame": 4.0,
+      "estimated_rtf_after": 0.22,
+      "training_required": false,
+      "accuracy_gain": {
+        "sitting_standing_precision": "+15-25%",
+        "new_events": [
+          "crouching",
+          "falling",
+          "crawling",
+          "reaching_extended"
+        ]
+      },
+      "risk": "LOW",
+      "technical_changes": [
+        "swap pose model name in s07 settings",
+        "add spatial pose-to-track assignment algorithm"
+      ],
+      "datasets_required": null,
+      "validation_gate": "693 tests + 595s benchmark + TCE corpus posture evaluation"
+    },
+    {
+      "rank": 2,
+      "id": "tracker_appearance",
+      "name": "Appearance-Augmented Tracker (ByteTrack + OSNet ReID)",
+      "targets_bottleneck": "A3 (Tracking fragmentation)",
+      "priority": "TOP_PRIORITY_2",
+      "model_candidates": [
+        "OSNet-x0_25",
+        "OSNet-x1_0",
+        "FastReID-R50"
+      ],
+      "current_model": "MobileNetV3-Small (post-hoc ReID only)",
+      "vram_additional_mb": 130,
+      "latency_ms_per_frame": 5.0,
+      "estimated_rtf_after": 0.22,
+      "training_required": false,
+      "accuracy_gain": {
+        "track_fragmentation_reduction": "40-60%",
+        "expected_total_tracks": "400-500 (vs 954 current)"
+      },
+      "risk": "MEDIUM",
+      "technical_changes": [
+        "replace IoU-only tracker with ByteTrack association",
+        "replace MobileNetV3 with OSNet in reid pass",
+        "enable mid-sequence re-identification"
+      ],
+      "datasets_required": [
+        "Market-1501 (validation only)",
+        "MOT17 (evaluation)"
+      ],
+      "validation_gate": "693 tests + 595s benchmark track count regression check"
+    },
+    {
+      "rank": 3,
+      "id": "temporal_action_model",
+      "name": "Lightweight Temporal Video Action Classifier (X3D-XS or MoViNet-A2)",
+      "targets_bottleneck": "A1 (Activity recognition) + A10 (No temporal model)",
+      "priority": "TOP_PRIORITY_3",
+      "model_candidates": [
+        "X3D-XS",
+        "X3D-S",
+        "MoViNet-A0",
+        "MoViNet-A2"
+      ],
+      "current_model": "None (kinematic heuristics only)",
+      "vram_additional_mb": 30,
+      "latency_ms_per_frame": 3.0,
+      "estimated_rtf_after": 0.23,
+      "training_required": false,
+      "training_optional": true,
+      "accuracy_gain": {
+        "ambiguous_activity_f1": "+20-35%",
+        "new_activities": [
+          "falling",
+          "picking_up",
+          "handing_object"
+        ]
+      },
+      "risk": "MEDIUM",
+      "technical_changes": [
+        "add temporal clip extraction per track window",
+        "add video model inference pass in S05 or S07",
+        "ensemble with kinematic classifier (kinematic=high-conf, temporal=ambiguous)"
+      ],
+      "datasets_required": [
+        "UCF-101 (validation)",
+        "Kinetics-400 subset (validation)",
+        "TCE corpus (required - must be created)"
+      ],
+      "validation_gate": "693 tests + 595s benchmark + TCE corpus confusion matrix"
+    },
+    {
+      "rank": 4,
+      "id": "sahi_by_default",
+      "name": "Enable SAHI Tiled Inference by Default for High-Resolution Input",
+      "targets_bottleneck": "A4 (Small object detection at modern resolution)",
+      "priority": "PHASE_4",
+      "model_candidates": null,
+      "current_model": "YOLO11L full-frame (SAHI disabled by default)",
+      "vram_additional_mb": 0,
+      "latency_ms_per_frame": 8.0,
+      "estimated_rtf_after": 0.27,
+      "training_required": false,
+      "accuracy_gain": {
+        "small_person_recall_1080p": "+30-50% at distance >10m"
+      },
+      "risk": "LOW",
+      "technical_changes": [
+        "change use_sahi default to True for input resolution >720p",
+        "add adaptive tile sizing based on input resolution"
+      ],
+      "datasets_required": null,
+      "validation_gate": "693 tests + 1080p footage benchmark"
+    },
+    {
+      "rank": 5,
+      "id": "scene_context_generalized",
+      "name": "Generalized Scene Understanding (CLIP or YOLO-World beyond stairs)",
+      "targets_bottleneck": "A6 (Scene understanding limited to stairs)",
+      "priority": "PHASE_4",
+      "model_candidates": [
+        "CLIP-ViT-B/32",
+        "YOLO-World-v2-L",
+        "CLIP-ViT-L/14"
+      ],
+      "current_model": "YOLO-World-v2 (stairs only, feature-flagged off)",
+      "vram_additional_mb": 340,
+      "latency_ms_per_frame": 6.0,
+      "estimated_rtf_after": 0.26,
+      "training_required": false,
+      "accuracy_gain": {
+        "event_semantic_precision": "+10-20%"
+      },
+      "risk": "MEDIUM",
+      "technical_changes": [
+        "generalize SceneStairGuard to SceneContextEngine",
+        "define scene taxonomy (road/sidewalk/doorway/corridor/parking/indoor/outdoor)",
+        "add scene-adaptive event rule weights"
+      ],
+      "datasets_required": [
+        "Places365 (validation)",
+        "SUN Database (validation)"
+      ],
+      "validation_gate": "693 tests + scene classification accuracy on TCE corpus"
+    },
+    {
+      "rank": 6,
+      "id": "reid_model_upgrade",
+      "name": "Dedicated ReID Model (OSNet)",
+      "targets_bottleneck": "A9 (ReID quality)",
+      "priority": "PHASE_2_INTEGRATED",
+      "model_candidates": [
+        "OSNet-x0_25",
+        "OSNet-ain-x0_25",
+        "OSNet-x1_0"
+      ],
+      "current_model": "MobileNetV3-Small (ImageNet pretrained, not ReID-optimized)",
+      "vram_additional_mb": 25,
+      "latency_ms_per_frame": 2.0,
+      "estimated_rtf_after": 0.21,
+      "training_required": false,
+      "accuracy_gain": {
+        "person_identity_accuracy": "+10-20% cross-occlusion identification"
+      },
+      "risk": "LOW",
+      "technical_changes": [
+        "replace AppearanceEmbedder backbone in person_reid.py with OSNet"
+      ],
+      "datasets_required": [
+        "Market-1501 (validation only)"
+      ],
+      "validation_gate": "693 tests + 595s unique person count check"
+    },
+    {
+      "rank": 7,
+      "id": "causal_story_arcs",
+      "name": "Causal Story Arc Construction (CAUSE edges in EventGraph)",
+      "targets_bottleneck": "A5 (Story construction flat lists)",
+      "priority": "PHASE_5",
+      "model_candidates": null,
+      "current_model": "CO_OCCURRENCE + SAME_TRACK_TEMPORAL edges only",
+      "vram_additional_mb": 0,
+      "latency_ms_per_frame": 0.5,
+      "estimated_rtf_after": 0.2,
+      "training_required": false,
+      "accuracy_gain": {
+        "narrative_coherence": "qualitative improvement - multi-track arcs"
+      },
+      "risk": "HIGH",
+      "technical_changes": [
+        "add CAUSAL edge type to EventGraph",
+        "define causal inference rules (approach + interact + separate)",
+        "redesign StoryBuilder to use causal chains"
+      ],
+      "datasets_required": null,
+      "validation_gate": "693 tests + manual narrative coherence evaluation panel"
+    },
+    {
+      "rank": 8,
+      "id": "novelty_redundancy_ranking",
+      "name": "Novelty and Redundancy Factor in S10 Ranking",
+      "targets_bottleneck": "A7 (Compression ranking oversimplified)",
+      "priority": "PHASE_5",
+      "model_candidates": null,
+      "current_model": "importance*0.4 + narrative*0.6 (two-factor only)",
+      "vram_additional_mb": 0,
+      "latency_ms_per_frame": 0.2,
+      "estimated_rtf_after": 0.2,
+      "training_required": false,
+      "accuracy_gain": {
+        "compression_relevance": "+5-10% narrative density"
+      },
+      "risk": "LOW",
+      "technical_changes": [
+        "add novelty score (penalize repeated same-type events)",
+        "add redundancy score (penalize same-event-type same-zone concentration)",
+        "add confidence-decay based on track length"
+      ],
+      "datasets_required": null,
+      "validation_gate": "693 tests + compression ratio benchmark"
+    },
+    {
+      "rank": 9,
+      "id": "low_light_learned",
+      "name": "Learned Low-Light Enhancement (Zero-DCE or SCI)",
+      "targets_bottleneck": "A8 (Low-light heuristic only)",
+      "priority": "PHASE_6",
+      "model_candidates": [
+        "Zero-DCE",
+        "SCI",
+        "RetinexNet"
+      ],
+      "current_model": "CLAHE + gamma (bypassed on daylight validation footage)",
+      "vram_additional_mb": 50,
+      "latency_ms_per_frame": 3.0,
+      "estimated_rtf_after": 0.24,
+      "training_required": false,
+      "accuracy_gain": {
+        "dark_scene_detection": "+10-20% detection recall in low-light conditions"
+      },
+      "risk": "LOW",
+      "technical_changes": [
+        "replace CLAHE pass in low_light.py with Zero-DCE inference",
+        "benchmark raw vs CLAHE vs Zero-DCE on real night footage"
+      ],
+      "datasets_required": [
+        "ExDark (validation)"
+      ],
+      "validation_gate": "693 tests + low-light footage before/after benchmark"
+    },
+    {
+      "rank": 10,
+      "id": "multi_track_interaction",
+      "name": "Multi-Track Interaction Recognition (social patterns)",
+      "targets_bottleneck": "A5 (Story) + A1 (Activity) - multi-person interactions",
+      "priority": "FUTURE",
+      "model_candidates": null,
+      "current_model": "Single-track analysis only",
+      "vram_additional_mb": 0,
+      "latency_ms_per_frame": 1.0,
+      "estimated_rtf_after": 0.21,
+      "training_required": false,
+      "accuracy_gain": {
+        "multi_person_narrative": "approach/handoff/confrontation/grouping detection"
+      },
+      "risk": "HIGH",
+      "technical_changes": [
+        "add multi-track co-observation spatial analysis",
+        "define social interaction primitives",
+        "link to causal story arcs"
+      ],
+      "datasets_required": [
+        "VIRAT (scenario validation)"
+      ],
+      "validation_gate": "693 tests + manual multi-person scenario evaluation"
+    }
+  ],
+  "top_priorities": {
+    "priority_1": {
+      "id": "pose_upgrade",
+      "title": "Upgrade Pose Model (yolov8n-pose -> yolov8m-pose) and Link Pose to MOT Tracks",
+      "rationale": "Pose infrastructure already exists and runs on every frame. Nano model quality is too low. Floating track_id=-1 poses cannot be attributed to persons. Drop-in upgrade with no training requirement."
+    },
+    "priority_2": {
+      "id": "tracker_appearance",
+      "title": "Appearance-Augmented Tracker (ByteTrack + OSNet ReID)",
+      "rationale": "954 total tracks for 595s video indicates severe fragmentation. Track breaks corrupt all downstream narrative and compression stages. ByteTrack with OSNet embeddings fixes this without training."
+    },
+    "priority_3": {
+      "id": "temporal_action_model",
+      "title": "Lightweight Temporal Video Action Classifier (X3D-XS or MoViNet-A2)",
+      "rationale": "Kinematic heuristic cannot distinguish falling/picking-up/running-vs-walking. X3D-XS (4 MB, 5ms/clip) covers all Kinetics-400 activities TCE needs. Ensemble with kinematic classifier for safety."
+    }
+  },
+  "combined_top_3_impact": {
+    "additional_vram_mb": 460,
+    "total_estimated_vram_mb": 1443,
+    "estimated_rtf": 0.27,
+    "speedup_vs_realtime": "3.7x",
+    "training_required": false,
+    "production_code_modified_this_investigation": false,
+    "tests_required_before_any_change": 693
+  },
+  "prerequisite_corpus": {
+    "name": "TCE Evaluation Corpus v1.0",
+    "status": "NOT_CREATED",
+    "required_before": "PHASE_3",
+    "target_videos": 200,
+    "target_activities": [
+      "walking",
+      "running",
+      "standing",
+      "sitting",
+      "crouching",
+      "crawling",
+      "falling",
+      "reaching",
+      "carrying",
+      "entering",
+      "exiting",
+      "loitering",
+      "climbing_stairs_ascending",
+      "climbing_stairs_descending",
+      "vehicle_interaction",
+      "object_interaction"
+    ],
+    "annotation_format": "per_track_activity_label + temporal_segment_timestamps",
+    "annotation_tool_recommended": "CVAT or Label Studio"
+  }
+}

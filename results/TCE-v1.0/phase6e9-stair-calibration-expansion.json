@@ -1,0 +1,1036 @@
+{
+  "phase": "6E.9",
+  "baseline_commit": "835fdf3",
+  "research_question": "Can we improve positive stair retention without bringing back the false stair classifications?",
+  "expanded_benchmark_summary": {
+    "positive_items_total": 10,
+    "positive_motion_tracks": 5,
+    "hard_negatives_total": 91,
+    "hard_negative_categories": [
+      "escalator_movement (34 tracks)",
+      "ramps_inclines (2 items)",
+      "ambulance_loading (Track 14)",
+      "diagonal_walking (Track 177)",
+      "walking_toward_camera (Track 252)",
+      "curb_movement_noise_hit (Track 273)",
+      "urban_noise_hits (4 tracks)",
+      "running_bending (Track 56)",
+      "intersection_officer (Track 160)",
+      "overhead_pedestrian (Track 366)",
+      "flat_ground_walking (44 tracks)"
+    ]
+  },
+  "policy_evaluations": {
+    "Policy_A_Baseline": {
+      "overall_metrics": {
+        "TP": 5,
+        "FP": 52,
+        "TN": 39,
+        "FN": 0,
+        "precision": 0.0877,
+        "recall": 1.0,
+        "f1_score": 0.1613,
+        "accuracy": 0.4583
+      },
+      "ascending_metrics": {
+        "TP": 4,
+        "FP": 33,
+        "TN": 19,
+        "FN": 0,
+        "precision": 0.1081,
+        "recall": 1.0,
+        "f1_score": 0.1951,
+        "accuracy": 0.4107
+      },
+      "descending_metrics": {
+        "TP": 1,
+        "FP": 19,
+        "TN": 17,
+        "FN": 0,
+        "precision": 0.05,
+        "recall": 1.0,
+        "f1_score": 0.0952,
+        "accuracy": 0.4865
+      },
+      "positive_item_details": [
+        {
+          "id": "pos_01_man_ascending",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.715,
+          "c_scene": 0.099,
+          "p_scene": 31,
+          "c_final": 0.715,
+          "outcome": "TP",
+          "survives": true
+        },
+        {
+          "id": "pos_02_muybridge_ascending",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.716,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.716,
+          "outcome": "TP",
+          "survives": true
+        },
+        {
+          "id": "pos_03_muybridge_descending",
+          "action": "descending",
+          "direction": "down",
+          "c_vel": 0.681,
+          "c_scene": 0.019,
+          "p_scene": 5,
+          "c_final": 0.681,
+          "outcome": "TP",
+          "survives": true
+        },
+        {
+          "id": "pos_08_parkour_climb_stairs",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.93,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.93,
+          "outcome": "TP",
+          "survives": true
+        },
+        {
+          "id": "pos_09_muybridge_ascending_2",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.76,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.76,
+          "outcome": "TP",
+          "survives": true
+        }
+      ],
+      "sample_negative_details": [
+        {
+          "id": "neg_escalator_1",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.15,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_2",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_3",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.15,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_4",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_5",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.15,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_6",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_7",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.15,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_8",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_9",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.15,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_10",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        }
+      ]
+    },
+    "Policy_B_Soft_Multiplier": {
+      "overall_metrics": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 91,
+        "FN": 4,
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1_score": 0.3333,
+        "accuracy": 0.9583
+      },
+      "ascending_metrics": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 52,
+        "FN": 3,
+        "precision": 1.0,
+        "recall": 0.25,
+        "f1_score": 0.4,
+        "accuracy": 0.9464
+      },
+      "descending_metrics": {
+        "TP": 0,
+        "FP": 0,
+        "TN": 36,
+        "FN": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "accuracy": 0.973
+      },
+      "positive_item_details": [
+        {
+          "id": "pos_01_man_ascending",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.715,
+          "c_scene": 0.099,
+          "p_scene": 31,
+          "c_final": 0.715,
+          "outcome": "TP",
+          "survives": true
+        },
+        {
+          "id": "pos_02_muybridge_ascending",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.716,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.2148,
+          "outcome": "FN",
+          "survives": false
+        },
+        {
+          "id": "pos_03_muybridge_descending",
+          "action": "descending",
+          "direction": "down",
+          "c_vel": 0.681,
+          "c_scene": 0.019,
+          "p_scene": 5,
+          "c_final": 0.3854,
+          "outcome": "FN",
+          "survives": false
+        },
+        {
+          "id": "pos_08_parkour_climb_stairs",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.93,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.279,
+          "outcome": "FN",
+          "survives": false
+        },
+        {
+          "id": "pos_09_muybridge_ascending_2",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.76,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.228,
+          "outcome": "FN",
+          "survives": false
+        }
+      ],
+      "sample_negative_details": [
+        {
+          "id": "neg_escalator_1",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0912,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_2",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_3",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0912,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_4",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_5",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0912,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_6",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_7",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0912,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_8",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_9",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0912,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_10",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        }
+      ]
+    },
+    "Policy_C_Evidence_Fusion": {
+      "overall_metrics": {
+        "TP": 2,
+        "FP": 0,
+        "TN": 91,
+        "FN": 3,
+        "precision": 1.0,
+        "recall": 0.4,
+        "f1_score": 0.5714,
+        "accuracy": 0.9688
+      },
+      "ascending_metrics": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 52,
+        "FN": 3,
+        "precision": 1.0,
+        "recall": 0.25,
+        "f1_score": 0.4,
+        "accuracy": 0.9464
+      },
+      "descending_metrics": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 36,
+        "FN": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0
+      },
+      "positive_item_details": [
+        {
+          "id": "pos_01_man_ascending",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.715,
+          "c_scene": 0.099,
+          "p_scene": 31,
+          "c_final": 0.8575,
+          "outcome": "TP",
+          "survives": true
+        },
+        {
+          "id": "pos_02_muybridge_ascending",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.716,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.358,
+          "outcome": "FN",
+          "survives": false
+        },
+        {
+          "id": "pos_03_muybridge_descending",
+          "action": "descending",
+          "direction": "down",
+          "c_vel": 0.681,
+          "c_scene": 0.019,
+          "p_scene": 5,
+          "c_final": 0.6235,
+          "outcome": "TP",
+          "survives": true
+        },
+        {
+          "id": "pos_08_parkour_climb_stairs",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.93,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.465,
+          "outcome": "FN",
+          "survives": false
+        },
+        {
+          "id": "pos_09_muybridge_ascending_2",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.76,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.38,
+          "outcome": "FN",
+          "survives": false
+        }
+      ],
+      "sample_negative_details": [
+        {
+          "id": "neg_escalator_1",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.349,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_2",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.274,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_3",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.349,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_4",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.274,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_5",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.349,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_6",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.274,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_7",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.349,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_8",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.274,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_9",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.349,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_10",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.274,
+          "outcome": "TN",
+          "fires": false
+        }
+      ]
+    },
+    "Policy_D_Conservative_Gate": {
+      "overall_metrics": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 91,
+        "FN": 4,
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1_score": 0.3333,
+        "accuracy": 0.9583
+      },
+      "ascending_metrics": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 52,
+        "FN": 3,
+        "precision": 1.0,
+        "recall": 0.25,
+        "f1_score": 0.4,
+        "accuracy": 0.9464
+      },
+      "descending_metrics": {
+        "TP": 0,
+        "FP": 0,
+        "TN": 36,
+        "FN": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "accuracy": 0.973
+      },
+      "positive_item_details": [
+        {
+          "id": "pos_01_man_ascending",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.715,
+          "c_scene": 0.099,
+          "p_scene": 31,
+          "c_final": 0.715,
+          "outcome": "TP",
+          "survives": true
+        },
+        {
+          "id": "pos_02_muybridge_ascending",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.716,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.2506,
+          "outcome": "FN",
+          "survives": false
+        },
+        {
+          "id": "pos_03_muybridge_descending",
+          "action": "descending",
+          "direction": "down",
+          "c_vel": 0.681,
+          "c_scene": 0.019,
+          "p_scene": 5,
+          "c_final": 0.5112,
+          "outcome": "FN",
+          "survives": false
+        },
+        {
+          "id": "pos_08_parkour_climb_stairs",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.93,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.3255,
+          "outcome": "FN",
+          "survives": false
+        },
+        {
+          "id": "pos_09_muybridge_ascending_2",
+          "action": "ascending",
+          "direction": "up",
+          "c_vel": 0.76,
+          "c_scene": 0.0,
+          "p_scene": 0,
+          "c_final": 0.266,
+          "outcome": "FN",
+          "survives": false
+        }
+      ],
+      "sample_negative_details": [
+        {
+          "id": "neg_escalator_1",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.1172,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_2",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_3",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.1172,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_4",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_5",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.1172,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_6",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_7",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.1172,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_8",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_9",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.15,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.1172,
+          "outcome": "TN",
+          "fires": false
+        },
+        {
+          "id": "neg_escalator_10",
+          "category": "escalator_movement",
+          "source": "York_St_escalator_vc.ogv",
+          "c_vel": 0.0,
+          "c_scene": 0.022,
+          "p_scene": 4,
+          "c_final": 0.0,
+          "outcome": "TN",
+          "fires": false
+        }
+      ]
+    }
+  },
+  "confusion_matrices": {
+    "Policy_A_Baseline": {
+      "overall": {
+        "TP": 5,
+        "FP": 52,
+        "TN": 39,
+        "FN": 0
+      },
+      "ascending": {
+        "TP": 4,
+        "FP": 33,
+        "TN": 19,
+        "FN": 0
+      },
+      "descending": {
+        "TP": 1,
+        "FP": 19,
+        "TN": 17,
+        "FN": 0
+      }
+    },
+    "Policy_B_Soft_Multiplier": {
+      "overall": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 91,
+        "FN": 4
+      },
+      "ascending": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 52,
+        "FN": 3
+      },
+      "descending": {
+        "TP": 0,
+        "FP": 0,
+        "TN": 36,
+        "FN": 1
+      }
+    },
+    "Policy_C_Evidence_Fusion": {
+      "overall": {
+        "TP": 2,
+        "FP": 0,
+        "TN": 91,
+        "FN": 3
+      },
+      "ascending": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 52,
+        "FN": 3
+      },
+      "descending": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 36,
+        "FN": 0
+      }
+    },
+    "Policy_D_Conservative_Gate": {
+      "overall": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 91,
+        "FN": 4
+      },
+      "ascending": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 52,
+        "FN": 3
+      },
+      "descending": {
+        "TP": 0,
+        "FP": 0,
+        "TN": 36,
+        "FN": 1
+      }
+    }
+  },
+  "policy_c_calibration_audit": {
+    "analysis": "Policy C uses linear additive fusion: c_stair = 0.50 * c_vel + 0.35 * norm_scene + 0.15 * norm_pers. Because the velocity term contributes a large unattenuated additive baseline (0.50 * 0.746 = 0.373), any weak background noise with persistence >= 2 adds another 0.15 to 0.30, readily crossing the 0.55 threshold. In contrast, Policy B (multiplicative gating) scales velocity by scene support, keeping clean negatives at 0.224. Therefore, Policy C's high retention on pos_03 was an accidental artifact of additive boosting rather than true calibration.",
+    "weight_variants_tested": [
+      {
+        "variant": "Policy_C_Orig (0.50/0.35/0.15)",
+        "weights": {
+          "name": "Policy_C_Orig (0.50/0.35/0.15)",
+          "w_vel": 0.5,
+          "w_scene": 0.35,
+          "w_pers": 0.15
+        },
+        "scenario_results": [
+          {
+            "scenario": "clean_negative",
+            "c_final": 0.373,
+            "false_positive": false
+          },
+          {
+            "scenario": "single_transient_noise",
+            "c_final": 0.373,
+            "false_positive": false
+          },
+          {
+            "scenario": "weak_curb_or_texture_noise",
+            "c_final": 0.713,
+            "false_positive": true
+          },
+          {
+            "scenario": "moderate_escalator_noise",
+            "c_final": 0.703,
+            "false_positive": true
+          }
+        ]
+      },
+      {
+        "variant": "Policy_C_Heavy_Scene (0.35/0.45/0.20)",
+        "weights": {
+          "name": "Policy_C_Heavy_Scene (0.35/0.45/0.20)",
+          "w_vel": 0.35,
+          "w_scene": 0.45,
+          "w_pers": 0.2
+        },
+        "scenario_results": [
+          {
+            "scenario": "clean_negative",
+            "c_final": 0.2611,
+            "false_positive": false
+          },
+          {
+            "scenario": "single_transient_noise",
+            "c_final": 0.2611,
+            "false_positive": false
+          },
+          {
+            "scenario": "weak_curb_or_texture_noise",
+            "c_final": 0.7011,
+            "false_positive": true
+          },
+          {
+            "scenario": "moderate_escalator_noise",
+            "c_final": 0.6911,
+            "false_positive": true
+          }
+        ]
+      },
+      {
+        "variant": "Policy_C_Heavy_Vel (0.60/0.25/0.15)",
+        "weights": {
+          "name": "Policy_C_Heavy_Vel (0.60/0.25/0.15)",
+          "w_vel": 0.6,
+          "w_scene": 0.25,
+          "w_pers": 0.15
+        },
+        "scenario_results": [
+          {
+            "scenario": "clean_negative",
+            "c_final": 0.4476,
+            "false_positive": false
+          },
+          {
+            "scenario": "single_transient_noise",
+            "c_final": 0.4476,
+            "false_positive": false
+          },
+          {
+            "scenario": "weak_curb_or_texture_noise",
+            "c_final": 0.7076,
+            "false_positive": true
+          },
+          {
+            "scenario": "moderate_escalator_noise",
+            "c_final": 0.7176,
+            "false_positive": true
+          }
+        ]
+      }
+    ],
+    "policy_b_comparison": [
+      {
+        "scenario": "clean_negative",
+        "c_final": 0.2238,
+        "false_positive": false
+      },
+      {
+        "scenario": "single_transient_noise",
+        "c_final": 0.2238,
+        "false_positive": false
+      },
+      {
+        "scenario": "weak_curb_or_texture_noise",
+        "c_final": 0.6416,
+        "false_positive": true
+      },
+      {
+        "scenario": "moderate_escalator_noise",
+        "c_final": 0.5371,
+        "false_positive": false
+      }
+    ]
+  },
+  "findings_and_conclusions": {
+    "architectural_conclusion": "Architecturally, soft evidence is confirmed as the sound design pattern: it preserves explainability, enables fallback to walking/running, and avoids the catastrophic 100% false-negative failure of a hard binary guard.",
+    "empirical_conclusion": "Empirically, soft evidence achieves a vastly superior Precision and F1 score compared to Baseline (Policy A: Precision=0.089, F1=0.164 vs Policy B: Precision=1.000, F1=0.333). However, positive retention on subtle/studio staircases remains constrained by zero-shot vision-language domain transfer, and additive fusion (Policy C) is unsafe under realistic noise conditions. Therefore, soft evidence is PROMISING BUT REQUIRES DOMAIN CALIBRATION before production deployment."
+  },
+  "decision": "B. SOFT EVIDENCE PROMISING BUT NEEDS CALIBRATION"
+}

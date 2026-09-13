@@ -1,0 +1,93 @@
+{
+  "phase": "Phase 6D.3",
+  "experimental_settings": {
+    "cycle_threshold": 0.25,
+    "require_temporal_overlap": true
+  },
+  "baseline_commit": "bd9d18e",
+  "metrics": {
+    "job_id": "PHASE6D3-100A8A",
+    "runtime_s": 88.8,
+    "rtf": 0.296,
+    "total_tracks": 546,
+    "person_tracks": 249,
+    "confirmed_person_tracks": 154,
+    "motion_profiles": 277,
+    "s07_events": 92,
+    "fused_events": 232,
+    "story_segments": 148,
+    "complete_stories": 1,
+    "partial_stories": 22,
+    "kept_events": 0,
+    "exported_clips": 92,
+    "events_by_type": {
+      "group_gathering": 1,
+      "running": 14,
+      "person_sitting": 2,
+      "light_turned_off": 8,
+      "person_standing_up": 2,
+      "light_turned_on": 10,
+      "person_picked_up_book": 1,
+      "person_placed_handbag": 1,
+      "vehicle_receding": 4,
+      "vehicle_approaching": 4,
+      "person_entered_scene": 13,
+      "walking_upstairs": 7,
+      "person_left_scene": 12,
+      "person_fallen": 1,
+      "walking_downstairs": 3,
+      "person_crouching_sustained": 4,
+      "cycling": 3,
+      "vehicle_stationary": 1,
+      "person_crawling": 1
+    }
+  },
+  "phase6d_reference": {
+    "runtime_s": 72.6,
+    "rtf": 0.242,
+    "total_tracks": 546,
+    "motion_profiles": 277,
+    "s07_events": 213,
+    "fused_events": 213,
+    "story_segments": 138,
+    "complete_stories": 10,
+    "partial_stories": 15,
+    "kept_events": 91,
+    "exported_clips": 91
+  },
+  "cycling_audit_candidates": [
+    {
+      "track_id": 186,
+      "timestamp_fmt": "02:26",
+      "start_ms": 146146.14614614614,
+      "confidence": 0.685,
+      "mean_speed": 0.26572,
+      "cycling_conf": 0.65,
+      "obs_count": 9,
+      "duration_s": 2.5,
+      "frame_ref": 884
+    },
+    {
+      "track_id": 234,
+      "timestamp_fmt": "02:41",
+      "start_ms": 161828.4951618285,
+      "confidence": 0.813,
+      "mean_speed": 0.40165,
+      "cycling_conf": 0.65,
+      "obs_count": 8,
+      "duration_s": 5.2,
+      "frame_ref": 987
+    },
+    {
+      "track_id": 254,
+      "timestamp_fmt": "03:24",
+      "start_ms": 204204.2042042042,
+      "confidence": 0.701,
+      "mean_speed": 0.30501,
+      "cycling_conf": 0.65,
+      "obs_count": 5,
+      "duration_s": 4.5,
+      "frame_ref": 1246
+    }
+  ]
+}

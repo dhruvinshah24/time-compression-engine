@@ -85,15 +85,34 @@ class ActivityClassifier:
     Classifies dominant activity for a confirmed person track.
 
     Args:
-        fps:         Original video FPS (before frame extraction).
-        frame_skip:  How many original frames were skipped between extractions.
+        fps:                    Original video FPS (before frame extraction).
+        frame_skip:             How many original frames were skipped between extractions.
+        cycle_threshold:        Override for CYCLE_HORIZ_THRESHOLD used in Signal 2.
+                                Defaults to CYCLE_HORIZ_THRESHOLD (0.018).
+                                Use a higher value (e.g. 0.25) for experimental runs.
+                                Phase 6D.3: CYCLE_HORIZ_THRESHOLD_EXPERIMENTAL.
+        require_temporal_overlap: If True, Signal 1 (bicycle proximity) is only
+                                triggered when person and bicycle tracks overlap
+                                in frame range. Default False preserves baseline
+                                behaviour (Phase 6D.2 Defect A).
+                                Phase 6D.3 fix for Defect A.
     """
 
-    def __init__(self, fps: float = 30.0, frame_skip: int = 5) -> None:
+    def __init__(
+        self,
+        fps: float = 30.0,
+        frame_skip: int = 5,
+        cycle_threshold: float = CYCLE_HORIZ_THRESHOLD,
+        require_temporal_overlap: bool = False,
+    ) -> None:
         self.fps = fps
         self.frame_skip = frame_skip
         # Time between consecutive extracted frames (seconds)
         self._dt = frame_skip / max(fps, 1.0)
+        # Experimental parameters (Phase 6D.3)
+        # Defaults match baseline behaviour (bd9d18e) — TCE_V1_REFERENCE unaffected.
+        self._cycle_threshold = cycle_threshold
+        self._require_temporal_overlap = require_temporal_overlap
 
     def classify(
         self,
@@ -321,6 +340,11 @@ class ActivityClassifier:
           2. Very high horizontal velocity with stable bbox height (seated position).
 
         Returns confidence [0, 1].
+
+        Experimental parameters (Phase 6D.3):
+          self._require_temporal_overlap: If True, Signal 1 only fires when person
+              and bicycle tracks have overlapping frame ranges.
+          self._cycle_threshold: Replaces CYCLE_HORIZ_THRESHOLD for Signal 2.
         """
         # Signal 1: bicycle track nearby
         bicycle_tracks = [
@@ -329,12 +353,32 @@ class ActivityClassifier:
         ]
 
         if bicycle_tracks and track.observations:
+            person_start = track.observations[0].frame_number
+            person_end   = track.observations[-1].frame_number
             person_cxs = np.array([o.bbox.cx for o in track.observations])
             person_cys = np.array([o.bbox.cy for o in track.observations])
 
             for bt in bicycle_tracks:
                 if not bt.observations:
                     continue
+
+                # ── Temporal alignment guard (Phase 6D.3 Defect A fix) ──────
+                # When require_temporal_overlap=True (experimental), only
+                # consider bicycle tracks that exist in the same frame range
+                # as the person track.
+                if self._require_temporal_overlap:
+                    bike_start = bt.observations[0].frame_number
+                    bike_end   = bt.observations[-1].frame_number
+                    # Intervals [person_start, person_end] and [bike_start, bike_end]
+                    # overlap iff: bike_start <= person_end AND bike_end >= person_start
+                    if not (bike_start <= person_end and bike_end >= person_start):
+                        logger.debug(
+                            "[ActivityClassifier] Skipping bicycle track (no temporal overlap): "
+                            "person=[%d,%d] bike=[%d,%d]",
+                            person_start, person_end, bike_start, bike_end,
+                        )
+                        continue
+
                 bike_cxs = np.array([o.bbox.cx for o in bt.observations])
                 bike_cys = np.array([o.bbox.cy for o in bt.observations])
 
@@ -352,7 +396,9 @@ class ActivityClassifier:
                     return overlap_conf
 
         # Signal 2: high horizontal velocity + stable vertical position
-        if mean_speed >= CYCLE_HORIZ_THRESHOLD:
+        # Uses self._cycle_threshold (Phase 6D.3 experimental parameter).
+        # Default = CYCLE_HORIZ_THRESHOLD (0.018) — baseline preserved.
+        if mean_speed >= self._cycle_threshold:
             heights = [o.bbox.height for o in track.observations] if track.observations else [0]
             height_std = float(np.std(heights))
             if height_std < 0.03:   # stable seated height

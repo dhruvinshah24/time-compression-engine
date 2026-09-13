@@ -221,7 +221,17 @@ async def run(context: PipelineContext) -> StageResult:
 
         fps = float(context.metadata.get("fps", 30.0))
         frame_skip = int(context.settings.get("frame_skip_rate", 5))
-        clf = ActivityClassifier(fps=fps, frame_skip=frame_skip)
+        # Experimental parameters (Phase 6D.3) — defaults preserve baseline behavior.
+        # TCE_V1_REFERENCE does not set these keys, so defaults apply.
+        from app.utils.activity_classifier import CYCLE_HORIZ_THRESHOLD
+        cycle_threshold = float(context.settings.get("cycle_threshold", CYCLE_HORIZ_THRESHOLD))
+        require_temporal_overlap = bool(context.settings.get("require_temporal_overlap", False))
+        clf = ActivityClassifier(
+            fps=fps,
+            frame_skip=frame_skip,
+            cycle_threshold=cycle_threshold,
+            require_temporal_overlap=require_temporal_overlap,
+        )
 
         confirmed_person_tracks = [
             t for t in result.all_tracks

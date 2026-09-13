@@ -1,0 +1,255 @@
+{
+  "phase": "Phase 6D.4",
+  "experimental_settings": {
+    "cycle_threshold": 0.25,
+    "require_temporal_overlap": true,
+    "vocabulary_additions": [
+      "running",
+      "walking_upstairs",
+      "walking_downstairs"
+    ]
+  },
+  "baseline_commit": "bd9d18e",
+  "prev_experiment_commit": "cb128dc",
+  "metrics": {
+    "job_id": "PHASE6D4-B15246",
+    "runtime_s": 86.5,
+    "rtf": 0.288,
+    "total_tracks": 546,
+    "person_tracks": 249,
+    "confirmed_person_tracks": 154,
+    "motion_profiles": 277,
+    "s07_events": 92,
+    "fused_events": 232,
+    "story_segments": 148,
+    "complete_stories": 10,
+    "partial_stories": 30,
+    "kept_events": 0,
+    "exported_clips": 92,
+    "events_by_type": {
+      "person_reaching_up": 9,
+      "group_gathering": 1,
+      "running": 10,
+      "walking_upstairs": 7,
+      "person_entered_scene": 14,
+      "person_sitting": 3,
+      "light_turned_off": 8,
+      "person_standing_up": 2,
+      "light_turned_on": 10,
+      "person_picked_up_book": 1,
+      "person_placed_handbag": 1,
+      "person_left_scene": 14,
+      "vehicle_receding": 3,
+      "vehicle_approaching": 3,
+      "walking_downstairs": 2,
+      "cycling": 2,
+      "person_crouching_sustained": 2
+    },
+    "completeness_breakdown": {
+      "complete": 10,
+      "partial": 30,
+      "minimal": 106,
+      "exit_only": 1,
+      "entry_only": 1
+    },
+    "obs003_continuity_issues": 5
+  },
+  "phase6d3_reference": {
+    "runtime_s": 88.8,
+    "rtf": 0.296,
+    "total_tracks": 546,
+    "motion_profiles": 277,
+    "s07_events": 92,
+    "fused_events": 232,
+    "story_segments": 148,
+    "complete_stories": 1,
+    "partial_stories": 22,
+    "kept_events": 0,
+    "exported_clips": 92
+  },
+  "phase6d_reference": {
+    "runtime_s": 72.6,
+    "rtf": 0.242,
+    "total_tracks": 546,
+    "motion_profiles": 277,
+    "s07_events": 213,
+    "fused_events": 213,
+    "story_segments": 138,
+    "complete_stories": 10,
+    "partial_stories": 15,
+    "kept_events": 91,
+    "exported_clips": 91
+  },
+  "cycling_audit_candidates": [
+    {
+      "track_id": 234,
+      "timestamp_fmt": "02:41",
+      "start_ms": 161828.4951618285,
+      "confidence": 0.813,
+      "mean_speed": 0.40165,
+      "cycling_conf": 0.65,
+      "obs_count": 8,
+      "duration_s": 5.2,
+      "frame_ref": 987
+    },
+    {
+      "track_id": 254,
+      "timestamp_fmt": "03:24",
+      "start_ms": 204204.2042042042,
+      "confidence": 0.701,
+      "mean_speed": 0.30501,
+      "cycling_conf": 0.65,
+      "obs_count": 5,
+      "duration_s": 4.5,
+      "frame_ref": 1246
+    }
+  ],
+  "complete_stories": [
+    {
+      "segment_id": "seg_1_184a3f05",
+      "track_ids": [
+        1
+      ],
+      "event_types": [
+        "person_reaching_up",
+        "person_entered_scene",
+        "walking_upstairs",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_left_scene",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up"
+      ],
+      "narrative_score": 0.5701,
+      "continuity_issues": [
+        "Event 7 (person_reaching_up) follows terminal event (person_reaching_up) \u2014 track 1",
+        "Event 8 (person_reaching_up) follows terminal event (person_reaching_up) \u2014 track 1",
+        "Event 9 (person_reaching_up) follows terminal event (person_reaching_up) \u2014 track 1",
+        "Event 10 (person_reaching_up) follows terminal event (person_reaching_up) \u2014 track 1",
+        "Event 11 (person_reaching_up) follows terminal event (person_reaching_up) \u2014 track 1"
+      ]
+    },
+    {
+      "segment_id": "seg_14_2a58c35b",
+      "track_ids": [
+        14
+      ],
+      "event_types": [
+        "person_entered_scene",
+        "walking_upstairs",
+        "person_left_scene"
+      ],
+      "narrative_score": 0.8565,
+      "continuity_issues": []
+    },
+    {
+      "segment_id": "seg_56_c71dd97f",
+      "track_ids": [
+        56
+      ],
+      "event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "narrative_score": 0.8388,
+      "continuity_issues": []
+    },
+    {
+      "segment_id": "seg_75_de762d51",
+      "track_ids": [
+        75
+      ],
+      "event_types": [
+        "person_entered_scene",
+        "running",
+        "person_sitting",
+        "person_left_scene"
+      ],
+      "narrative_score": 0.7946,
+      "continuity_issues": []
+    },
+    {
+      "segment_id": "seg_160_e3263291",
+      "track_ids": [
+        160
+      ],
+      "event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "narrative_score": 0.8435,
+      "continuity_issues": []
+    },
+    {
+      "segment_id": "seg_177_a7c632fc",
+      "track_ids": [
+        177
+      ],
+      "event_types": [
+        "person_entered_scene",
+        "walking_upstairs",
+        "person_left_scene"
+      ],
+      "narrative_score": 0.8419,
+      "continuity_issues": []
+    },
+    {
+      "segment_id": "seg_234_d633b51d",
+      "track_ids": [
+        234
+      ],
+      "event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "narrative_score": 0.8452,
+      "continuity_issues": []
+    },
+    {
+      "segment_id": "seg_252_8b1cef73",
+      "track_ids": [
+        252
+      ],
+      "event_types": [
+        "person_entered_scene",
+        "walking_upstairs",
+        "person_left_scene"
+      ],
+      "narrative_score": 0.8228,
+      "continuity_issues": []
+    },
+    {
+      "segment_id": "seg_273_cfa9c86a",
+      "track_ids": [
+        273
+      ],
+      "event_types": [
+        "person_entered_scene",
+        "walking_upstairs",
+        "person_left_scene"
+      ],
+      "narrative_score": 0.8562,
+      "continuity_issues": []
+    },
+    {
+      "segment_id": "seg_366_731503d8",
+      "track_ids": [
+        366
+      ],
+      "event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "narrative_score": 0.7176,
+      "continuity_issues": []
+    }
+  ]
+}

@@ -266,11 +266,14 @@ class TestUnroledEventsStillPartial:
         result = BUILDER.build(events)
         assert result.complete_segments == 0
 
-    def test_narrative_running_string_not_an_action(self):
+    def test_narrative_running_string_now_an_action(self):
         """
-        narrative_builder emits 'running' (not 'person_running').
-        'running' is NOT in _ACTION_EVENTS. This is a separate mismatch
-        that is NOT fixed in Phase 6D. Verify it still fails.
+        Phase 6D.4 fix: narrative_builder emits 'running' (not 'person_running').
+        Phase 6D.4 added 'running' to _ACTION_EVENTS.
+        entry + 'running' + exit is now COMPLETE.
+
+        Previously (Phase 6D): asserted complete_segments == 0 (known defect).
+        Phase 6D.4: this is the correct behavior — complete_segments == 1.
         """
         events = [
             _evt(EventType.PERSON_ENTERED_SCENE, start_ms=0.0, end_ms=500.0),
@@ -278,9 +281,8 @@ class TestUnroledEventsStillPartial:
             _evt(EventType.PERSON_LEFT_SCENE, start_ms=6000.0, end_ms=6500.0),
         ]
         result = BUILDER.build(events)
-        # "running" != "person_running" — NOT COMPLETE in Phase 6D
-        # (this is a known remaining issue, not fixed here)
-        assert result.complete_segments == 0, (
-            "'running' (from narrative_builder) should NOT be in _ACTION_EVENTS "
-            "— this is a separate known issue (not fixed in Phase 6D)"
+        # Phase 6D.4: "running" IS in _ACTION_EVENTS — story should be COMPLETE
+        assert result.complete_segments == 1, (
+            "Phase 6D.4: 'running' is now in _ACTION_EVENTS. "
+            "entry+running+exit should produce a COMPLETE story."
         )

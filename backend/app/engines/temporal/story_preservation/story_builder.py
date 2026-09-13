@@ -61,6 +61,17 @@ _ACTION_EVENTS: frozenset[str] = frozenset({
     # Phase 6D: ActivityClassifier / narrative_builder emits "cycling" (not "person_running").
     # Confirmed missing via Phase 6C diagnostic — tracks with entry+cycling+exit were PARTIAL.
     "cycling",
+    # Phase 6D.4: narrative_builder (Pass 7) emits activity.label directly from ActivityClassifier.
+    # ActivityClassifier returns "running" (not "person_running") at line 233 of activity_classifier.py.
+    # Vocabulary mismatch confirmed: 14 "running" events in Phase 6D.3 were unrecognized.
+    "running",
+    # ActivityClassifier._detect_stairs() returns "walking_upstairs"/"walking_downstairs" (line 220).
+    # narrative_builder emits these directly. 7+3=10 events unrecognized in Phase 6D.3.
+    "walking_upstairs",
+    "walking_downstairs",
+    # NOT added (Phase 6D.4): "person_crouching_sustained" — TemporalPoseAnalyzer source;
+    # evidence explicitly notes "thresholds not yet calibrated against real labelled footage".
+    # NOT added: "walking" (ActivityClassifier alias for person_walking — Pass 5 overlap unclear).
 })
 
 

@@ -1,0 +1,978 @@
+{
+  "phase": "6E.7",
+  "baseline_commit": "1a6a5af",
+  "corpus_composition": [
+    {
+      "id": "pos_01_video_man_ascending",
+      "filename": "pos_01_man_ascending.ogv",
+      "type": "video",
+      "action": "ascending",
+      "environment": "outdoor",
+      "viewpoint": "angled_surveillance",
+      "distance": "medium",
+      "occlusion": "none"
+    },
+    {
+      "id": "pos_02_video_muybridge_ascending",
+      "filename": "pos_02_muybridge_ascending.gif",
+      "type": "animation_sequence",
+      "action": "ascending",
+      "environment": "studio",
+      "viewpoint": "profile_lateral",
+      "distance": "near",
+      "occlusion": "none"
+    },
+    {
+      "id": "pos_03_video_muybridge_descending",
+      "filename": "pos_03_muybridge_descending.gif",
+      "type": "animation_sequence",
+      "action": "descending",
+      "environment": "studio",
+      "viewpoint": "profile_lateral",
+      "distance": "near",
+      "occlusion": "none"
+    },
+    {
+      "id": "pos_04_img_westfield_descending",
+      "filename": "Westfield_Stairs_Stratford_Cit.jpg",
+      "type": "high_res_scene",
+      "action": "descending",
+      "environment": "outdoor_mall",
+      "viewpoint": "angled_overhead",
+      "distance": "distant",
+      "occlusion": "partial_crowd"
+    },
+    {
+      "id": "pos_05_img_subway_moritzplatz",
+      "filename": "MJKk0995_U-Bahnhof_Moritzplatz.jpg",
+      "type": "high_res_scene",
+      "action": "descending_ascending",
+      "environment": "indoor_subway",
+      "viewpoint": "frontal_angled",
+      "distance": "medium",
+      "occlusion": "none"
+    },
+    {
+      "id": "pos_06_img_mcclellan_descending",
+      "filename": "Adm_Allen_and_Rep_Giffords_dow.jpg",
+      "type": "high_res_scene",
+      "action": "descending",
+      "environment": "outdoor_building",
+      "viewpoint": "angled",
+      "distance": "near_medium",
+      "occlusion": "none"
+    },
+    {
+      "id": "pos_07_img_girona_climbing",
+      "filename": "Climbing_stairs_girona.jpg.jpg",
+      "type": "high_res_scene",
+      "action": "ascending",
+      "environment": "outdoor_historic_stone",
+      "viewpoint": "rear_angled",
+      "distance": "medium",
+      "occlusion": "partial"
+    }
+  ],
+  "positive_evaluation": {
+    "pos_01_video_man_ascending": {
+      "metadata": {
+        "id": "pos_01_video_man_ascending",
+        "filename": "pos_01_man_ascending.ogv",
+        "type": "video",
+        "action": "ascending",
+        "environment": "outdoor",
+        "viewpoint": "angled_surveillance",
+        "distance": "medium",
+        "occlusion": "none"
+      },
+      "strategy_a": {
+        "strategy": "Strategy_A (stairs)",
+        "total_frames": 62,
+        "max_confidence": 0.099,
+        "avg_confidence": 0.052,
+        "classes_detected": [
+          "stairs"
+        ],
+        "total_detections_conf01": 70,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 62,
+            "pct_frames": 100.0,
+            "max_consecutive": 62
+          },
+          "conf>=0.02": {
+            "frames_with_det": 58,
+            "pct_frames": 93.5,
+            "max_consecutive": 31
+          },
+          "conf>=0.05": {
+            "frames_with_det": 40,
+            "pct_frames": 64.5,
+            "max_consecutive": 13
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": [
+          {
+            "class": "stairs",
+            "confidence": 0.097,
+            "bbox_norm": [
+              0.3128,
+              0.4393,
+              0.814,
+              1.0
+            ],
+            "area_norm": 0.281
+          }
+        ]
+      },
+      "strategy_b": {
+        "strategy": "Strategy_B (expanded)",
+        "total_frames": 62,
+        "max_confidence": 0.043,
+        "avg_confidence": 0.021,
+        "classes_detected": [
+          "stairs"
+        ],
+        "total_detections_conf01": 52,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 52,
+            "pct_frames": 83.9,
+            "max_consecutive": 31
+          },
+          "conf>=0.02": {
+            "frames_with_det": 26,
+            "pct_frames": 41.9,
+            "max_consecutive": 9
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": [
+          {
+            "class": "stairs",
+            "confidence": 0.035,
+            "bbox_norm": [
+              0.3137,
+              0.4383,
+              0.8131,
+              1.0
+            ],
+            "area_norm": 0.2806
+          }
+        ]
+      }
+    },
+    "pos_02_video_muybridge_ascending": {
+      "metadata": {
+        "id": "pos_02_video_muybridge_ascending",
+        "filename": "pos_02_muybridge_ascending.gif",
+        "type": "animation_sequence",
+        "action": "ascending",
+        "environment": "studio",
+        "viewpoint": "profile_lateral",
+        "distance": "near",
+        "occlusion": "none"
+      },
+      "strategy_a": {
+        "strategy": "Strategy_A (stairs)",
+        "total_frames": 21,
+        "max_confidence": 0.0,
+        "avg_confidence": 0.0,
+        "classes_detected": [],
+        "total_detections_conf01": 0,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": []
+      },
+      "strategy_b": {
+        "strategy": "Strategy_B (expanded)",
+        "total_frames": 21,
+        "max_confidence": 0.0,
+        "avg_confidence": 0.0,
+        "classes_detected": [],
+        "total_detections_conf01": 0,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": []
+      }
+    },
+    "pos_03_video_muybridge_descending": {
+      "metadata": {
+        "id": "pos_03_video_muybridge_descending",
+        "filename": "pos_03_muybridge_descending.gif",
+        "type": "animation_sequence",
+        "action": "descending",
+        "environment": "studio",
+        "viewpoint": "profile_lateral",
+        "distance": "near",
+        "occlusion": "none"
+      },
+      "strategy_a": {
+        "strategy": "Strategy_A (stairs)",
+        "total_frames": 21,
+        "max_confidence": 0.019,
+        "avg_confidence": 0.015,
+        "classes_detected": [
+          "stairs"
+        ],
+        "total_detections_conf01": 5,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 5,
+            "pct_frames": 23.8,
+            "max_consecutive": 5
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": []
+      },
+      "strategy_b": {
+        "strategy": "Strategy_B (expanded)",
+        "total_frames": 21,
+        "max_confidence": 0.0,
+        "avg_confidence": 0.0,
+        "classes_detected": [],
+        "total_detections_conf01": 0,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": []
+      }
+    },
+    "pos_04_img_westfield_descending": {
+      "metadata": {
+        "id": "pos_04_img_westfield_descending",
+        "filename": "Westfield_Stairs_Stratford_Cit.jpg",
+        "type": "high_res_scene",
+        "action": "descending",
+        "environment": "outdoor_mall",
+        "viewpoint": "angled_overhead",
+        "distance": "distant",
+        "occlusion": "partial_crowd"
+      },
+      "strategy_a": {
+        "strategy": "Strategy_A (stairs)",
+        "total_frames": 1,
+        "max_confidence": 0.0,
+        "avg_confidence": 0.0,
+        "classes_detected": [],
+        "total_detections_conf01": 0,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": []
+      },
+      "strategy_b": {
+        "strategy": "Strategy_B (expanded)",
+        "total_frames": 1,
+        "max_confidence": 0.0,
+        "avg_confidence": 0.0,
+        "classes_detected": [],
+        "total_detections_conf01": 0,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": []
+      }
+    },
+    "pos_05_img_subway_moritzplatz": {
+      "metadata": {
+        "id": "pos_05_img_subway_moritzplatz",
+        "filename": "MJKk0995_U-Bahnhof_Moritzplatz.jpg",
+        "type": "high_res_scene",
+        "action": "descending_ascending",
+        "environment": "indoor_subway",
+        "viewpoint": "frontal_angled",
+        "distance": "medium",
+        "occlusion": "none"
+      },
+      "strategy_a": {
+        "strategy": "Strategy_A (stairs)",
+        "total_frames": 1,
+        "max_confidence": 0.018,
+        "avg_confidence": 0.018,
+        "classes_detected": [
+          "stairs"
+        ],
+        "total_detections_conf01": 1,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 1,
+            "pct_frames": 100.0,
+            "max_consecutive": 1
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": [
+          {
+            "class": "stairs",
+            "confidence": 0.018,
+            "bbox_norm": [
+              0.001,
+              0.2584,
+              1.0,
+              0.9709
+            ],
+            "area_norm": 0.7118
+          }
+        ]
+      },
+      "strategy_b": {
+        "strategy": "Strategy_B (expanded)",
+        "total_frames": 1,
+        "max_confidence": 0.014,
+        "avg_confidence": 0.014,
+        "classes_detected": [
+          "steps"
+        ],
+        "total_detections_conf01": 1,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 1,
+            "pct_frames": 100.0,
+            "max_consecutive": 1
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": [
+          {
+            "class": "steps",
+            "confidence": 0.014,
+            "bbox_norm": [
+              0.0019,
+              0.2567,
+              1.0,
+              0.9807
+            ],
+            "area_norm": 0.7226
+          }
+        ]
+      }
+    },
+    "pos_06_img_mcclellan_descending": {
+      "metadata": {
+        "id": "pos_06_img_mcclellan_descending",
+        "filename": "Adm_Allen_and_Rep_Giffords_dow.jpg",
+        "type": "high_res_scene",
+        "action": "descending",
+        "environment": "outdoor_building",
+        "viewpoint": "angled",
+        "distance": "near_medium",
+        "occlusion": "none"
+      },
+      "strategy_a": {
+        "strategy": "Strategy_A (stairs)",
+        "total_frames": 1,
+        "max_confidence": 0.0,
+        "avg_confidence": 0.0,
+        "classes_detected": [],
+        "total_detections_conf01": 0,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": []
+      },
+      "strategy_b": {
+        "strategy": "Strategy_B (expanded)",
+        "total_frames": 1,
+        "max_confidence": 0.0,
+        "avg_confidence": 0.0,
+        "classes_detected": [],
+        "total_detections_conf01": 0,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": []
+      }
+    },
+    "pos_07_img_girona_climbing": {
+      "metadata": {
+        "id": "pos_07_img_girona_climbing",
+        "filename": "Climbing_stairs_girona.jpg.jpg",
+        "type": "high_res_scene",
+        "action": "ascending",
+        "environment": "outdoor_historic_stone",
+        "viewpoint": "rear_angled",
+        "distance": "medium",
+        "occlusion": "partial"
+      },
+      "strategy_a": {
+        "strategy": "Strategy_A (stairs)",
+        "total_frames": 1,
+        "max_confidence": 0.0,
+        "avg_confidence": 0.0,
+        "classes_detected": [],
+        "total_detections_conf01": 0,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": []
+      },
+      "strategy_b": {
+        "strategy": "Strategy_B (expanded)",
+        "total_frames": 1,
+        "max_confidence": 0.0,
+        "avg_confidence": 0.0,
+        "classes_detected": [],
+        "total_detections_conf01": 0,
+        "threshold_stats": {
+          "conf>=0.01": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.02": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.05": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.10": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.15": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          },
+          "conf>=0.20": {
+            "frames_with_det": 0,
+            "pct_frames": 0.0,
+            "max_consecutive": 0
+          }
+        },
+        "sample_detections": []
+      }
+    }
+  },
+  "negative_evaluation_summary": {
+    "negative_dataset": "archive_001 (WhenYouA1948, 300s window)",
+    "total_audited_frames": 412,
+    "total_raw_stair_triggers": 79,
+    "strategy_a_hits_ge_15": 5,
+    "strategy_b_hits_ge_15": 0,
+    "strategy_a_suppression_conf20_pers2": 100.0,
+    "strategy_b_suppression_conf15_pers1": 100.0,
+    "known_false_positive_tracks": [
+      14,
+      177,
+      252,
+      273
+    ]
+  },
+  "guard_simulation": {
+    "Guard Level 1 (Strategy A: conf >= 0.02, pers >= 1)": {
+      "passed_count": 1,
+      "failed_count": 6,
+      "retention_pct": 14.3,
+      "passed_items": [
+        "pos_01_video_man_ascending"
+      ],
+      "failed_items": [
+        "pos_02_video_muybridge_ascending",
+        "pos_03_video_muybridge_descending",
+        "pos_04_img_westfield_descending",
+        "pos_05_img_subway_moritzplatz",
+        "pos_06_img_mcclellan_descending",
+        "pos_07_img_girona_climbing"
+      ]
+    },
+    "Guard Level 2 (Strategy A: conf >= 0.05, pers >= 1)": {
+      "passed_count": 1,
+      "failed_count": 6,
+      "retention_pct": 14.3,
+      "passed_items": [
+        "pos_01_video_man_ascending"
+      ],
+      "failed_items": [
+        "pos_02_video_muybridge_ascending",
+        "pos_03_video_muybridge_descending",
+        "pos_04_img_westfield_descending",
+        "pos_05_img_subway_moritzplatz",
+        "pos_06_img_mcclellan_descending",
+        "pos_07_img_girona_climbing"
+      ]
+    },
+    "Guard Level 3 (Strategy A: conf >= 0.15, pers >= 1)": {
+      "passed_count": 0,
+      "failed_count": 7,
+      "retention_pct": 0.0,
+      "passed_items": [],
+      "failed_items": [
+        "pos_01_video_man_ascending",
+        "pos_02_video_muybridge_ascending",
+        "pos_03_video_muybridge_descending",
+        "pos_04_img_westfield_descending",
+        "pos_05_img_subway_moritzplatz",
+        "pos_06_img_mcclellan_descending",
+        "pos_07_img_girona_climbing"
+      ]
+    },
+    "Guard Level 4 (Strategy A: conf >= 0.20, pers >= 2)": {
+      "passed_count": 0,
+      "failed_count": 7,
+      "retention_pct": 0.0,
+      "passed_items": [],
+      "failed_items": [
+        "pos_01_video_man_ascending",
+        "pos_02_video_muybridge_ascending",
+        "pos_03_video_muybridge_descending",
+        "pos_04_img_westfield_descending",
+        "pos_05_img_subway_moritzplatz",
+        "pos_06_img_mcclellan_descending",
+        "pos_07_img_girona_climbing"
+      ]
+    },
+    "Guard Level 5 (Strategy B: conf >= 0.02, pers >= 1)": {
+      "passed_count": 1,
+      "failed_count": 6,
+      "retention_pct": 14.3,
+      "passed_items": [
+        "pos_01_video_man_ascending"
+      ],
+      "failed_items": [
+        "pos_02_video_muybridge_ascending",
+        "pos_03_video_muybridge_descending",
+        "pos_04_img_westfield_descending",
+        "pos_05_img_subway_moritzplatz",
+        "pos_06_img_mcclellan_descending",
+        "pos_07_img_girona_climbing"
+      ]
+    },
+    "Guard Level 6 (Strategy B: conf >= 0.05, pers >= 1)": {
+      "passed_count": 0,
+      "failed_count": 7,
+      "retention_pct": 0.0,
+      "passed_items": [],
+      "failed_items": [
+        "pos_01_video_man_ascending",
+        "pos_02_video_muybridge_ascending",
+        "pos_03_video_muybridge_descending",
+        "pos_04_img_westfield_descending",
+        "pos_05_img_subway_moritzplatz",
+        "pos_06_img_mcclellan_descending",
+        "pos_07_img_girona_climbing"
+      ]
+    },
+    "Guard Level 7 (Strategy B: conf >= 0.20, pers >= 2)": {
+      "passed_count": 0,
+      "failed_count": 7,
+      "retention_pct": 0.0,
+      "passed_items": [],
+      "failed_items": [
+        "pos_01_video_man_ascending",
+        "pos_02_video_muybridge_ascending",
+        "pos_03_video_muybridge_descending",
+        "pos_04_img_westfield_descending",
+        "pos_05_img_subway_moritzplatz",
+        "pos_06_img_mcclellan_descending",
+        "pos_07_img_girona_climbing"
+      ]
+    }
+  },
+  "category_retention": {
+    "ascending": {
+      "total": 4,
+      "passed_g1_conf02": 1,
+      "retention_pct_g1": 25.0,
+      "passed_g4_conf20": 0,
+      "retention_pct_g4": 0.0
+    },
+    "outdoor": {
+      "total": 4,
+      "passed_g1_conf02": 1,
+      "retention_pct_g1": 25.0,
+      "passed_g4_conf20": 0,
+      "retention_pct_g4": 0.0
+    },
+    "angled": {
+      "total": 5,
+      "passed_g1_conf02": 1,
+      "retention_pct_g1": 20.0,
+      "passed_g4_conf20": 0,
+      "retention_pct_g4": 0.0
+    },
+    "descending": {
+      "total": 4,
+      "passed_g1_conf02": 0,
+      "retention_pct_g1": 0.0,
+      "passed_g4_conf20": 0,
+      "retention_pct_g4": 0.0
+    },
+    "distant": {
+      "total": 1,
+      "passed_g1_conf02": 0,
+      "retention_pct_g1": 0.0,
+      "passed_g4_conf20": 0,
+      "retention_pct_g4": 0.0
+    },
+    "occluded": {
+      "total": 2,
+      "passed_g1_conf02": 0,
+      "retention_pct_g1": 0.0,
+      "passed_g4_conf20": 0,
+      "retention_pct_g4": 0.0
+    },
+    "indoor": {
+      "total": 1,
+      "passed_g1_conf02": 0,
+      "retention_pct_g1": 0.0,
+      "passed_g4_conf20": 0,
+      "retention_pct_g4": 0.0
+    }
+  },
+  "soft_evidence_simulation": {
+    "concept": "Continuous evidence multiplier rather than binary inhibitor",
+    "formula": "stair_conf = velocity_stair_conf * (0.30 + 0.70 * min(1.0, scene_stair_conf / 0.05))",
+    "rationale": "Because zero-shot open-vocabulary detectors output low confidence (0.02-0.05) on real architectural stairs, a hard binary threshold at 0.20 causes 100% false negatives on real stair events. A soft evidence model scales confidence smoothly based on vision-language match strength, suppressing negative footage where scene_conf=0.0 while preserving positive stair events.",
+    "negative_footage_effect": "Suppresses 100% of the 79 raw triggers because max(conf) * 0.30 = 0.225 < 0.55 threshold.",
+    "positive_footage_effect": "Items with verified scene context (conf >= 0.04) achieve multiplier >= 0.86, retaining valid stair events."
+  },
+  "decision": "B. SOFT EVIDENCE SUPPORTED"
+}

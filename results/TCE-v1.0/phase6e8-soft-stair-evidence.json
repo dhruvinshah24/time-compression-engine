@@ -1,0 +1,1102 @@
+{
+  "phase": "6E.8",
+  "baseline_commit": "bdc4183",
+  "objective": "Controlled experiment on soft stair evidence integration",
+  "policies_evaluated": {
+    "Policy_A_Baseline": {
+      "policy_name": "Policy_A_Baseline",
+      "negative_evaluation": {
+        "total_negative_triggers": 79,
+        "suppressed_count": 0,
+        "survived_count": 79,
+        "suppression_pct": 0.0,
+        "known_audit_tracks": [
+          {
+            "track_id": 14,
+            "direction": "up",
+            "scenario": "loading_ambulance",
+            "c_vel": 0.733,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.733,
+            "decision": "walking_upstairs",
+            "details": {
+              "c_final": 0.733,
+              "c_vel": 0.733
+            }
+          },
+          {
+            "track_id": 177,
+            "direction": "up",
+            "scenario": "diagonal_sidewalk_walking",
+            "c_vel": 0.746,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.746,
+            "decision": "walking_upstairs",
+            "details": {
+              "c_final": 0.746,
+              "c_vel": 0.746
+            }
+          },
+          {
+            "track_id": 252,
+            "direction": "up",
+            "scenario": "walking_toward_camera",
+            "c_vel": 0.712,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.712,
+            "decision": "walking_upstairs",
+            "details": {
+              "c_final": 0.712,
+              "c_vel": 0.712
+            }
+          },
+          {
+            "track_id": 273,
+            "direction": "up",
+            "scenario": "curb_movement_noise_hit",
+            "c_vel": 0.727,
+            "c_scene": 0.153,
+            "p_scene": 1,
+            "c_final": 0.727,
+            "decision": "walking_upstairs",
+            "details": {
+              "c_final": 0.727,
+              "c_vel": 0.727
+            }
+          }
+        ]
+      },
+      "positive_evaluation": {
+        "total_items": 7,
+        "video_items_count": 3,
+        "passed_count": 3,
+        "retention_pct_video": 100.0,
+        "retention_pct_all": 42.86,
+        "item_results": [
+          {
+            "id": "pos_01_video_man_ascending",
+            "media": "pos_01_man_ascending.ogv",
+            "type": "video",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.715,
+            "c_scene": 0.099,
+            "p_scene": 31,
+            "c_final": 0.715,
+            "survives": true,
+            "label": "walking_upstairs",
+            "details": {
+              "c_final": 0.715
+            }
+          },
+          {
+            "id": "pos_02_video_muybridge_ascending",
+            "media": "pos_02_muybridge_ascending.gif",
+            "type": "sequence",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.716,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.716,
+            "survives": true,
+            "label": "walking_upstairs",
+            "details": {
+              "c_final": 0.716
+            }
+          },
+          {
+            "id": "pos_03_video_muybridge_descending",
+            "media": "pos_03_muybridge_descending.gif",
+            "type": "sequence",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.681,
+            "c_scene": 0.019,
+            "p_scene": 5,
+            "c_final": 0.681,
+            "survives": true,
+            "label": "walking_downstairs",
+            "details": {
+              "c_final": 0.681
+            }
+          },
+          {
+            "id": "pos_04_img_westfield_descending",
+            "media": "Westfield_Stairs_Stratford_Cit.jpg",
+            "type": "image",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_05_img_subway_moritzplatz",
+            "media": "MJKk0995_U-Bahnhof_Moritzplatz.jpg",
+            "type": "image",
+            "action": "both",
+            "direction": "both",
+            "c_vel": 0.0,
+            "c_scene": 0.018,
+            "p_scene": 1,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_06_img_mcclellan_descending",
+            "media": "Adm_Allen_and_Rep_Giffords_dow.jpg",
+            "type": "image",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_07_img_girona_climbing",
+            "media": "Climbing_stairs_girona.jpg.jpg",
+            "type": "image",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          }
+        ]
+      }
+    },
+    "Policy_B_Soft_Multiplier": {
+      "policy_name": "Policy_B_Soft_Multiplier",
+      "negative_evaluation": {
+        "total_negative_triggers": 79,
+        "suppressed_count": 79,
+        "survived_count": 0,
+        "suppression_pct": 100.0,
+        "known_audit_tracks": [
+          {
+            "track_id": 14,
+            "direction": "up",
+            "scenario": "loading_ambulance",
+            "c_vel": 0.733,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.2199,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.733,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "effective_c_scene": 0.0,
+              "factor": 0.3,
+              "c_final": 0.2199,
+              "w_base": 0.3,
+              "tau_ref": 0.05,
+              "min_pers": 2
+            }
+          },
+          {
+            "track_id": 177,
+            "direction": "up",
+            "scenario": "diagonal_sidewalk_walking",
+            "c_vel": 0.746,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.2238,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.746,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "effective_c_scene": 0.0,
+              "factor": 0.3,
+              "c_final": 0.2238,
+              "w_base": 0.3,
+              "tau_ref": 0.05,
+              "min_pers": 2
+            }
+          },
+          {
+            "track_id": 252,
+            "direction": "up",
+            "scenario": "walking_toward_camera",
+            "c_vel": 0.712,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.2136,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.712,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "effective_c_scene": 0.0,
+              "factor": 0.3,
+              "c_final": 0.2136,
+              "w_base": 0.3,
+              "tau_ref": 0.05,
+              "min_pers": 2
+            }
+          },
+          {
+            "track_id": 273,
+            "direction": "up",
+            "scenario": "curb_movement_noise_hit",
+            "c_vel": 0.727,
+            "c_scene": 0.153,
+            "p_scene": 1,
+            "c_final": 0.2181,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.727,
+              "c_scene": 0.153,
+              "p_scene": 1,
+              "effective_c_scene": 0.0,
+              "factor": 0.3,
+              "c_final": 0.2181,
+              "w_base": 0.3,
+              "tau_ref": 0.05,
+              "min_pers": 2
+            }
+          }
+        ]
+      },
+      "positive_evaluation": {
+        "total_items": 7,
+        "video_items_count": 3,
+        "passed_count": 1,
+        "retention_pct_video": 33.33,
+        "retention_pct_all": 14.29,
+        "item_results": [
+          {
+            "id": "pos_01_video_man_ascending",
+            "media": "pos_01_man_ascending.ogv",
+            "type": "video",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.715,
+            "c_scene": 0.099,
+            "p_scene": 31,
+            "c_final": 0.715,
+            "survives": true,
+            "label": "walking_upstairs",
+            "details": {
+              "c_vel": 0.715,
+              "c_scene": 0.099,
+              "p_scene": 31,
+              "effective_c_scene": 0.099,
+              "factor": 1.0,
+              "c_final": 0.715,
+              "w_base": 0.3,
+              "tau_ref": 0.05,
+              "min_pers": 2
+            }
+          },
+          {
+            "id": "pos_02_video_muybridge_ascending",
+            "media": "pos_02_muybridge_ascending.gif",
+            "type": "sequence",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.716,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.2148,
+            "survives": false,
+            "label": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.716,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "effective_c_scene": 0.0,
+              "factor": 0.3,
+              "c_final": 0.2148,
+              "w_base": 0.3,
+              "tau_ref": 0.05,
+              "min_pers": 2
+            }
+          },
+          {
+            "id": "pos_03_video_muybridge_descending",
+            "media": "pos_03_muybridge_descending.gif",
+            "type": "sequence",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.681,
+            "c_scene": 0.019,
+            "p_scene": 5,
+            "c_final": 0.3854,
+            "survives": false,
+            "label": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.681,
+              "c_scene": 0.019,
+              "p_scene": 5,
+              "effective_c_scene": 0.019,
+              "factor": 0.566,
+              "c_final": 0.3854,
+              "w_base": 0.3,
+              "tau_ref": 0.05,
+              "min_pers": 2
+            }
+          },
+          {
+            "id": "pos_04_img_westfield_descending",
+            "media": "Westfield_Stairs_Stratford_Cit.jpg",
+            "type": "image",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_05_img_subway_moritzplatz",
+            "media": "MJKk0995_U-Bahnhof_Moritzplatz.jpg",
+            "type": "image",
+            "action": "both",
+            "direction": "both",
+            "c_vel": 0.0,
+            "c_scene": 0.018,
+            "p_scene": 1,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_06_img_mcclellan_descending",
+            "media": "Adm_Allen_and_Rep_Giffords_dow.jpg",
+            "type": "image",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_07_img_girona_climbing",
+            "media": "Climbing_stairs_girona.jpg.jpg",
+            "type": "image",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          }
+        ]
+      }
+    },
+    "Policy_C_Evidence_Fusion": {
+      "policy_name": "Policy_C_Evidence_Fusion",
+      "negative_evaluation": {
+        "total_negative_triggers": 79,
+        "suppressed_count": 79,
+        "survived_count": 0,
+        "suppression_pct": 100.0,
+        "known_audit_tracks": [
+          {
+            "track_id": 14,
+            "direction": "up",
+            "scenario": "loading_ambulance",
+            "c_vel": 0.733,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.3665,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.733,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "norm_scene": 0.0,
+              "norm_pers": 0.0,
+              "c_final": 0.3665,
+              "weights": {
+                "w_vel": 0.5,
+                "w_scene": 0.35,
+                "w_pers": 0.15
+              }
+            }
+          },
+          {
+            "track_id": 177,
+            "direction": "up",
+            "scenario": "diagonal_sidewalk_walking",
+            "c_vel": 0.746,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.373,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.746,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "norm_scene": 0.0,
+              "norm_pers": 0.0,
+              "c_final": 0.373,
+              "weights": {
+                "w_vel": 0.5,
+                "w_scene": 0.35,
+                "w_pers": 0.15
+              }
+            }
+          },
+          {
+            "track_id": 252,
+            "direction": "up",
+            "scenario": "walking_toward_camera",
+            "c_vel": 0.712,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.356,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.712,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "norm_scene": 0.0,
+              "norm_pers": 0.0,
+              "c_final": 0.356,
+              "weights": {
+                "w_vel": 0.5,
+                "w_scene": 0.35,
+                "w_pers": 0.15
+              }
+            }
+          },
+          {
+            "track_id": 273,
+            "direction": "up",
+            "scenario": "curb_movement_noise_hit",
+            "c_vel": 0.727,
+            "c_scene": 0.153,
+            "p_scene": 1,
+            "c_final": 0.3635,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.727,
+              "c_scene": 0.153,
+              "p_scene": 1,
+              "norm_scene": 0.0,
+              "norm_pers": 0.0,
+              "c_final": 0.3635,
+              "weights": {
+                "w_vel": 0.5,
+                "w_scene": 0.35,
+                "w_pers": 0.15
+              }
+            }
+          }
+        ]
+      },
+      "positive_evaluation": {
+        "total_items": 7,
+        "video_items_count": 3,
+        "passed_count": 2,
+        "retention_pct_video": 66.67,
+        "retention_pct_all": 28.57,
+        "item_results": [
+          {
+            "id": "pos_01_video_man_ascending",
+            "media": "pos_01_man_ascending.ogv",
+            "type": "video",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.715,
+            "c_scene": 0.099,
+            "p_scene": 31,
+            "c_final": 0.8575,
+            "survives": true,
+            "label": "walking_upstairs",
+            "details": {
+              "c_vel": 0.715,
+              "c_scene": 0.099,
+              "p_scene": 31,
+              "norm_scene": 1.0,
+              "norm_pers": 1.0,
+              "c_final": 0.8575,
+              "weights": {
+                "w_vel": 0.5,
+                "w_scene": 0.35,
+                "w_pers": 0.15
+              }
+            }
+          },
+          {
+            "id": "pos_02_video_muybridge_ascending",
+            "media": "pos_02_muybridge_ascending.gif",
+            "type": "sequence",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.716,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.358,
+            "survives": false,
+            "label": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.716,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "norm_scene": 0.0,
+              "norm_pers": 0.0,
+              "c_final": 0.358,
+              "weights": {
+                "w_vel": 0.5,
+                "w_scene": 0.35,
+                "w_pers": 0.15
+              }
+            }
+          },
+          {
+            "id": "pos_03_video_muybridge_descending",
+            "media": "pos_03_muybridge_descending.gif",
+            "type": "sequence",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.681,
+            "c_scene": 0.019,
+            "p_scene": 5,
+            "c_final": 0.6235,
+            "survives": true,
+            "label": "walking_downstairs",
+            "details": {
+              "c_vel": 0.681,
+              "c_scene": 0.019,
+              "p_scene": 5,
+              "norm_scene": 0.38,
+              "norm_pers": 1.0,
+              "c_final": 0.6235,
+              "weights": {
+                "w_vel": 0.5,
+                "w_scene": 0.35,
+                "w_pers": 0.15
+              }
+            }
+          },
+          {
+            "id": "pos_04_img_westfield_descending",
+            "media": "Westfield_Stairs_Stratford_Cit.jpg",
+            "type": "image",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_05_img_subway_moritzplatz",
+            "media": "MJKk0995_U-Bahnhof_Moritzplatz.jpg",
+            "type": "image",
+            "action": "both",
+            "direction": "both",
+            "c_vel": 0.0,
+            "c_scene": 0.018,
+            "p_scene": 1,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_06_img_mcclellan_descending",
+            "media": "Adm_Allen_and_Rep_Giffords_dow.jpg",
+            "type": "image",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_07_img_girona_climbing",
+            "media": "Climbing_stairs_girona.jpg.jpg",
+            "type": "image",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          }
+        ]
+      }
+    },
+    "Policy_D_Conservative_Gate": {
+      "policy_name": "Policy_D_Conservative_Gate",
+      "negative_evaluation": {
+        "total_negative_triggers": 79,
+        "suppressed_count": 79,
+        "survived_count": 0,
+        "suppression_pct": 100.0,
+        "known_audit_tracks": [
+          {
+            "track_id": 14,
+            "direction": "up",
+            "scenario": "loading_ambulance",
+            "c_vel": 0.733,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.2566,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.733,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "effective_c_scene": 0.0,
+              "factor": 0.35,
+              "c_final": 0.2566,
+              "w_base": 0.35,
+              "tau_ref": 0.05
+            }
+          },
+          {
+            "track_id": 177,
+            "direction": "up",
+            "scenario": "diagonal_sidewalk_walking",
+            "c_vel": 0.746,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.2611,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.746,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "effective_c_scene": 0.0,
+              "factor": 0.35,
+              "c_final": 0.2611,
+              "w_base": 0.35,
+              "tau_ref": 0.05
+            }
+          },
+          {
+            "track_id": 252,
+            "direction": "up",
+            "scenario": "walking_toward_camera",
+            "c_vel": 0.712,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.2492,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.712,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "effective_c_scene": 0.0,
+              "factor": 0.35,
+              "c_final": 0.2492,
+              "w_base": 0.35,
+              "tau_ref": 0.05
+            }
+          },
+          {
+            "track_id": 273,
+            "direction": "up",
+            "scenario": "curb_movement_noise_hit",
+            "c_vel": 0.727,
+            "c_scene": 0.153,
+            "p_scene": 1,
+            "c_final": 0.2544,
+            "decision": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.727,
+              "c_scene": 0.153,
+              "p_scene": 1,
+              "effective_c_scene": 0.0,
+              "factor": 0.35,
+              "c_final": 0.2544,
+              "w_base": 0.35,
+              "tau_ref": 0.05
+            }
+          }
+        ]
+      },
+      "positive_evaluation": {
+        "total_items": 7,
+        "video_items_count": 3,
+        "passed_count": 1,
+        "retention_pct_video": 33.33,
+        "retention_pct_all": 14.29,
+        "item_results": [
+          {
+            "id": "pos_01_video_man_ascending",
+            "media": "pos_01_man_ascending.ogv",
+            "type": "video",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.715,
+            "c_scene": 0.099,
+            "p_scene": 31,
+            "c_final": 0.715,
+            "survives": true,
+            "label": "walking_upstairs",
+            "details": {
+              "c_vel": 0.715,
+              "c_scene": 0.099,
+              "p_scene": 31,
+              "effective_c_scene": 0.099,
+              "factor": 1.0,
+              "c_final": 0.715,
+              "w_base": 0.35,
+              "tau_ref": 0.05
+            }
+          },
+          {
+            "id": "pos_02_video_muybridge_ascending",
+            "media": "pos_02_muybridge_ascending.gif",
+            "type": "sequence",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.716,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.2506,
+            "survives": false,
+            "label": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.716,
+              "c_scene": 0.0,
+              "p_scene": 0,
+              "effective_c_scene": 0.0,
+              "factor": 0.35,
+              "c_final": 0.2506,
+              "w_base": 0.35,
+              "tau_ref": 0.05
+            }
+          },
+          {
+            "id": "pos_03_video_muybridge_descending",
+            "media": "pos_03_muybridge_descending.gif",
+            "type": "sequence",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.681,
+            "c_scene": 0.019,
+            "p_scene": 5,
+            "c_final": 0.5112,
+            "survives": false,
+            "label": "walking (suppressed)",
+            "details": {
+              "c_vel": 0.681,
+              "c_scene": 0.019,
+              "p_scene": 5,
+              "effective_c_scene": 0.019,
+              "factor": 0.7507,
+              "c_final": 0.5112,
+              "w_base": 0.35,
+              "tau_ref": 0.05
+            }
+          },
+          {
+            "id": "pos_04_img_westfield_descending",
+            "media": "Westfield_Stairs_Stratford_Cit.jpg",
+            "type": "image",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_05_img_subway_moritzplatz",
+            "media": "MJKk0995_U-Bahnhof_Moritzplatz.jpg",
+            "type": "image",
+            "action": "both",
+            "direction": "both",
+            "c_vel": 0.0,
+            "c_scene": 0.018,
+            "p_scene": 1,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_06_img_mcclellan_descending",
+            "media": "Adm_Allen_and_Rep_Giffords_dow.jpg",
+            "type": "image",
+            "action": "descending",
+            "direction": "down",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          },
+          {
+            "id": "pos_07_img_girona_climbing",
+            "media": "Climbing_stairs_girona.jpg.jpg",
+            "type": "image",
+            "action": "ascending",
+            "direction": "up",
+            "c_vel": 0.0,
+            "c_scene": 0.0,
+            "p_scene": 0,
+            "c_final": 0.0,
+            "survives": false,
+            "label": "no_motion (static_image)",
+            "details": {
+              "reason": "static_image_no_temporal_tracks"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "downstream_fusion_validation": {
+    "test_item": "pos_01_man_ascending",
+    "fuser_passed": true,
+    "fused_confidence": 0.859,
+    "confidence_vector": {
+      "fused": 0.859,
+      "components": {
+        "detection": 0.88,
+        "motion": 0.78,
+        "rule": 0.75,
+        "track_stability": 1.0,
+        "scene_reliability": 1.0
+      },
+      "detection": 0.88,
+      "motion": 0.78,
+      "rule": 0.75,
+      "track_stability": 1.0,
+      "scene_reliability": 1.0,
+      "weights_used": {
+        "detection": 0.3,
+        "motion": 0.25,
+        "rule": 0.2,
+        "track_stability": 0.15,
+        "scene_reliability": 0.1
+      },
+      "strategy": "weighted_linear"
+    }
+  },
+  "parameter_sensitivity": {
+    "total_grid_points": 48,
+    "negative_suppression_range": [
+      100.0,
+      100.0
+    ],
+    "positive_retention_range": [
+      33.33,
+      66.67
+    ],
+    "sample_grid": [
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.03,
+        "tau_act": 0.5,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.03,
+        "tau_act": 0.55,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.03,
+        "tau_act": 0.6,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.05,
+        "tau_act": 0.5,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.05,
+        "tau_act": 0.55,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.05,
+        "tau_act": 0.6,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.08,
+        "tau_act": 0.5,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.08,
+        "tau_act": 0.55,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.08,
+        "tau_act": 0.6,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.1,
+        "tau_act": 0.5,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.1,
+        "tau_act": 0.55,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      },
+      {
+        "w_base": 0.2,
+        "tau_ref": 0.1,
+        "tau_act": 0.6,
+        "negative_suppressed_count": 79,
+        "negative_suppression_pct": 100.0,
+        "positive_video_retained_count": 1,
+        "positive_video_retention_pct": 33.33
+      }
+    ],
+    "stability_finding": "Negative suppression is 100% stable across all w_base <= 0.40 and tau_act >= 0.50. Positive retention on pos_01 is 100% stable across all grid points. However, pos_03 retention is highly sensitive to tau_ref and policy choice."
+  },
+  "direction_analysis": {
+    "ascending": {
+      "negative_triggers": 56,
+      "policy_b_suppressed": 56,
+      "positive_video_items": 2,
+      "policy_b_retained": 1
+    },
+    "descending": {
+      "negative_triggers": 23,
+      "policy_b_suppressed": 23,
+      "positive_video_items": 1,
+      "policy_b_retained": 0,
+      "policy_c_retained": 1
+    }
+  },
+  "explainability_example": {
+    "event_type": "walking_upstairs",
+    "track_id": 1,
+    "velocity_confidence": 0.715,
+    "scene_stair_confidence": 0.099,
+    "scene_stair_persistence": 31,
+    "scene_stair_supported": true,
+    "spatial_relation": "contained (IoU=0.28)",
+    "final_stair_confidence": 0.715,
+    "fused_confidence": 0.859,
+    "decision": "walking_upstairs",
+    "fallback_label": "walking"
+  },
+  "decision": "B. SOFT EVIDENCE PROMISING BUT NEEDS CALIBRATION",
+  "rationale": "Soft evidence successfully suppresses 100% of negative false stair triggers in archive_001 and successfully retains authentic outdoor surveillance stair climbing (pos_01). It also integrates seamlessly with downstream ConfidenceFuser. However, retention of subtle/distant stairs (pos_03, static scenes) is sensitive to coefficient choice and requires calibrated vision-language thresholding before promotion to production."
+}

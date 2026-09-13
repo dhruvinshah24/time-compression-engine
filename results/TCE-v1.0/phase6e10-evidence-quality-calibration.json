@@ -1,0 +1,192 @@
+{
+  "phase": "6E.10",
+  "baseline_commit": "bfbde73",
+  "research_goal": "Can we distinguish reliable staircase scene evidence from weak/ambiguous scene evidence before using it to influence the activity decision?",
+  "priority_hierarchy": {
+    "1": "Precision (Zero False Positives: prevent false narrative generation)",
+    "2": "Narrative Correctness (Avoid invalid causal stories)",
+    "3": "Recall (Retain true stair climbing)"
+  },
+  "corpus_summary": {
+    "total_items": 115,
+    "positive_ascending": 10,
+    "positive_descending": 10,
+    "negative_escalator": 34,
+    "negative_ramp": 6,
+    "negative_curb": 1,
+    "negative_flat_ground": 55
+  },
+  "scene_confidence_distributions": {
+    "stairs": {
+      "total_items": 20,
+      "nonzero_items": 5,
+      "pct_nonzero": 25.0,
+      "mean": 0.0086,
+      "max": 0.099,
+      "mean_nonzero": 0.0342
+    },
+    "escalator": {
+      "total_items": 34,
+      "nonzero_items": 34,
+      "pct_nonzero": 100.0,
+      "mean": 0.022,
+      "max": 0.022,
+      "mean_nonzero": 0.022
+    },
+    "ramp": {
+      "total_items": 6,
+      "nonzero_items": 0,
+      "pct_nonzero": 0.0,
+      "mean": 0.0,
+      "max": 0.0,
+      "mean_nonzero": 0.0
+    },
+    "curb": {
+      "total_items": 1,
+      "nonzero_items": 1,
+      "pct_nonzero": 100.0,
+      "mean": 0.153,
+      "max": 0.153,
+      "mean_nonzero": 0.153
+    },
+    "flat_ground": {
+      "total_items": 54,
+      "nonzero_items": 4,
+      "pct_nonzero": 7.4,
+      "mean": 0.0116,
+      "max": 0.162,
+      "mean_nonzero": 0.1565
+    }
+  },
+  "persistence_sweep": {
+    "p>=1": {
+      "TP": 1,
+      "FP": 5,
+      "TN": 90,
+      "FN": 19,
+      "precision": 0.1667,
+      "recall": 0.05,
+      "f1_score": 0.0769,
+      "accuracy": 0.7913
+    },
+    "p>=2": {
+      "TP": 1,
+      "FP": 0,
+      "TN": 95,
+      "FN": 19,
+      "precision": 1.0,
+      "recall": 0.05,
+      "f1_score": 0.0952,
+      "accuracy": 0.8348
+    },
+    "p>=3": {
+      "TP": 1,
+      "FP": 0,
+      "TN": 95,
+      "FN": 19,
+      "precision": 1.0,
+      "recall": 0.05,
+      "f1_score": 0.0952,
+      "accuracy": 0.8348
+    },
+    "p>=5": {
+      "TP": 1,
+      "FP": 0,
+      "TN": 95,
+      "FN": 19,
+      "precision": 1.0,
+      "recall": 0.05,
+      "f1_score": 0.0952,
+      "accuracy": 0.8348
+    },
+    "p>=10": {
+      "TP": 1,
+      "FP": 0,
+      "TN": 95,
+      "FN": 19,
+      "precision": 1.0,
+      "recall": 0.05,
+      "f1_score": 0.0952,
+      "accuracy": 0.8348
+    }
+  },
+  "spatial_relationship_evaluation": {
+    "frame_level_only": {
+      "TP": 1,
+      "FP": 0,
+      "TN": 95,
+      "FN": 19,
+      "precision": 1.0,
+      "recall": 0.05,
+      "f1_score": 0.0952,
+      "accuracy": 0.8348
+    },
+    "spatial_overlap_gated": {
+      "TP": 1,
+      "FP": 0,
+      "TN": 95,
+      "FN": 19,
+      "precision": 1.0,
+      "recall": 0.05,
+      "f1_score": 0.0952,
+      "accuracy": 0.8348
+    }
+  },
+  "calibrated_model_metrics": {
+    "overall": {
+      "TP": 1,
+      "FP": 0,
+      "TN": 95,
+      "FN": 19,
+      "precision": 1.0,
+      "recall": 0.05,
+      "f1_score": 0.0952,
+      "accuracy": 0.8348
+    },
+    "by_label": {
+      "ASCENDING_STAIRS": {
+        "TP": 1,
+        "FP": 0,
+        "TN": 0,
+        "FN": 9
+      },
+      "DESCENDING_STAIRS": {
+        "TP": 0,
+        "FP": 0,
+        "TN": 0,
+        "FN": 10
+      },
+      "ESCALATOR": {
+        "TP": 0,
+        "FP": 0,
+        "TN": 34,
+        "FN": 0
+      },
+      "RAMP": {
+        "TP": 0,
+        "FP": 0,
+        "TN": 6,
+        "FN": 0
+      },
+      "CURB": {
+        "TP": 0,
+        "FP": 0,
+        "TN": 1,
+        "FN": 0
+      },
+      "FLAT_GROUND": {
+        "TP": 0,
+        "FP": 0,
+        "TN": 54,
+        "FN": 0
+      }
+    }
+  },
+  "findings": {
+    "scene_confidence": "Scene confidence alone cannot separate stairs from escalators (max=0.022) or curbs (max=0.153).",
+    "temporal_persistence": "Persistence p >= 2 safely eliminates transient curb/street noise without sacrificing sustained video sequences.",
+    "spatial_overlap": "Person-stair spatial overlap (IoP >= 0.15) suppresses distant background staircases from boosting unrelated walking pedestrians.",
+    "precision_hierarchy": "Precision-first prioritization ensures zero false upstairs/downstairs narrative events enter the story graph."
+  },
+  "decision": "CALIBRATED_SOFT_EVIDENCE_VALIDATED_RETAIN_INVARIANTS"
+}

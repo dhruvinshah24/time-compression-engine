@@ -1,0 +1,913 @@
+{
+  "phase": "6E.14-AUDIT",
+  "vocabulary_comparison": {
+    "story_builder_actions": [
+      "cycling",
+      "person_loitering",
+      "person_running",
+      "person_standing",
+      "person_walking",
+      "running",
+      "vehicle_approaching",
+      "vehicle_receding",
+      "vehicle_stationary",
+      "walking_downstairs",
+      "walking_upstairs"
+    ],
+    "sequence_validator_actions": [
+      "person_loitering",
+      "person_running",
+      "person_standing",
+      "person_walking",
+      "vehicle_approaching",
+      "vehicle_receding",
+      "vehicle_stationary"
+    ],
+    "missing_from_sequence_validator": [
+      "cycling",
+      "running",
+      "walking_downstairs",
+      "walking_upstairs"
+    ]
+  },
+  "warnings_audit": [
+    {
+      "warning_id": "WARN-S12-01",
+      "segment_id": "seg_1_ebfe5648",
+      "track_ids": [
+        1
+      ],
+      "start_ms": 166.83350016683352,
+      "end_ms": 105739.07240573908,
+      "duration_s": 105.57,
+      "pre_compression_event_count": 14,
+      "post_compression_event_count": 14,
+      "pre_compression_event_types": [
+        "person_reaching_up",
+        "person_entered_scene",
+        "running",
+        "person_sitting",
+        "person_reaching_up",
+        "person_left_scene",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up"
+      ],
+      "post_compression_event_types": [
+        "person_reaching_up",
+        "person_entered_scene",
+        "running",
+        "person_sitting",
+        "person_reaching_up",
+        "person_left_scene",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up",
+        "person_reaching_up"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 79,
+        "importance_score": 0.5899,
+        "narrative_score": 0.5597,
+        "combined_rank": 0.5718
+      },
+      "events_detail": [
+        {
+          "event_id": "87f56a8c-6f61-4708-ad0f-8a5f0c5d42d3",
+          "event_type": "person_reaching_up",
+          "start_ms": 166.83350016683352,
+          "end_ms": 1935.2686019352686,
+          "confidence": 0.8284,
+          "is_kept": true
+        },
+        {
+          "event_id": "c971f095-5ec3-4ef6-9ce3-2b8b57f79778",
+          "event_type": "person_entered_scene",
+          "start_ms": 834.1675008341675,
+          "end_ms": 834.1675008341675,
+          "confidence": 0.8332,
+          "is_kept": true
+        },
+        {
+          "event_id": "4157afda-7a1b-47a4-be1f-f313af29a393",
+          "event_type": "running",
+          "start_ms": 834.1675008341675,
+          "end_ms": 9676.343009676344,
+          "confidence": 0.8284,
+          "is_kept": true
+        },
+        {
+          "event_id": "5410f337-89a6-4157-9bb0-d794bbfdbd30",
+          "event_type": "person_sitting",
+          "start_ms": 6506.506506506506,
+          "end_ms": 6506.506506506506,
+          "confidence": 0.8332,
+          "is_kept": true
+        },
+        {
+          "event_id": "5d53b06d-03ae-4288-84e8-9ff668a8d9d9",
+          "event_type": "person_reaching_up",
+          "start_ms": 9042.375709042377,
+          "end_ms": 9042.375709042377,
+          "confidence": 0.8332,
+          "is_kept": true
+        },
+        {
+          "event_id": "ca78291a-7c21-4098-983f-77354a88ed21",
+          "event_type": "person_left_scene",
+          "start_ms": 9676.343009676344,
+          "end_ms": 9676.343009676344,
+          "confidence": 0.8332,
+          "is_kept": true
+        },
+        {
+          "event_id": "9cd94f98-120e-4b8a-9bcd-e6eba2ed7805",
+          "event_type": "person_reaching_up",
+          "start_ms": 11845.178511845179,
+          "end_ms": 11845.178511845179,
+          "confidence": 0.8332,
+          "is_kept": true
+        },
+        {
+          "event_id": "265dfdbc-1592-49aa-b440-e9e456dd5957",
+          "event_type": "person_reaching_up",
+          "start_ms": 15382.04871538205,
+          "end_ms": 17384.050717384052,
+          "confidence": 0.8332,
+          "is_kept": true
+        },
+        {
+          "event_id": "289636d2-fc8e-4206-a2fb-4c6e297aa63b",
+          "event_type": "person_reaching_up",
+          "start_ms": 27394.060727394062,
+          "end_ms": 29229.22922922923,
+          "confidence": 0.8316,
+          "is_kept": true
+        },
+        {
+          "event_id": "a05ae06e-87d8-449b-9c79-44504da08bda",
+          "event_type": "person_reaching_up",
+          "start_ms": 52986.31965298633,
+          "end_ms": 60326.993660326996,
+          "confidence": 0.8324,
+          "is_kept": true
+        },
+        {
+          "event_id": "e1d1c9e2-d312-42e7-ace5-c16c2bab2f3f",
+          "event_type": "person_reaching_up",
+          "start_ms": 67200.53386720053,
+          "end_ms": 67200.53386720053,
+          "confidence": 0.8332,
+          "is_kept": true
+        },
+        {
+          "event_id": "4e5ad124-c0c2-4a9a-a05c-07f9f996a258",
+          "event_type": "person_reaching_up",
+          "start_ms": 87754.42108775442,
+          "end_ms": 89122.45578912245,
+          "confidence": 0.8311,
+          "is_kept": true
+        },
+        {
+          "event_id": "929c90ae-7c4d-4231-aca6-6d3a5f35a634",
+          "event_type": "person_reaching_up",
+          "start_ms": 100967.63430096763,
+          "end_ms": 100967.63430096763,
+          "confidence": 0.8332,
+          "is_kept": true
+        },
+        {
+          "event_id": "c7ad1bb9-5d5b-40b0-9749-92ee3f5eb1a3",
+          "event_type": "person_reaching_up",
+          "start_ms": 104904.9049049049,
+          "end_ms": 105739.07240573908,
+          "confidence": 0.8332,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-02",
+      "segment_id": "seg_11_41b62a8b",
+      "track_ids": [
+        11
+      ],
+      "start_ms": 31197.864531197865,
+      "end_ms": 35201.86853520187,
+      "duration_s": 4.0,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 6,
+        "importance_score": 0.7536,
+        "narrative_score": 0.8121,
+        "combined_rank": 0.7887
+      },
+      "events_detail": [
+        {
+          "event_id": "bf4d8573-88a9-43f4-85c4-3d74700f1381",
+          "event_type": "person_entered_scene",
+          "start_ms": 31197.864531197865,
+          "end_ms": 34868.2015348682,
+          "confidence": 0.7816,
+          "is_kept": true
+        },
+        {
+          "event_id": "5cbcd22a-0cd0-4a9e-a5c7-f74b4766a626",
+          "event_type": "running",
+          "start_ms": 31197.864531197865,
+          "end_ms": 32532.532532532532,
+          "confidence": 0.7816,
+          "is_kept": true
+        },
+        {
+          "event_id": "39efbc21-7647-4a6f-a75d-57b08626e163",
+          "event_type": "person_left_scene",
+          "start_ms": 32532.532532532532,
+          "end_ms": 35201.86853520187,
+          "confidence": 0.7766,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-03",
+      "segment_id": "seg_57_da22ebfe",
+      "track_ids": [
+        57
+      ],
+      "start_ms": 57390.724057390726,
+      "end_ms": 61227.8945612279,
+      "duration_s": 3.84,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 21,
+        "importance_score": 0.6477,
+        "narrative_score": 0.7283,
+        "combined_rank": 0.6961
+      },
+      "events_detail": [
+        {
+          "event_id": "f8103685-9a9e-442b-b86c-82c1989eef4b",
+          "event_type": "person_entered_scene",
+          "start_ms": 57390.724057390726,
+          "end_ms": 57390.724057390726,
+          "confidence": 0.586,
+          "is_kept": true
+        },
+        {
+          "event_id": "4fa6b4ce-1659-4869-b058-aff00972abd3",
+          "event_type": "running",
+          "start_ms": 57390.724057390726,
+          "end_ms": 60060.06006006006,
+          "confidence": 0.586,
+          "is_kept": true
+        },
+        {
+          "event_id": "bad47aab-6131-497e-b57f-6d65b5276257",
+          "event_type": "person_left_scene",
+          "start_ms": 60060.06006006006,
+          "end_ms": 61227.8945612279,
+          "confidence": 0.5646,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-04",
+      "segment_id": "seg_153_e50ce28c",
+      "track_ids": [
+        153
+      ],
+      "start_ms": 135802.46913580247,
+      "end_ms": 148648.64864864867,
+      "duration_s": 12.85,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 4,
+        "importance_score": 0.7596,
+        "narrative_score": 0.8444,
+        "combined_rank": 0.8105
+      },
+      "events_detail": [
+        {
+          "event_id": "3e00fd34-3584-4e54-a0e3-f5e3218eaf3d",
+          "event_type": "person_entered_scene",
+          "start_ms": 135802.46913580247,
+          "end_ms": 135802.46913580247,
+          "confidence": 0.8118,
+          "is_kept": true
+        },
+        {
+          "event_id": "60df2ae0-ac60-4a52-9366-36e84984c65c",
+          "event_type": "running",
+          "start_ms": 135802.46913580247,
+          "end_ms": 148148.14814814815,
+          "confidence": 0.8095,
+          "is_kept": true
+        },
+        {
+          "event_id": "f1d396e0-cef9-4521-a526-2c1e6d736cc9",
+          "event_type": "person_left_scene",
+          "start_ms": 148148.14814814815,
+          "end_ms": 148648.64864864867,
+          "confidence": 0.8118,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-05",
+      "segment_id": "seg_181_90f844da",
+      "track_ids": [
+        181
+      ],
+      "start_ms": 140640.64064064066,
+      "end_ms": 161494.82816149484,
+      "duration_s": 20.85,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 3,
+        "importance_score": 0.7702,
+        "narrative_score": 0.8507,
+        "combined_rank": 0.8185
+      },
+      "events_detail": [
+        {
+          "event_id": "e7e763fa-b356-4459-9814-53235f004971",
+          "event_type": "person_entered_scene",
+          "start_ms": 140640.64064064066,
+          "end_ms": 140807.4741408075,
+          "confidence": 0.8312,
+          "is_kept": true
+        },
+        {
+          "event_id": "eb6d06ba-56a8-40dd-ba14-961a56d0a125",
+          "event_type": "running",
+          "start_ms": 140640.64064064066,
+          "end_ms": 151818.4851518185,
+          "confidence": 0.8249,
+          "is_kept": true
+        },
+        {
+          "event_id": "4262bfc3-1a02-4224-9f87-756c38bf1bf9",
+          "event_type": "person_left_scene",
+          "start_ms": 151818.4851518185,
+          "end_ms": 161494.82816149484,
+          "confidence": 0.8239,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-06",
+      "segment_id": "seg_246_c894f4b1",
+      "track_ids": [
+        246
+      ],
+      "start_ms": 204204.2042042042,
+      "end_ms": 208708.70870870873,
+      "duration_s": 4.5,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "cycling",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "cycling"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 9,
+        "importance_score": 0.7382,
+        "narrative_score": 0.7991,
+        "combined_rank": 0.7747
+      },
+      "events_detail": [
+        {
+          "event_id": "18eabc2b-9737-4a1a-aa50-cc87e0711e73",
+          "event_type": "person_entered_scene",
+          "start_ms": 204204.2042042042,
+          "end_ms": 204204.2042042042,
+          "confidence": 0.7224,
+          "is_kept": true
+        },
+        {
+          "event_id": "56cdf847-fe96-409f-981e-dc574480c2ca",
+          "event_type": "cycling",
+          "start_ms": 204204.2042042042,
+          "end_ms": 208708.70870870873,
+          "confidence": 0.7224,
+          "is_kept": true
+        },
+        {
+          "event_id": "4dbfebcf-4301-466d-87c7-a338b07bbe5d",
+          "event_type": "person_left_scene",
+          "start_ms": 208708.70870870873,
+          "end_ms": 208708.70870870873,
+          "confidence": 0.7224,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-07",
+      "segment_id": "seg_272_f9059ace",
+      "track_ids": [
+        272
+      ],
+      "start_ms": 229062.3957290624,
+      "end_ms": 240907.5742409076,
+      "duration_s": 11.85,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 1,
+        "importance_score": 0.8011,
+        "narrative_score": 0.8737,
+        "combined_rank": 0.8447
+      },
+      "events_detail": [
+        {
+          "event_id": "470da7c1-deae-4aa6-8c81-a536361f4c15",
+          "event_type": "person_entered_scene",
+          "start_ms": 229062.3957290624,
+          "end_ms": 229062.3957290624,
+          "confidence": 0.8873,
+          "is_kept": true
+        },
+        {
+          "event_id": "df9d5374-363b-48d7-a6ca-cc0eda9a5b01",
+          "event_type": "running",
+          "start_ms": 229062.3957290624,
+          "end_ms": 233233.23323323324,
+          "confidence": 0.884,
+          "is_kept": true
+        },
+        {
+          "event_id": "04e2a452-1801-4915-8cc1-0a3292220d1f",
+          "event_type": "person_left_scene",
+          "start_ms": 233233.23323323324,
+          "end_ms": 240907.5742409076,
+          "confidence": 0.8818,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-08",
+      "segment_id": "seg_543_56bb3c99",
+      "track_ids": [
+        543
+      ],
+      "start_ms": 313980.6473139807,
+      "end_ms": 331664.998331665,
+      "duration_s": 17.68,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 2,
+        "importance_score": 0.7839,
+        "narrative_score": 0.8623,
+        "combined_rank": 0.8309
+      },
+      "events_detail": [
+        {
+          "event_id": "c154fd35-e35b-4702-9990-8ff75ff59901",
+          "event_type": "person_entered_scene",
+          "start_ms": 313980.6473139807,
+          "end_ms": 315148.4818151485,
+          "confidence": 0.8568,
+          "is_kept": true
+        },
+        {
+          "event_id": "82193db5-df9a-41b7-b85f-5a486b8df23e",
+          "event_type": "running",
+          "start_ms": 313980.6473139807,
+          "end_ms": 331664.998331665,
+          "confidence": 0.8536,
+          "is_kept": true
+        },
+        {
+          "event_id": "bab47472-7fe4-45d6-a1ff-b6f9f22ca4fc",
+          "event_type": "person_left_scene",
+          "start_ms": 331664.998331665,
+          "end_ms": 331664.998331665,
+          "confidence": 0.8568,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-09",
+      "segment_id": "seg_626_ded9f246",
+      "track_ids": [
+        626
+      ],
+      "start_ms": 360860.86086086085,
+      "end_ms": 364030.6973640307,
+      "duration_s": 3.17,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 5,
+        "importance_score": 0.7714,
+        "narrative_score": 0.8169,
+        "combined_rank": 0.7987
+      },
+      "events_detail": [
+        {
+          "event_id": "ccee714b-b7a2-4a48-a3df-e159db4e16bc",
+          "event_type": "person_entered_scene",
+          "start_ms": 360860.86086086085,
+          "end_ms": 363697.03036369703,
+          "confidence": 0.8351,
+          "is_kept": true
+        },
+        {
+          "event_id": "8bc64c63-f8d3-47c5-bf44-530ea5cf3316",
+          "event_type": "running",
+          "start_ms": 360860.86086086085,
+          "end_ms": 364030.6973640307,
+          "confidence": 0.8308,
+          "is_kept": true
+        },
+        {
+          "event_id": "79b9b4cd-a286-4878-8161-d1a082ba8054",
+          "event_type": "person_left_scene",
+          "start_ms": 364030.6973640307,
+          "end_ms": 364030.6973640307,
+          "confidence": 0.8351,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-10",
+      "segment_id": "seg_768_6e238d40",
+      "track_ids": [
+        768
+      ],
+      "start_ms": 411745.0784117451,
+      "end_ms": 417250.5839172506,
+      "duration_s": 5.51,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 7,
+        "importance_score": 0.7481,
+        "narrative_score": 0.8154,
+        "combined_rank": 0.7885
+      },
+      "events_detail": [
+        {
+          "event_id": "f0ee6b66-d00c-4f04-91f1-9f4bf47a4710",
+          "event_type": "person_entered_scene",
+          "start_ms": 411745.0784117451,
+          "end_ms": 411745.0784117451,
+          "confidence": 0.7385,
+          "is_kept": true
+        },
+        {
+          "event_id": "5b63a1ee-08f6-4416-aa51-0a7a5d087ff6",
+          "event_type": "running",
+          "start_ms": 411745.0784117451,
+          "end_ms": 417250.5839172506,
+          "confidence": 0.7385,
+          "is_kept": true
+        },
+        {
+          "event_id": "91a83640-ba27-443f-a21b-887ebb3cf3b0",
+          "event_type": "person_left_scene",
+          "start_ms": 417250.5839172506,
+          "end_ms": 417250.5839172506,
+          "confidence": 0.7385,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-11",
+      "segment_id": "seg_774_baf3c065",
+      "track_ids": [
+        774
+      ],
+      "start_ms": 429763.0964297631,
+      "end_ms": 431264.5979312646,
+      "duration_s": 1.5,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 8,
+        "importance_score": 0.7744,
+        "narrative_score": 0.7848,
+        "combined_rank": 0.7806
+      },
+      "events_detail": [
+        {
+          "event_id": "77dfe475-3c3e-4ef6-82e5-8fd67c176c08",
+          "event_type": "person_entered_scene",
+          "start_ms": 429763.0964297631,
+          "end_ms": 429763.0964297631,
+          "confidence": 0.8368,
+          "is_kept": true
+        },
+        {
+          "event_id": "be236b45-2c33-450a-b5bf-7765d4116e45",
+          "event_type": "running",
+          "start_ms": 429763.0964297631,
+          "end_ms": 431264.5979312646,
+          "confidence": 0.8368,
+          "is_kept": true
+        },
+        {
+          "event_id": "8843c811-dc27-4ff8-a33b-2f82322d61cc",
+          "event_type": "person_left_scene",
+          "start_ms": 431264.5979312646,
+          "end_ms": 431264.5979312646,
+          "confidence": 0.8368,
+          "is_kept": true
+        }
+      ]
+    },
+    {
+      "warning_id": "WARN-S12-12",
+      "segment_id": "seg_808_4baca1b1",
+      "track_ids": [
+        808
+      ],
+      "start_ms": 441941.941941942,
+      "end_ms": 443610.2769436103,
+      "duration_s": 1.67,
+      "pre_compression_event_count": 3,
+      "post_compression_event_count": 3,
+      "pre_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_compression_event_types": [
+        "person_entered_scene",
+        "running",
+        "person_left_scene"
+      ],
+      "post_has_entry": true,
+      "post_has_exit": true,
+      "post_has_sb_action": true,
+      "post_has_val_action": false,
+      "sb_actions_retained": [
+        "running"
+      ],
+      "val_actions_retained": [],
+      "is_action_actually_retained_in_clip": true,
+      "vocabulary_mismatch_cause": true,
+      "ranking": {
+        "rank": 16,
+        "importance_score": 0.6993,
+        "narrative_score": 0.717,
+        "combined_rank": 0.7099
+      },
+      "events_detail": [
+        {
+          "event_id": "1f792257-70e5-4535-af16-a2614e84798a",
+          "event_type": "person_entered_scene",
+          "start_ms": 441941.941941942,
+          "end_ms": 441941.941941942,
+          "confidence": 0.6618,
+          "is_kept": true
+        },
+        {
+          "event_id": "933975c3-2ecd-4cad-8500-a0319db58c37",
+          "event_type": "running",
+          "start_ms": 441941.941941942,
+          "end_ms": 443610.2769436103,
+          "confidence": 0.654,
+          "is_kept": true
+        },
+        {
+          "event_id": "203a470c-b454-40be-92d2-8753d83d411d",
+          "event_type": "person_left_scene",
+          "start_ms": 443610.2769436103,
+          "end_ms": 443610.2769436103,
+          "confidence": 0.6618,
+          "is_kept": true
+        }
+      ]
+    }
+  ]
+}

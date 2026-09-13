@@ -1,0 +1,1351 @@
+{
+  "phase": "6E.14",
+  "job_id": "PHASE6E14-D87877",
+  "decision": "PASS \u2014 595s END-TO-END VALIDATED",
+  "input": {
+    "video_file": "C:\\Users\\dhruv\\.gemini\\antigravity\\scratch\\time-compression-engine\\data\\real\\archive\\videos\\WhenYouA1948_512kb.mp4",
+    "duration_s": 595.23,
+    "total_frames": 17839,
+    "fps": 29.97,
+    "resolution": "320x240"
+  },
+  "performance": {
+    "total_runtime_s": 118.4,
+    "rtf": 0.199,
+    "peak_vram_mb": 983,
+    "stair_inferences_count": 137,
+    "stair_inference_ms": 6886.8,
+    "stage_durations": {
+      "s01_upload": 0.1,
+      "s02_extract": 3.23,
+      "s03_scene_detect": 15.16,
+      "s04_object_detect": 30.93,
+      "s05_track": 2.89,
+      "s06_motion_analyze": 0.04,
+      "s07_event_understand": 27.1,
+      "s08_confidence_fuse": 0.01,
+      "s09_story_build": 0.01,
+      "s10_rank": 0.01,
+      "s11_summarize": 0.0,
+      "s12_export": 38.95
+    }
+  },
+  "stages": [
+    {
+      "stage": "s01_upload",
+      "success": true,
+      "duration_ms": 103,
+      "duration_s": 0.1,
+      "warnings_count": 0,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "file_size_bytes": 41943491,
+        "duration_seconds": 595.228562,
+        "fps": 29.97,
+        "frame_count": 17839,
+        "resolution": "320x240",
+        "codec": "h264",
+        "has_audio": true,
+        "is_long_video": false
+      },
+      "artifacts": [
+        "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_6e14_595s_k7bkhbjw\\outputs\\thumbnails\\PHASE6E14-D87877\\upload_preview.jpg"
+      ]
+    },
+    {
+      "stage": "s02_extract",
+      "success": true,
+      "duration_ms": 3228,
+      "duration_s": 3.23,
+      "warnings_count": 0,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "frames_extracted": 3568,
+        "frame_skip_rate": 5,
+        "processing_profile": "STANDARD",
+        "extraction_speed_fps": 1105.67,
+        "extraction_time_ms": 3227,
+        "frames_dir": "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_6e14_595s_k7bkhbjw\\outputs\\frames\\PHASE6E14-D87877",
+        "estimated_frames": 3567,
+        "frame_reduction_ratio": 5.0,
+        "chunked_extraction": false,
+        "adaptive_skip_enabled": false,
+        "skip_source": "settings",
+        "adaptive_skip_stats": null
+      },
+      "artifacts": [
+        "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_6e14_595s_k7bkhbjw\\outputs\\frames\\PHASE6E14-D87877"
+      ]
+    },
+    {
+      "stage": "s03_scene_detect",
+      "success": true,
+      "duration_ms": 15157,
+      "duration_s": 15.16,
+      "warnings_count": 0,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_frames_analyzed": 3568,
+        "scene_boundaries_detected": 174,
+        "scene_segments": 175,
+        "hard_cuts_detected": 0,
+        "duplicate_frames": 2423,
+        "keyframes_selected": 1071,
+        "duplicate_rate": 0.6790919282511211,
+        "reduction_ratio": 3.331465919701214,
+        "avg_composite_score": 0.026865087781078996,
+        "processing_time_ms": 15155,
+        "processing_fps": 235.43385021445067
+      },
+      "artifacts": []
+    },
+    {
+      "stage": "s04_object_detect",
+      "success": true,
+      "duration_ms": 30934,
+      "duration_s": 30.93,
+      "warnings_count": 0,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_frames_processed": 1063,
+        "total_detections": 4375,
+        "frames_with_detections": 944,
+        "detection_rate": 0.8880526810912511,
+        "avg_inference_time_ms": 26.37,
+        "model_name": "yolo11l",
+        "detections_by_class": {
+          "person": 2290,
+          "truck": 300,
+          "handbag": 13,
+          "bus": 84,
+          "dog": 63,
+          "car": 1263,
+          "suitcase": 10,
+          "bed": 4,
+          "book": 6,
+          "traffic_light": 39,
+          "cat": 6,
+          "tie": 49,
+          "banana": 2,
+          "umbrella": 5,
+          "motorcycle": 64,
+          "bench": 50,
+          "potted_plant": 25,
+          "stop_sign": 77,
+          "vase": 3,
+          "cup": 1,
+          "laptop": 1,
+          "chair": 14,
+          "table": 1,
+          "fire_hydrant": 1,
+          "tennis_racket": 2,
+          "bicycle": 1,
+          "clock": 1
+        },
+        "quality_dominant": "normal",
+        "quality_mean_luminance": 102.58,
+        "quality_mean_blur": 244.97,
+        "quality_low_light_ratio": 0.04,
+        "quality_unusable_ratio": 0.007,
+        "quality_preprocessing": "off",
+        "skipped_unusable_frames": 8
+      },
+      "artifacts": []
+    },
+    {
+      "stage": "s05_track",
+      "success": true,
+      "duration_ms": 2888,
+      "duration_s": 2.89,
+      "warnings_count": 0,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_frames_processed": 1063,
+        "total_tracks_created": 954,
+        "active_tracks": 0,
+        "ended_tracks": 954,
+        "confirmed_tracks": 451,
+        "avg_track_length_frames": 4.59,
+        "avg_track_confidence": 0.4736,
+        "classes_tracked": {
+          "person": 338,
+          "truck": 145,
+          "handbag": 9,
+          "bus": 41,
+          "dog": 15,
+          "car": 287,
+          "suitcase": 9,
+          "bed": 2,
+          "book": 3,
+          "traffic_light": 16,
+          "cat": 6,
+          "tie": 23,
+          "banana": 2,
+          "umbrella": 5,
+          "motorcycle": 17,
+          "bench": 12,
+          "potted_plant": 7,
+          "stop_sign": 2,
+          "vase": 2,
+          "cup": 1,
+          "laptop": 1,
+          "chair": 5,
+          "table": 1,
+          "fire_hydrant": 1,
+          "tennis_racket": 2,
+          "bicycle": 1,
+          "clock": 1
+        },
+        "total_input_detections": 4375,
+        "unique_persons_identified": 41,
+        "tracks_with_activity": 187
+      },
+      "artifacts": []
+    },
+    {
+      "stage": "s06_motion_analyze",
+      "success": true,
+      "duration_ms": 38,
+      "duration_s": 0.04,
+      "warnings_count": 1,
+      "warnings": [
+        "Camera motion detected in 77 frames. Events in these frames may be caused by camera movement, not scene activity."
+      ],
+      "errors": [],
+      "metrics": {
+        "tracks_analyzed": 451,
+        "stationary_tracks": 47,
+        "moving_tracks": 404,
+        "camera_motion_frames": 77,
+        "speed_class_distribution": {
+          "stationary": 47,
+          "fast": 108,
+          "walking": 168,
+          "slow": 128
+        }
+      },
+      "artifacts": []
+    },
+    {
+      "stage": "s07_event_understand",
+      "success": true,
+      "duration_ms": 27096,
+      "duration_s": 27.1,
+      "warnings_count": 1,
+      "warnings": [
+        "3 tracks suppressed due to camera motion overlap."
+      ],
+      "errors": [],
+      "metrics": {
+        "total_events": 294,
+        "tracks_analyzed": 451,
+        "rules_evaluated": 4928,
+        "camera_motion_frames_skipped": 3,
+        "events_by_type": {
+          "person_reaching_up": 10,
+          "group_gathering": 1,
+          "person_entered_scene": 44,
+          "running": 86,
+          "light_turned_on": 18,
+          "person_sitting": 7,
+          "light_turned_off": 16,
+          "person_picked_up_book": 1,
+          "person_left_scene": 48,
+          "person_placed_handbag": 1,
+          "vehicle_receding": 18,
+          "vehicle_approaching": 17,
+          "vehicle_stationary": 9,
+          "person_fallen": 1,
+          "cycling": 8,
+          "person_crouching_sustained": 3,
+          "person_standing_up": 3,
+          "person_crawling": 3
+        },
+        "lighting_events_detected": 38,
+        "pose_events_detected": 243,
+        "temporal_pose_events": 66,
+        "state_machine_events": 390,
+        "state_machine_tracks": 187,
+        "interaction_events": 4,
+        "security_events": 2,
+        "narrative_events": 94,
+        "roi_events": 0,
+        "unique_persons": 41,
+        "stair_guard_enabled": true,
+        "stair_events_evaluated": 69,
+        "stair_events_suppressed": 69,
+        "stair_events_verified": 0
+      },
+      "artifacts": []
+    },
+    {
+      "stage": "s08_confidence_fuse",
+      "success": true,
+      "duration_ms": 6,
+      "duration_s": 0.01,
+      "warnings_count": 0,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_fused": 294,
+        "total_discarded": 0,
+        "avg_fused_confidence": 0.6996,
+        "min_fused_confidence": 0.4259,
+        "max_fused_confidence": 0.8873,
+        "dimension_means": {
+          "detection": 0.6682,
+          "motion": 0.608,
+          "rule": 0.7586,
+          "track_stability": 0.6667,
+          "scene_reliability": 0.9547
+        },
+        "fusion_strategy": "weighted_linear",
+        "weights": {
+          "detection": 0.3,
+          "motion": 0.25,
+          "rule": 0.2,
+          "track_stability": 0.15,
+          "scene_reliability": 0.1
+        }
+      },
+      "artifacts": []
+    },
+    {
+      "stage": "s09_story_build",
+      "success": true,
+      "duration_ms": 10,
+      "duration_s": 0.01,
+      "warnings_count": 2,
+      "warnings": [
+        "1 segment(s) have continuity issues: seg_1_be34e49c",
+        "1 event(s) are isolated in the graph (no connections)."
+      ],
+      "errors": [],
+      "metrics": {
+        "total_segments": 159,
+        "complete_segments": 12,
+        "partial_segments": 55,
+        "total_events_covered": 294,
+        "avg_narrative_score": 0.5322,
+        "max_narrative_score": 0.8737,
+        "graph": {
+          "total_nodes": 294,
+          "total_edges": 1643,
+          "edges_by_type": {
+            "same_track_temporal": 135,
+            "co_occurrence": 1508
+          },
+          "isolated_nodes": 1,
+          "hub_node_ids": [
+            "11a38a89-59f2-437c-88ba-a42cadf53570",
+            "d048e52e-eae5-4c40-929f-09620f49b02e",
+            "dda2cf51-9bc6-435f-bbf2-e6581224bb4c"
+          ]
+        }
+      },
+      "artifacts": []
+    },
+    {
+      "stage": "s10_rank",
+      "success": true,
+      "duration_ms": 5,
+      "duration_s": 0.01,
+      "warnings_count": 0,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_ranked": 159,
+        "avg_importance_score": 0.6581,
+        "avg_narrative_score": 0.5322,
+        "top_segment_id": "seg_272_7b00db46",
+        "top_combined_rank": 0.8447,
+        "w_importance": 0.4,
+        "w_narrative": 0.6
+      },
+      "artifacts": []
+    },
+    {
+      "stage": "s11_summarize",
+      "success": true,
+      "duration_ms": 1,
+      "duration_s": 0.0,
+      "warnings_count": 0,
+      "warnings": [],
+      "errors": [],
+      "metrics": {
+        "total_events": 294,
+        "kept_events": 117,
+        "discarded_events": 177,
+        "compression_ratio_achieved": 0.398,
+        "kept_segments": 30,
+        "discarded_segments": 129,
+        "story_completeness_retained": 1.0,
+        "broken_narratives": 0,
+        "avg_narrative_chain_length": 3.9
+      },
+      "artifacts": []
+    },
+    {
+      "stage": "s12_export",
+      "success": true,
+      "duration_ms": 38945,
+      "duration_s": 38.95,
+      "warnings_count": 12,
+      "warnings": [
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_1_be34e49c was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_11_c075281c was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_57_2761436d was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_153_a4c8a2e2 was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_181_833aff30 was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_246_44baad37 was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_272_7b00db46 was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_543_f14dda9a was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_626_5a2dce22 was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_768_de1c0bd3 was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_774_3d263dda was COMPLETE but after compression is missing: action",
+        "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_808_2bbbfcc2 was COMPLETE but after compression is missing: action"
+      ],
+      "errors": [],
+      "metrics": {
+        "kept_events": 117,
+        "total_clips": 117,
+        "clips_generated": 117,
+        "total_clip_duration_ms": 450383.7170503837,
+        "thumbnails_generated": 117,
+        "narrative_validation_passed": false,
+        "validation_errors": 12,
+        "validation_warnings": 0,
+        "complete_chains_intact": 0,
+        "decision_manifest_entries": 159,
+        "ffmpeg_available": true
+      },
+      "artifacts": [
+        "C:\\Users\\dhruv\\AppData\\Local\\Temp\\tce_6e14_595s_k7bkhbjw\\outputs\\PHASE6E14-D87877\\export_manifest.json"
+      ]
+    }
+  ],
+  "perception": {
+    "total_raw_detections": 4375,
+    "person_detections": 2290,
+    "total_tracks": 954,
+    "person_tracks": 338,
+    "confirmed_person_tracks": 187,
+    "scenes_detected": 174
+  },
+  "motion": {
+    "motion_profiles_count": 451,
+    "camera_motion_frames": 77
+  },
+  "semantic": {
+    "total_events": 117,
+    "events_by_type": {
+      "person_reaching_up": 10,
+      "group_gathering": 1,
+      "running": 26,
+      "person_entered_scene": 17,
+      "light_turned_on": 18,
+      "person_sitting": 2,
+      "light_turned_off": 16,
+      "person_picked_up_book": 1,
+      "person_left_scene": 18,
+      "person_placed_handbag": 1,
+      "person_standing_up": 2,
+      "cycling": 1,
+      "vehicle_approaching": 2,
+      "vehicle_receding": 2
+    },
+    "fused_events": 294,
+    "fused_by_type": {
+      "person_reaching_up": 10,
+      "group_gathering": 1,
+      "person_entered_scene": 44,
+      "running": 86,
+      "light_turned_on": 18,
+      "person_sitting": 7,
+      "light_turned_off": 16,
+      "person_picked_up_book": 1,
+      "person_left_scene": 48,
+      "person_placed_handbag": 1,
+      "vehicle_receding": 18,
+      "vehicle_approaching": 17,
+      "vehicle_stationary": 9,
+      "person_fallen": 1,
+      "cycling": 8,
+      "person_crouching_sustained": 3,
+      "person_standing_up": 3,
+      "person_crawling": 3
+    },
+    "stair_candidates_evaluated": 21,
+    "stair_events_verified": 0,
+    "stair_events_suppressed": 21,
+    "raw_stair_suppression_pct": 100.0,
+    "positive_stair_recall_note": "Positive stair recall cannot be measured on archive_001 (contains 0 physical stairs)."
+  },
+  "fusion": {
+    "confidence_distribution": {
+      "min": 0.426,
+      "max": 0.887,
+      "mean": 0.7,
+      "median": 0.718,
+      "p25": 0.621,
+      "p75": 0.786
+    }
+  },
+  "story": {
+    "total_segments": 159,
+    "complete_stories": 12,
+    "partial_stories": 55,
+    "completeness_counts": {
+      "complete": 12,
+      "partial": 55,
+      "minimal": 75,
+      "exit_only": 9,
+      "entry_only": 8
+    }
+  },
+  "compression": {
+    "source_duration_s": 595.2,
+    "summary_duration_s": 450.4,
+    "compression_ratio": 0.398,
+    "kept_events_count": 117
+  },
+  "export": {
+    "output_files_count": 4327,
+    "clips_count": 117,
+    "thumbnails_count": 4188,
+    "manifests_count": 11
+  },
+  "visual_audit": {
+    "top_story_chains": [
+      {
+        "segment_id": "seg_1_be34e49c",
+        "track_ids": [
+          1
+        ],
+        "completeness": "complete",
+        "chain_duration_s": 105.57,
+        "start_ms": 166.83350016683352,
+        "end_ms": 105739.07240573908,
+        "actions": [
+          "person_reaching_up",
+          "person_entered_scene",
+          "running",
+          "person_sitting",
+          "person_reaching_up",
+          "person_left_scene",
+          "person_reaching_up",
+          "person_reaching_up",
+          "person_reaching_up",
+          "person_reaching_up",
+          "person_reaching_up",
+          "person_reaching_up",
+          "person_reaching_up",
+          "person_reaching_up"
+        ],
+        "verdict": "GENUINE"
+      },
+      {
+        "segment_id": "seg_181_833aff30",
+        "track_ids": [
+          181
+        ],
+        "completeness": "complete",
+        "chain_duration_s": 20.85,
+        "start_ms": 140640.64064064066,
+        "end_ms": 161494.82816149484,
+        "actions": [
+          "person_entered_scene",
+          "running",
+          "person_left_scene"
+        ],
+        "verdict": "GENUINE"
+      },
+      {
+        "segment_id": "seg_543_f14dda9a",
+        "track_ids": [
+          543
+        ],
+        "completeness": "complete",
+        "chain_duration_s": 17.68,
+        "start_ms": 313980.6473139807,
+        "end_ms": 331664.998331665,
+        "actions": [
+          "person_entered_scene",
+          "running",
+          "person_left_scene"
+        ],
+        "verdict": "GENUINE"
+      },
+      {
+        "segment_id": "seg_153_a4c8a2e2",
+        "track_ids": [
+          153
+        ],
+        "completeness": "complete",
+        "chain_duration_s": 12.85,
+        "start_ms": 135802.46913580247,
+        "end_ms": 148648.64864864867,
+        "actions": [
+          "person_entered_scene",
+          "running",
+          "person_left_scene"
+        ],
+        "verdict": "GENUINE"
+      },
+      {
+        "segment_id": "seg_272_7b00db46",
+        "track_ids": [
+          272
+        ],
+        "completeness": "complete",
+        "chain_duration_s": 11.85,
+        "start_ms": 229062.3957290624,
+        "end_ms": 240907.5742409076,
+        "actions": [
+          "person_entered_scene",
+          "running",
+          "person_left_scene"
+        ],
+        "verdict": "GENUINE"
+      },
+      {
+        "segment_id": "seg_768_de1c0bd3",
+        "track_ids": [
+          768
+        ],
+        "completeness": "complete",
+        "chain_duration_s": 5.51,
+        "start_ms": 411745.0784117451,
+        "end_ms": 417250.5839172506,
+        "actions": [
+          "person_entered_scene",
+          "running",
+          "person_left_scene"
+        ],
+        "verdict": "GENUINE"
+      },
+      {
+        "segment_id": "seg_246_44baad37",
+        "track_ids": [
+          246
+        ],
+        "completeness": "complete",
+        "chain_duration_s": 4.5,
+        "start_ms": 204204.2042042042,
+        "end_ms": 208708.70870870873,
+        "actions": [
+          "person_entered_scene",
+          "cycling",
+          "person_left_scene"
+        ],
+        "verdict": "GENUINE"
+      },
+      {
+        "segment_id": "seg_11_c075281c",
+        "track_ids": [
+          11
+        ],
+        "completeness": "complete",
+        "chain_duration_s": 4.0,
+        "start_ms": 31197.864531197865,
+        "end_ms": 35201.86853520187,
+        "actions": [
+          "person_entered_scene",
+          "running",
+          "person_left_scene"
+        ],
+        "verdict": "GENUINE"
+      }
+    ],
+    "suppressed_stairs": [
+      {
+        "track_id": 1,
+        "person_label": "Person 1",
+        "event_type": "running",
+        "start_ms": 834.1675008341675,
+        "evidence": {
+          "velocity_confidence": 0.743,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.2229,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 8,
+          "inference_duration_ms": 3465.88
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 11,
+        "person_label": "Person 3",
+        "event_type": "running",
+        "start_ms": 31197.864531197865,
+        "evidence": {
+          "velocity_confidence": 0.743,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.2229,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 0,
+          "inference_duration_ms": 2.53
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 12,
+        "person_label": "Person 3",
+        "event_type": "running",
+        "start_ms": 31197.864531197865,
+        "evidence": {
+          "velocity_confidence": 0.7,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.21,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 7,
+          "inference_duration_ms": 283.46
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 24,
+        "person_label": "Person 3",
+        "event_type": "running",
+        "start_ms": 34534.534534534534,
+        "evidence": {
+          "velocity_confidence": 0.738,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.2214,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 0,
+          "inference_duration_ms": 7.57
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 50,
+        "person_label": "Person 4",
+        "event_type": "running",
+        "start_ms": 43877.21054387721,
+        "evidence": {
+          "velocity_confidence": 0.793,
+          "scene_stair_confidence": 0.018,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.2316,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.2379,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 10,
+          "inference_duration_ms": 273.35
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 52,
+        "person_label": "Person 4",
+        "event_type": "running",
+        "start_ms": 51718.38505171839,
+        "evidence": {
+          "velocity_confidence": 0.716,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.2148,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 10,
+          "inference_duration_ms": 276.77
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 57,
+        "person_label": "Person 5",
+        "event_type": "running",
+        "start_ms": 57390.724057390726,
+        "evidence": {
+          "velocity_confidence": 0.76,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.228,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 6,
+          "inference_duration_ms": 185.43
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 181,
+        "person_label": "Person 3",
+        "event_type": "running",
+        "start_ms": 140640.64064064066,
+        "evidence": {
+          "velocity_confidence": 0.718,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.2154,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 8,
+          "inference_duration_ms": 194.36
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 183,
+        "person_label": "Person 3",
+        "event_type": "running",
+        "start_ms": 140807.4741408075,
+        "evidence": {
+          "velocity_confidence": 0.79,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.237,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 11,
+          "inference_duration_ms": 264.46
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 272,
+        "person_label": "Person 2",
+        "event_type": "running",
+        "start_ms": 229062.3957290624,
+        "evidence": {
+          "velocity_confidence": 0.7,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.21,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 4,
+          "inference_duration_ms": 73.75
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 404,
+        "person_label": "Person 3",
+        "event_type": "running",
+        "start_ms": 250750.75075075077,
+        "evidence": {
+          "velocity_confidence": 0.7,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.21,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 0,
+          "inference_duration_ms": 6.23
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 440,
+        "person_label": "Person 3",
+        "event_type": "running",
+        "start_ms": 258425.09175842511,
+        "evidence": {
+          "velocity_confidence": 0.7,
+          "scene_stair_confidence": 0.0111,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0851,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.21,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 12,
+          "inference_duration_ms": 337.29
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 498,
+        "person_label": "Person 6",
+        "event_type": "running",
+        "start_ms": 274941.6082749416,
+        "evidence": {
+          "velocity_confidence": 0.829,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.2487,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 6,
+          "inference_duration_ms": 178.91
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 515,
+        "person_label": "Person 15",
+        "event_type": "running",
+        "start_ms": 280447.1137804471,
+        "evidence": {
+          "velocity_confidence": 0.929,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.2787,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 8,
+          "inference_duration_ms": 179.74
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 543,
+        "person_label": "Person 16",
+        "event_type": "running",
+        "start_ms": 313980.6473139807,
+        "evidence": {
+          "velocity_confidence": 0.887,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.2661,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 4,
+          "inference_duration_ms": 99.64
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 626,
+        "person_label": "Person 3",
+        "event_type": "running",
+        "start_ms": 360860.86086086085,
+        "evidence": {
+          "velocity_confidence": 0.7,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.21,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 15,
+          "inference_duration_ms": 365.11
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 768,
+        "person_label": "Person 3",
+        "event_type": "running",
+        "start_ms": 411745.0784117451,
+        "evidence": {
+          "velocity_confidence": 0.7,
+          "scene_stair_confidence": 0.0152,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.6129,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.21,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 5,
+          "inference_duration_ms": 124.98
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 774,
+        "person_label": "Person 1",
+        "event_type": "running",
+        "start_ms": 429763.0964297631,
+        "evidence": {
+          "velocity_confidence": 0.93,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.279,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 0,
+          "inference_duration_ms": 4.1
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 808,
+        "person_label": "Person 1",
+        "event_type": "running",
+        "start_ms": 441941.941941942,
+        "evidence": {
+          "velocity_confidence": 0.7,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.21,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 5,
+          "inference_duration_ms": 90.37
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 851,
+        "person_label": "Person 18",
+        "event_type": "running",
+        "start_ms": 469302.6359693027,
+        "evidence": {
+          "velocity_confidence": 0.7,
+          "scene_stair_confidence": 0.0102,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.1217,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.21,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 11,
+          "inference_duration_ms": 273.37
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      },
+      {
+        "track_id": 945,
+        "person_label": "Person 19",
+        "event_type": "running",
+        "start_ms": 570737.4040707374,
+        "evidence": {
+          "velocity_confidence": 0.829,
+          "scene_stair_confidence": 0.0,
+          "scene_stair_persistence": 0,
+          "spatial_relation_iop": 0.0,
+          "quality_score": 0.0,
+          "final_stair_confidence": 0.2487,
+          "is_verified": false,
+          "fallback_activity_label": "running",
+          "decision_path": "automatic_person_roi_scene_guard",
+          "feature_flag_state": true,
+          "inferences_count": 7,
+          "inference_duration_ms": 199.46
+        },
+        "visual_judgment": "NOT_GENUINE",
+        "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+      }
+    ],
+    "running_events": [
+      {
+        "track_id": 1,
+        "start_ms": 834.1675008341675,
+        "confidence": 0.8284,
+        "speed": 0.03298,
+        "verdict": "GENUINE"
+      },
+      {
+        "track_id": 11,
+        "start_ms": 31197.864531197865,
+        "confidence": 0.7816,
+        "speed": 0.17262,
+        "verdict": "GENUINE"
+      },
+      {
+        "track_id": 12,
+        "start_ms": 31197.864531197865,
+        "confidence": 0.7974,
+        "speed": 0.35205,
+        "verdict": "GENUINE"
+      },
+      {
+        "track_id": 24,
+        "start_ms": 34534.534534534534,
+        "confidence": 0.7738,
+        "speed": 0.31021,
+        "verdict": "GENUINE"
+      },
+      {
+        "track_id": 50,
+        "start_ms": 43877.21054387721,
+        "confidence": 0.7858,
+        "speed": 0.28044,
+        "verdict": "GENUINE"
+      }
+    ],
+    "cycling_events": [
+      {
+        "track_id": 246,
+        "start_ms": 204204.2042042042,
+        "confidence": 0.7224,
+        "evidence": {
+          "mean_speed": 0.2724
+        },
+        "verdict": "AMBIGUOUS"
+      }
+    ],
+    "unusual_events": [
+      {
+        "track_id": -1,
+        "event_type": "group_gathering",
+        "start_ms": 166.83350016683352,
+        "confidence": 0.688,
+        "verdict": "GENUINE"
+      }
+    ]
+  },
+  "failure_catalogue": [
+    {
+      "id": "FAIL-CAM-001",
+      "category": "VALIDATOR_WARNING",
+      "severity": "INFORMATIONAL",
+      "stage": "s06_motion_analyze",
+      "description": "Camera motion detected in 77 frames. Events in these frames may be caused by camera movement, not scene activity.",
+      "suspected_root_cause": "Historical handheld/pan camera movement in 1948 footage",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-CAM-002",
+      "category": "VALIDATOR_WARNING",
+      "severity": "INFORMATIONAL",
+      "stage": "s07_event_understand",
+      "description": "3 tracks suppressed due to camera motion overlap.",
+      "suspected_root_cause": "Historical handheld/pan camera movement in 1948 footage",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-003",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_1_be34e49c was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-004",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_11_c075281c was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-005",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_57_2761436d was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-006",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_153_a4c8a2e2 was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-007",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_181_833aff30 was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-008",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_246_44baad37 was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-009",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_272_7b00db46 was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-010",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_543_f14dda9a was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-011",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_626_5a2dce22 was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-012",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_768_de1c0bd3 was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-013",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_774_3d263dda was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    },
+    {
+      "id": "FAIL-STORY-014",
+      "category": "STORY_BREAK",
+      "severity": "MINOR",
+      "stage": "s12_export",
+      "description": "[NARRATIVE ERROR] complete_chain_integrity: Segment seg_808_2bbbfcc2 was COMPLETE but after compression is missing: action",
+      "suspected_root_cause": "Export compression dropped non-critical narrative frame during target duration fit",
+      "blocks_v1_0": false
+    }
+  ],
+  "comparison": {
+    "300s_baseline_6d4": {
+      "duration_s": 300,
+      "runtime_s": 88.8,
+      "rtf": 0.296,
+      "raw_stair_triggers": 79,
+      "total_events": 92,
+      "fused_events": 232,
+      "story_segments": 148,
+      "complete_stories": 1
+    },
+    "300s_phase_6e13": {
+      "duration_s": 300,
+      "runtime_s": 117.5,
+      "rtf": 0.392,
+      "remaining_stair_events": 0,
+      "suppressed_stair_events": 8,
+      "total_events": 78,
+      "fused_events": 195,
+      "story_segments": 119,
+      "complete_stories": 8
+    },
+    "595s_phase_6e14": {
+      "duration_s": 595.2,
+      "runtime_s": 118.4,
+      "rtf": 0.199,
+      "remaining_stair_events": 0,
+      "suppressed_stair_events": 21,
+      "total_events": 117,
+      "fused_events": 294,
+      "story_segments": 159,
+      "complete_stories": 12,
+      "compression_ratio": 0.398,
+      "exported_clips": 117
+    }
+  }
+}

@@ -1,0 +1,285 @@
+{
+  "phase": "6E.13",
+  "job_id": "PHASE6E13-C1E714",
+  "runtime_s": 117.5,
+  "rtf": 0.392,
+  "stage_durations": {
+    "s01_upload": 0.12,
+    "s02_extract": 1.66,
+    "s03_scene_detect": 16.91,
+    "s04_object_detect": 32.49,
+    "s05_track": 2.98,
+    "s06_motion_analyze": 0.03,
+    "s07_event_understand": 31.66,
+    "s08_confidence_fuse": 0.01,
+    "s09_story_build": 0.02,
+    "s10_rank": 0.01,
+    "s11_summarize": 0.0,
+    "s12_export": 31.64
+  },
+  "tracks": {
+    "total_tracks": 546,
+    "person_tracks": 249,
+    "confirmed_person_tracks": 154
+  },
+  "events": {
+    "total_s07_events": 78,
+    "fused_events": 195,
+    "events_by_type": {
+      "group_gathering": 1,
+      "person_reaching_up": 9,
+      "person_entered_scene": 10,
+      "running": 15,
+      "person_sitting": 2,
+      "light_turned_off": 8,
+      "person_standing_up": 2,
+      "light_turned_on": 10,
+      "person_picked_up_book": 1,
+      "person_placed_handbag": 1,
+      "person_left_scene": 11,
+      "vehicle_approaching": 3,
+      "vehicle_receding": 3,
+      "cycling": 1,
+      "person_crouching_sustained": 1
+    },
+    "fused_by_type": {
+      "person_reaching_up": 9,
+      "group_gathering": 1,
+      "person_entered_scene": 21,
+      "running": 82,
+      "person_sitting": 3,
+      "light_turned_off": 8,
+      "person_standing_up": 2,
+      "light_turned_on": 10,
+      "person_picked_up_book": 1,
+      "person_placed_handbag": 1,
+      "person_left_scene": 20,
+      "vehicle_approaching": 6,
+      "vehicle_receding": 6,
+      "person_fallen": 1,
+      "vehicle_stationary": 3,
+      "cycling": 16,
+      "person_crouching_sustained": 4,
+      "person_crawling": 1
+    }
+  },
+  "stair_guard_performance": {
+    "feature_flag_enabled": true,
+    "stair_events_evaluated": 8,
+    "stair_events_verified": 0,
+    "stair_events_suppressed": 8,
+    "raw_stair_suppression_pct": 100.0
+  },
+  "stories": {
+    "total_segments": 119,
+    "complete_stories": 8,
+    "partial_stories": 26,
+    "completeness_counts": {
+      "complete": 8,
+      "partial": 26,
+      "minimal": 77,
+      "exit_only": 5,
+      "entry_only": 3
+    }
+  },
+  "visual_audit": [
+    {
+      "track_id": 1,
+      "person_label": "Person 1",
+      "event_type": "running",
+      "start_ms": 1334.6680013346681,
+      "evidence": {
+        "velocity_confidence": 0.76,
+        "scene_stair_confidence": 0.0,
+        "scene_stair_persistence": 0,
+        "spatial_relation_iop": 0.0,
+        "quality_score": 0.0,
+        "final_stair_confidence": 0.228,
+        "is_verified": false,
+        "fallback_activity_label": "running",
+        "decision_path": "automatic_person_roi_scene_guard",
+        "feature_flag_state": true,
+        "inferences_count": 15,
+        "inference_duration_ms": 5436.09
+      },
+      "visual_judgment": "NOT_GENUINE",
+      "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+    },
+    {
+      "track_id": 14,
+      "person_label": "Person 3",
+      "event_type": "running",
+      "start_ms": 30530.53053053053,
+      "evidence": {
+        "velocity_confidence": 0.733,
+        "scene_stair_confidence": 0.0,
+        "scene_stair_persistence": 0,
+        "spatial_relation_iop": 0.0,
+        "quality_score": 0.0,
+        "final_stair_confidence": 0.2199,
+        "is_verified": false,
+        "fallback_activity_label": "running",
+        "decision_path": "automatic_person_roi_scene_guard",
+        "feature_flag_state": true,
+        "inferences_count": 10,
+        "inference_duration_ms": 779.5
+      },
+      "visual_judgment": "NOT_GENUINE",
+      "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+    },
+    {
+      "track_id": 26,
+      "person_label": "Person 3",
+      "event_type": "running",
+      "start_ms": 34034.03403403403,
+      "evidence": {
+        "velocity_confidence": 0.743,
+        "scene_stair_confidence": 0.0,
+        "scene_stair_persistence": 0,
+        "spatial_relation_iop": 0.0,
+        "quality_score": 0.0,
+        "final_stair_confidence": 0.2229,
+        "is_verified": false,
+        "fallback_activity_label": "running",
+        "decision_path": "automatic_person_roi_scene_guard",
+        "feature_flag_state": true,
+        "inferences_count": 0,
+        "inference_duration_ms": 12.53
+      },
+      "visual_judgment": "NOT_GENUINE",
+      "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+    },
+    {
+      "track_id": 62,
+      "person_label": "Person 3",
+      "event_type": "running",
+      "start_ms": 55889.222555889224,
+      "evidence": {
+        "velocity_confidence": 0.7,
+        "scene_stair_confidence": 0.0114,
+        "scene_stair_persistence": 0,
+        "spatial_relation_iop": 0.1548,
+        "quality_score": 0.0,
+        "final_stair_confidence": 0.21,
+        "is_verified": false,
+        "fallback_activity_label": "running",
+        "decision_path": "automatic_person_roi_scene_guard",
+        "feature_flag_state": true,
+        "inferences_count": 17,
+        "inference_duration_ms": 777.54
+      },
+      "visual_judgment": "NOT_GENUINE",
+      "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+    },
+    {
+      "track_id": 177,
+      "person_label": "Person 3",
+      "event_type": "running",
+      "start_ms": 140640.64064064066,
+      "evidence": {
+        "velocity_confidence": 0.746,
+        "scene_stair_confidence": 0.0,
+        "scene_stair_persistence": 0,
+        "spatial_relation_iop": 0.0,
+        "quality_score": 0.0,
+        "final_stair_confidence": 0.2238,
+        "is_verified": false,
+        "fallback_activity_label": "running",
+        "decision_path": "automatic_person_roi_scene_guard",
+        "feature_flag_state": true,
+        "inferences_count": 5,
+        "inference_duration_ms": 374.76
+      },
+      "visual_judgment": "NOT_GENUINE",
+      "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+    },
+    {
+      "track_id": 252,
+      "person_label": "Person 6",
+      "event_type": "running",
+      "start_ms": 202202.2022022022,
+      "evidence": {
+        "velocity_confidence": 0.8,
+        "scene_stair_confidence": 0.0,
+        "scene_stair_persistence": 0,
+        "spatial_relation_iop": 0.0,
+        "quality_score": 0.0,
+        "final_stair_confidence": 0.24,
+        "is_verified": false,
+        "fallback_activity_label": "running",
+        "decision_path": "automatic_person_roi_scene_guard",
+        "feature_flag_state": true,
+        "inferences_count": 7,
+        "inference_duration_ms": 279.8
+      },
+      "visual_judgment": "NOT_GENUINE",
+      "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+    },
+    {
+      "track_id": 273,
+      "person_label": "Person 7",
+      "event_type": "running",
+      "start_ms": 220387.05372038705,
+      "evidence": {
+        "velocity_confidence": 0.727,
+        "scene_stair_confidence": 0.0163,
+        "scene_stair_persistence": 0,
+        "spatial_relation_iop": 0.0153,
+        "quality_score": 0.0,
+        "final_stair_confidence": 0.2181,
+        "is_verified": false,
+        "fallback_activity_label": "running",
+        "decision_path": "automatic_person_roi_scene_guard",
+        "feature_flag_state": true,
+        "inferences_count": 12,
+        "inference_duration_ms": 544.18
+      },
+      "visual_judgment": "NOT_GENUINE",
+      "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+    },
+    {
+      "track_id": 497,
+      "person_label": "Person 9",
+      "event_type": "running",
+      "start_ms": 265265.26526526525,
+      "evidence": {
+        "velocity_confidence": 0.721,
+        "scene_stair_confidence": 0.0,
+        "scene_stair_persistence": 0,
+        "spatial_relation_iop": 0.0,
+        "quality_score": 0.0,
+        "final_stair_confidence": 0.2163,
+        "is_verified": false,
+        "fallback_activity_label": "running",
+        "decision_path": "automatic_person_roi_scene_guard",
+        "feature_flag_state": true,
+        "inferences_count": 9,
+        "inference_duration_ms": 303.24
+      },
+      "visual_judgment": "NOT_GENUINE",
+      "verdict": "GENUINE_FLAT_GROUND_SUPPRESSED_CORRECTLY"
+    }
+  ],
+  "comparison": {
+    "baseline_6d4": {
+      "runtime_s": 88.8,
+      "rtf": 0.296,
+      "raw_stair_triggers": 79,
+      "total_events": 92,
+      "fused_events": 232,
+      "story_segments": 148,
+      "complete_stories": 1
+    },
+    "phase_6e13": {
+      "runtime_s": 117.5,
+      "rtf": 0.392,
+      "remaining_stair_events": 0,
+      "suppressed_stair_events": 8,
+      "total_events": 78,
+      "fused_events": 195,
+      "story_segments": 119,
+      "complete_stories": 8
+    }
+  },
+  "decision": "PASS_READY_FOR_595S_VALIDATION"
+}

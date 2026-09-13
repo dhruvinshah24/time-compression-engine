@@ -703,6 +703,24 @@ async def run(context: PipelineContext) -> StageResult:
             "cycling", "running", "walking_upstairs", "walking_downstairs",
             "loitering", "walking",
         }
+
+        # Phase 6E.13 Feature Flag: enable_scene_stair_guard (default False preserves baseline)
+        enable_scene_stair_guard = bool(context.settings.get("enable_scene_stair_guard", False))
+        stair_guard = None
+        frame_paths_map: dict[int, str] = {}
+        if enable_scene_stair_guard:
+            from app.utils.scene_stair_guard import SceneStairGuard
+            stair_guard = SceneStairGuard()
+            # Map frame numbers to paths
+            if isinstance(frame_paths_raw, dict):
+                frame_paths_map = {int(k): str(v) for k, v in frame_paths_raw.items()}
+            elif frame_numbers and frame_paths:
+                frame_paths_map = dict(zip(frame_numbers, frame_paths))
+
+        stair_events_evaluated = 0
+        stair_events_suppressed = 0
+        stair_events_verified = 0
+
         narrative_events: list[Event] = []
         for track in person_tracks:
             activity = track_activities.get(track.track_id)
@@ -717,6 +735,58 @@ async def run(context: PipelineContext) -> StageResult:
             if activity.label not in activity_event_types:
                 continue
 
+            act_label = activity.label
+            act_confidence = activity.confidence
+            act_evidence = dict(activity.evidence)
+
+            # ── Stair Guard Verification Gate (Phase 6E.13) ───────────────────
+            if enable_scene_stair_guard and act_label in {"walking_upstairs", "walking_downstairs"}:
+                stair_events_evaluated += 1
+                c_vel = act_evidence.get("stair_conf", act_confidence)
+                stair_dir = act_evidence.get("stair_direction", "up" if "up" in act_label else "down")
+                mean_spd = act_evidence.get("mean_speed", 0.015)
+
+                guard_res = stair_guard.evaluate_track_stair_context(
+                    track=track,
+                    frame_paths_map=frame_paths_map,
+                    frame_w=frame_w,
+                    frame_h=frame_h,
+                    c_vel=c_vel,
+                    stair_dir=stair_dir,
+                    mean_speed=mean_spd,
+                )
+
+                # Attach full explainability audit trail to evidence
+                act_evidence["stair_guard"] = guard_res.to_dict()
+
+                if guard_res.is_verified:
+                    stair_events_verified += 1
+                    act_confidence = guard_res.final_stair_confidence
+                    act_evidence["stair_verified"] = True
+                    act_evidence["decision_path"] = "scene_stair_guard_verified"
+                    logs.append(
+                        f"[{STAGE_NAME}] Track {track.track_id} ({label}): "
+                        f"STAIR VERIFIED (c_stair={guard_res.final_stair_confidence:.3f}, "
+                        f"c_scene={guard_res.scene_stair_confidence:.3f}, "
+                        f"pers={guard_res.scene_stair_persistence}, "
+                        f"iop={guard_res.spatial_relation_iop:.3f})"
+                    )
+                else:
+                    stair_events_suppressed += 1
+                    fallback = guard_res.fallback_activity_label or "walking"
+                    logs.append(
+                        f"[{STAGE_NAME}] Track {track.track_id} ({label}): "
+                        f"STAIR SUPPRESSED -> {fallback} "
+                        f"(c_stair={guard_res.final_stair_confidence:.3f} < 0.55, "
+                        f"c_scene={guard_res.scene_stair_confidence:.3f}, "
+                        f"pers={guard_res.scene_stair_persistence}, "
+                        f"iop={guard_res.spatial_relation_iop:.3f})"
+                    )
+                    act_label = fallback
+                    act_confidence = 0.70 if fallback == "walking" else 0.80
+                    act_evidence["stair_suppressed"] = True
+                    act_evidence["decision_path"] = "scene_stair_guard_suppressed"
+
             # Build human-readable description
             descriptions = {
                 "cycling":            f"{label} is cycling across the scene",
@@ -726,17 +796,17 @@ async def run(context: PipelineContext) -> StageResult:
                 "loitering":          f"{label} is loitering (stationary for >{LOITER_STILL_SEC:.0f}s)",
                 "walking":            f"{label} is walking",
             }
-            description = descriptions.get(activity.label, f"{label}: {activity.label}")
+            description = descriptions.get(act_label, f"{label}: {act_label}")
 
             if track.observations:
                 first_obs = track.observations[0]
                 narrative_events.append(Event(
                     event_id=str(uuid.uuid4()),
-                    event_type=activity.label,
+                    event_type=act_label,
                     track_id=track.track_id,
                     class_name="person",
                     rule_name="narrative_builder",
-                    confidence=activity.confidence,
+                    confidence=act_confidence,
                     evidence={
                         "person_label": label,
                         "description": description,
@@ -744,7 +814,7 @@ async def run(context: PipelineContext) -> StageResult:
                         "entry_direction": activity.entry_direction,
                         "exit_direction": activity.exit_direction,
                         "duration_s": round((track.observations[-1].timestamp_ms - first_obs.timestamp_ms) / 1000, 1),
-                        **activity.evidence,
+                        **act_evidence,
                     },
                     start_frame=first_obs.frame_number,
                     end_frame=track.observations[-1].frame_number,
@@ -903,6 +973,10 @@ async def run(context: PipelineContext) -> StageResult:
     metrics["narrative_events"] = len(narrative_events) if 'narrative_events' in dir() else 0
     metrics["roi_events"] = roi_events_total
     metrics["unique_persons"] = len(set(context.metadata.get("track_to_label", {}).values()))
+    metrics["stair_guard_enabled"] = enable_scene_stair_guard
+    metrics["stair_events_evaluated"] = stair_events_evaluated
+    metrics["stair_events_suppressed"] = stair_events_suppressed
+    metrics["stair_events_verified"] = stair_events_verified
     save_stage_metrics(context.job_id, STAGE_NAME, metrics)
 
     duration_ms = int((time.perf_counter() - start) * 1000)

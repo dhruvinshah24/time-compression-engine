@@ -226,11 +226,17 @@ async def run(context: PipelineContext) -> StageResult:
         from app.utils.activity_classifier import CYCLE_HORIZ_THRESHOLD
         cycle_threshold = float(context.settings.get("cycle_threshold", CYCLE_HORIZ_THRESHOLD))
         require_temporal_overlap = bool(context.settings.get("require_temporal_overlap", False))
+        # Experimental parameter (Phase 6E.2): short-track activity guard
+        min_activity_obs_raw = context.settings.get("min_activity_observations")
+        min_activity_observations = (
+            int(min_activity_obs_raw) if min_activity_obs_raw is not None else None
+        )
         clf = ActivityClassifier(
             fps=fps,
             frame_skip=frame_skip,
             cycle_threshold=cycle_threshold,
             require_temporal_overlap=require_temporal_overlap,
+            min_activity_observations=min_activity_observations,
         )
 
         confirmed_person_tracks = [

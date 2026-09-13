@@ -96,6 +96,11 @@ class ActivityClassifier:
                                 in frame range. Default False preserves baseline
                                 behaviour (Phase 6D.2 Defect A).
                                 Phase 6D.3 fix for Defect A.
+        min_activity_observations: If set, minimum number of observations required
+                                to classify velocity-derived activities. Tracks with
+                                fewer observations return 'entering_scene'.
+                                Default None preserves baseline behavior (>=3 obs).
+                                Phase 6E.2 experimental parameter.
     """
 
     def __init__(
@@ -104,6 +109,7 @@ class ActivityClassifier:
         frame_skip: int = 5,
         cycle_threshold: float = CYCLE_HORIZ_THRESHOLD,
         require_temporal_overlap: bool = False,
+        min_activity_observations: Optional[int] = None,
     ) -> None:
         self.fps = fps
         self.frame_skip = frame_skip
@@ -113,6 +119,9 @@ class ActivityClassifier:
         # Defaults match baseline behaviour (bd9d18e) — TCE_V1_REFERENCE unaffected.
         self._cycle_threshold = cycle_threshold
         self._require_temporal_overlap = require_temporal_overlap
+        # Experimental parameter (Phase 6E.2): short-track activity guard
+        # When None, default baseline threshold (3 observations) is used.
+        self._min_activity_observations = min_activity_observations
 
     def classify(
         self,
@@ -143,8 +152,8 @@ class ActivityClassifier:
         # ── Duration ─────────────────────────────────────────────────────────
         duration_ms = obs[-1].timestamp_ms - obs[0].timestamp_ms
 
-        # Only one observation → entering
-        if len(obs) < 3:
+        # Minimal observations to compute velocity is 2 (at least one displacement)
+        if len(obs) < 2:
             return ActivityResult(
                 label="entering_scene",
                 confidence=0.75,
@@ -152,6 +161,25 @@ class ActivityClassifier:
                 exit_direction=exit_dir,
                 duration_ms=duration_ms,
                 evidence={"obs_count": len(obs), "entry_direction": entry_dir},
+            )
+
+        # Observation-count guard (Phase 6E.2):
+        # Baseline behavior (min_activity_observations=None): requires >= 3 observations.
+        # Experimental: requires >= min_activity_observations.
+        # Tracks below threshold are classified as "entering_scene" (insufficient observations).
+        min_obs = self._min_activity_observations if self._min_activity_observations is not None else 3
+        if len(obs) < min_obs:
+            ev = {"obs_count": len(obs), "entry_direction": entry_dir}
+            if self._min_activity_observations is not None:
+                ev["min_activity_observations"] = self._min_activity_observations
+                ev["reason"] = "below_min_activity_observations"
+            return ActivityResult(
+                label="entering_scene",
+                confidence=0.75,
+                entry_direction=entry_dir,
+                exit_direction=exit_dir,
+                duration_ms=duration_ms,
+                evidence=ev,
             )
 
         # ── Velocity profile ─────────────────────────────────────────────────

@@ -1,0 +1,581 @@
+{
+  "phase": "6E.6",
+  "baseline_commit": "5898262",
+  "total_confirmed_person_tracks_ge_5": 98,
+  "total_raw_stair_triggers": 79,
+  "total_audited_frames": 412,
+  "suppression_eval": {
+    "Strategy_A (stairs only)": {
+      "conf>=0.15_pers>=1": {
+        "confidence_threshold": 0.15,
+        "min_persistence_frames": 1,
+        "retained_tracks_count": 11,
+        "suppressed_tracks_count": 68,
+        "suppression_pct": 86.1,
+        "retained_track_ids": [
+          273,
+          307,
+          429,
+          482,
+          486,
+          492,
+          493,
+          496,
+          497,
+          511,
+          512
+        ]
+      },
+      "conf>=0.15_pers>=2": {
+        "confidence_threshold": 0.15,
+        "min_persistence_frames": 2,
+        "retained_tracks_count": 7,
+        "suppressed_tracks_count": 72,
+        "suppression_pct": 91.1,
+        "retained_track_ids": [
+          482,
+          486,
+          492,
+          493,
+          496,
+          497,
+          511
+        ]
+      },
+      "conf>=0.15_pers>=3": {
+        "confidence_threshold": 0.15,
+        "min_persistence_frames": 3,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.15_pers>=5": {
+        "confidence_threshold": 0.15,
+        "min_persistence_frames": 5,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.20_pers>=1": {
+        "confidence_threshold": 0.2,
+        "min_persistence_frames": 1,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.20_pers>=2": {
+        "confidence_threshold": 0.2,
+        "min_persistence_frames": 2,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.20_pers>=3": {
+        "confidence_threshold": 0.2,
+        "min_persistence_frames": 3,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.20_pers>=5": {
+        "confidence_threshold": 0.2,
+        "min_persistence_frames": 5,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.25_pers>=1": {
+        "confidence_threshold": 0.25,
+        "min_persistence_frames": 1,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.25_pers>=2": {
+        "confidence_threshold": 0.25,
+        "min_persistence_frames": 2,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.25_pers>=3": {
+        "confidence_threshold": 0.25,
+        "min_persistence_frames": 3,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.25_pers>=5": {
+        "confidence_threshold": 0.25,
+        "min_persistence_frames": 5,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.30_pers>=1": {
+        "confidence_threshold": 0.3,
+        "min_persistence_frames": 1,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.30_pers>=2": {
+        "confidence_threshold": 0.3,
+        "min_persistence_frames": 2,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.30_pers>=3": {
+        "confidence_threshold": 0.3,
+        "min_persistence_frames": 3,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.30_pers>=5": {
+        "confidence_threshold": 0.3,
+        "min_persistence_frames": 5,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      }
+    },
+    "Strategy_B (expanded query)": {
+      "conf>=0.15_pers>=1": {
+        "confidence_threshold": 0.15,
+        "min_persistence_frames": 1,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.15_pers>=2": {
+        "confidence_threshold": 0.15,
+        "min_persistence_frames": 2,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.15_pers>=3": {
+        "confidence_threshold": 0.15,
+        "min_persistence_frames": 3,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.15_pers>=5": {
+        "confidence_threshold": 0.15,
+        "min_persistence_frames": 5,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.20_pers>=1": {
+        "confidence_threshold": 0.2,
+        "min_persistence_frames": 1,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.20_pers>=2": {
+        "confidence_threshold": 0.2,
+        "min_persistence_frames": 2,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.20_pers>=3": {
+        "confidence_threshold": 0.2,
+        "min_persistence_frames": 3,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.20_pers>=5": {
+        "confidence_threshold": 0.2,
+        "min_persistence_frames": 5,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.25_pers>=1": {
+        "confidence_threshold": 0.25,
+        "min_persistence_frames": 1,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.25_pers>=2": {
+        "confidence_threshold": 0.25,
+        "min_persistence_frames": 2,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.25_pers>=3": {
+        "confidence_threshold": 0.25,
+        "min_persistence_frames": 3,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.25_pers>=5": {
+        "confidence_threshold": 0.25,
+        "min_persistence_frames": 5,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.30_pers>=1": {
+        "confidence_threshold": 0.3,
+        "min_persistence_frames": 1,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.30_pers>=2": {
+        "confidence_threshold": 0.3,
+        "min_persistence_frames": 2,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.30_pers>=3": {
+        "confidence_threshold": 0.3,
+        "min_persistence_frames": 3,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      },
+      "conf>=0.30_pers>=5": {
+        "confidence_threshold": 0.3,
+        "min_persistence_frames": 5,
+        "retained_tracks_count": 0,
+        "suppressed_tracks_count": 79,
+        "suppression_pct": 100.0,
+        "retained_track_ids": []
+      }
+    }
+  },
+  "known_audit": {
+    "14": {
+      "track_id": 14,
+      "raw_activity_label": "walking_upstairs",
+      "raw_stair_fires": true,
+      "raw_stair_conf": 0.733,
+      "raw_stair_dir": "up",
+      "obs_count": 28,
+      "start_frame": 183,
+      "end_frame": 232,
+      "strategy_a_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_a_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      }
+    },
+    "56": {
+      "track_id": 56,
+      "raw_activity_label": "running",
+      "raw_stair_fires": false,
+      "raw_stair_conf": 0.0,
+      "raw_stair_dir": "up",
+      "obs_count": 43,
+      "start_frame": 263,
+      "end_frame": 360,
+      "strategy_a_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_a_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      }
+    },
+    "160": {
+      "track_id": 160,
+      "raw_activity_label": "running",
+      "raw_stair_fires": false,
+      "raw_stair_conf": 0.0,
+      "raw_stair_dir": "up",
+      "obs_count": 45,
+      "start_frame": 814,
+      "end_frame": 888,
+      "strategy_a_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_a_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      }
+    },
+    "177": {
+      "track_id": 177,
+      "raw_activity_label": "walking_upstairs",
+      "raw_stair_fires": true,
+      "raw_stair_conf": 0.746,
+      "raw_stair_dir": "up",
+      "obs_count": 27,
+      "start_frame": 843,
+      "end_frame": 909,
+      "strategy_a_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_a_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      }
+    },
+    "252": {
+      "track_id": 252,
+      "raw_activity_label": "walking_upstairs",
+      "raw_stair_fires": true,
+      "raw_stair_conf": 0.8,
+      "raw_stair_dir": "up",
+      "obs_count": 7,
+      "start_frame": 1212,
+      "end_frame": 1268,
+      "strategy_a_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_a_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      }
+    },
+    "273": {
+      "track_id": 273,
+      "raw_activity_label": "walking_upstairs",
+      "raw_stair_fires": true,
+      "raw_stair_conf": 0.727,
+      "raw_stair_dir": "up",
+      "obs_count": 12,
+      "start_frame": 1321,
+      "end_frame": 1352,
+      "strategy_a_conf15": {
+        "has_detection": true,
+        "persistence_frames": 1,
+        "persistence_pct": 8.3,
+        "max_confidence": 0.153,
+        "classes_found": [
+          "stairs"
+        ],
+        "detections_count": 1,
+        "spatial_relationships": [
+          {
+            "frame": 1335,
+            "class": "stairs",
+            "conf": 0.153,
+            "iou": 0.0368,
+            "dist": 0.3945
+          }
+        ]
+      },
+      "strategy_a_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf15": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      },
+      "strategy_b_conf20": {
+        "has_detection": false,
+        "persistence_frames": 0,
+        "persistence_pct": 0.0,
+        "max_confidence": 0.0,
+        "classes_found": [],
+        "detections_count": 0,
+        "spatial_relationships": []
+      }
+    }
+  },
+  "frame_level_hits_summary": {
+    "strategy_a_hits_ge_15": 5,
+    "strategy_b_hits_ge_15": 0
+  }
+}

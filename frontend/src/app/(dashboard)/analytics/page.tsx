@@ -5,7 +5,7 @@ import {
   Tooltip, ResponsiveContainer
 } from 'recharts';
 import { useEffect, useState } from 'react';
-import { Loader2, AlertCircle, BarChart3, Video, Zap, TrendingDown, CheckCircle2 } from 'lucide-react';
+import { Loader2, AlertCircle, BarChart3, Video, Zap, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { api } from '@/lib/api/client';
 import Link from 'next/link';
 
@@ -30,13 +30,26 @@ function formatBytes(bytes: number): string {
 
 export default function AnalyticsPage() {
   const [data, setData]       = useState<AnalyticsData | null>(null);
+  const [jobsData, setJobsData] = useState<{filename: string, event_count: number}[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    (api.analytics() as Promise<AnalyticsData>)
-      .then(res => { if (mounted) { setData(res); setLoading(false); } })
+    Promise.all([
+      api.analytics() as Promise<AnalyticsData>,
+      api.jobs.list().catch(() => []) as Promise<any[]>
+    ])
+      .then(([res, jobs]) => {
+        if (mounted) {
+          setData(res);
+          setJobsData(jobs.filter(j => j.status === 'completed').map(j => ({
+            filename: j.filename.replace('original.mp4', 'Video'),
+            event_count: j.event_count
+          })));
+          setLoading(false);
+        }
+      })
       .catch(err => { if (mounted) { setError(err.message); setLoading(false); } });
     return () => { mounted = false; };
   }, []);
@@ -57,25 +70,25 @@ export default function AnalyticsPage() {
 
   if (!data?.has_data) return (
     <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-      <BarChart3 className="w-16 h-16 text-muted opacity-30" />
+      <BarChart3 className="w-16 h-16 text-white/20 opacity-30" />
       <h3 className="text-xl font-semibold text-white">No analytics data yet</h3>
-      <p className="text-muted text-sm max-w-sm">
+      <p className="text-white/40 text-sm max-w-sm">
         Process a video to see performance metrics across all 12 pipeline stages.
       </p>
       <Link href="/upload">
-        <button className="mt-2 px-6 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors text-sm">
+        <button className="mt-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition-colors text-sm">
           Upload First Video
         </button>
       </Link>
     </div>
   );
 
+
   const statCards = [
-    { icon: Video,       label: 'Total Videos',     value: data.total_videos,       color: 'text-blue-400',   bg: 'bg-blue-400/10' },
-    { icon: Zap,         label: 'Total Events',      value: data.total_events,       color: 'text-purple-400', bg: 'bg-purple-400/10' },
-    { icon: TrendingDown,label: 'Avg Compression',   value: data.avg_compression_ratio ? `${data.avg_compression_ratio.toFixed(1)}:1` : '—',
-                                                                                      color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-    { icon: CheckCircle2,label: 'Jobs Completed',    value: data.completed_jobs,     color: 'text-amber-400',  bg: 'bg-amber-400/10' },
+    { icon: Video,       label: 'Total Videos',     value: data.total_videos,       color: 'text-blue-400',   bg: 'bg-blue-400/10', sub: 'Successfully ingested' },
+    { icon: Zap,         label: 'Total Events',      value: data.total_events,       color: 'text-purple-400', bg: 'bg-purple-400/10', sub: 'Detected across videos' },
+    { icon: TrendingUp,  label: 'Avg Retention',     value: data.avg_compression_ratio ? `${(data.avg_compression_ratio * 100).toFixed(0)}% kept` : '—', color: 'text-emerald-400', bg: 'bg-emerald-400/10', sub: 'Of original footage' },
+    { icon: CheckCircle2,label: 'Jobs Completed',    value: data.completed_jobs,     color: 'text-amber-400',  bg: 'bg-amber-400/10', sub: 'Pipelines finished' },
   ];
 
   const stageChartData = data.stage_averages.map(s => ({
@@ -87,17 +100,18 @@ export default function AnalyticsPage() {
     <div className="space-y-6 animate-slide-up">
       <div>
         <h1 className="text-2xl font-bold text-white tracking-tight">System Analytics</h1>
-        <p className="text-muted mt-1">Performance and compression metrics across all processed jobs.</p>
+        <p className="text-muted mt-1 text-sm">Real-time metrics from all processed pipeline runs.</p>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map(({ icon: Icon, label, value, color, bg }) => (
+        {statCards.map(({ icon: Icon, label, value, color, bg, sub }) => (
           <div key={label} className="glass rounded-xl border border-border p-5">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted mb-1">{label}</p>
                 <p className="text-2xl font-bold text-white">{String(value)}</p>
+                <p className="text-[10px] text-muted/60 mt-1">{sub}</p>
               </div>
               <div className={`w-10 h-10 rounded-full ${bg} ${color} flex items-center justify-center`}>
                 <Icon className="w-5 h-5" />
@@ -151,6 +165,38 @@ export default function AnalyticsPage() {
                   formatter={(v: number) => [`${v}ms`, 'Avg Duration']}
                 />
                 <Bar dataKey="ms" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              </RechartsBarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Events per video bar chart */}
+      {jobsData.length > 0 && (
+        <div className="glass rounded-xl border border-border p-6">
+          <h2 className="text-lg font-semibold text-white mb-6">Events per Video</h2>
+          <div className="h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsBarChart data={jobsData} margin={{ left: -20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                <XAxis
+                  dataKey="filename"
+                  stroke="#71717a"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={0}
+                  angle={-30}
+                  textAnchor="end"
+                  height={50}
+                />
+                <YAxis stroke="#71717a" fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip
+                  cursor={{ fill: '#27272a', opacity: 0.5 }}
+                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff', borderRadius: 8 }}
+                  formatter={(v: number) => [`${v}`, 'Events']}
+                />
+                <Bar dataKey="event_count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
               </RechartsBarChart>
             </ResponsiveContainer>
           </div>

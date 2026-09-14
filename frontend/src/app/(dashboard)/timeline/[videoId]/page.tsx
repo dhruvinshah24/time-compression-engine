@@ -454,15 +454,48 @@ function EventRow({ evt, index, total, durationSeconds, onPreview }: {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="ml-12 mr-0 mt-1 mb-1 p-3 rounded-xl bg-black/20 border border-white/5">
-              <p className="text-[10px] text-white/30 uppercase tracking-widest mb-2">Evidence</p>
-              <div className="grid grid-cols-2 gap-1.5">
-                {Object.entries(evidence).map(([k, v]) => (
-                  <div key={k} className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] text-white/40 capitalize">{k.replace(/_/g, ' ')}</span>
-                    <span className="text-[10px] text-white/70 font-mono">{String(v)}</span>
+            <div className="ml-12 mr-0 mt-1 mb-1 p-3.5 rounded-xl bg-black/25 border border-white/[0.06]">
+              <p className="text-[10px] text-white/30 uppercase tracking-widest mb-3">Why TCE detected this</p>
+              <div className="space-y-2">
+                {/* Detection confidence */}
+                {evidence.confidence !== undefined && (
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 flex-shrink-0" />
+                    <span className="text-[11px] text-white/60">Detection confidence: <span className="text-white/80 font-mono">{Math.round(Number(evidence.confidence) * 100)}%</span></span>
                   </div>
-                ))}
+                )}
+                {/* Track info */}
+                {evidence.track_id !== undefined && (
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-violet-400 mt-1.5 flex-shrink-0" />
+                    <span className="text-[11px] text-white/60">Tracked as: <span className="text-white/80">Track #{String(evidence.track_id)}</span></span>
+                  </div>
+                )}
+                {/* Speed / motion */}
+                {evidence.speed !== undefined && (
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0" />
+                    <span className="text-[11px] text-white/60">Motion speed: <span className="text-white/80 font-mono">{String(evidence.speed)}</span></span>
+                  </div>
+                )}
+                {/* Rule name */}
+                {evidence.rule !== undefined && (
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
+                    <span className="text-[11px] text-white/60">Rule triggered: <span className="text-white/80">{String(evidence.rule).replace(/_/g,' ')}</span></span>
+                  </div>
+                )}
+                {/* Any remaining evidence keys */}
+                {Object.entries(evidence)
+                  .filter(([k]) => !['confidence','track_id','speed','rule','bbox','crop_url','person_label','description'].includes(k))
+                  .slice(0, 4)
+                  .map(([k, v]) => (
+                    <div key={k} className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/20 mt-1.5 flex-shrink-0" />
+                      <span className="text-[11px] text-white/50">{k.replace(/_/g, ' ')}: <span className="text-white/70 font-mono">{typeof v === 'number' ? Number(v).toFixed(3) : String(v)}</span></span>
+                    </div>
+                  ))
+                }
               </div>
             </div>
           </motion.div>
@@ -655,15 +688,8 @@ export default function TimelinePage() {
 
   return (
     <>
-    <div className="min-h-screen bg-[#08080f] text-white">
-      {/* Background glow */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/8 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -right-40 w-80 h-80 bg-violet-600/8 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-cyan-600/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative max-w-6xl mx-auto px-4 py-8 space-y-8">
+    <div className="text-white">
+      <div className="space-y-6">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-4">
@@ -740,7 +766,7 @@ export default function TimelinePage() {
                     <div className="w-12 h-16 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex-shrink-0 flex items-center justify-center">
                       {person.crop_url ? (
                         <img
-                          src={`http://localhost:8000/api/v1${person.crop_url}`}
+                          src={person.crop_url?.startsWith('http') ? person.crop_url : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'}${person.crop_url}`}
                           alt={person.person_label}
                           className="w-full h-full object-cover"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -784,6 +810,20 @@ export default function TimelinePage() {
             : <p className="text-white/30 text-sm text-center py-4">No events detected</p>
           }
         </div>
+
+        {/* Generated clips */}
+        {allEvents.some(e => (e.evidence as Record<string,unknown>)?.clip_path) && (
+          <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08]">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
+                <PlayCircle size={14} className="text-indigo-400" />
+              </div>
+              <h2 className="text-sm font-semibold text-white/80">Event Clips</h2>
+              <span className="text-[10px] text-white/30 ml-1">— generated during analysis</span>
+            </div>
+            <p className="text-xs text-white/30">Clips are available in the outputs directory.</p>
+          </div>
+        )}
 
         {/* ── Main Content: Objects + Events ──────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">

@@ -289,6 +289,43 @@ function JobCard({ job, index }: { job: JobRecord; index: number }) {
   );
 }
 
+// ── Compression Hero ──────────────────────────────────────────────────────────
+function CompressionHero({ stats, jobs }: { stats: AnalyticsStats; jobs: JobRecord[] }) {
+  const completed = jobs.filter(j => j.status === 'completed');
+  if (completed.length === 0 || !stats.avg_compression_ratio) return null;
+  
+  const pct = Math.round(stats.avg_compression_ratio * 100);
+  const ratio = (1 / stats.avg_compression_ratio).toFixed(1);
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="p-5 rounded-2xl bg-gradient-to-r from-indigo-500/8 to-violet-500/8 border border-indigo-500/20 flex items-center gap-6"
+    >
+      <div className="flex-1">
+        <p className="text-xs text-indigo-400/70 uppercase tracking-wider mb-1">Average Compression</p>
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-bold text-white">{pct}%</span>
+          <span className="text-white/40 text-sm">of footage retained</span>
+        </div>
+        <p className="text-xs text-white/30 mt-1">{ratio}× compression · {stats.total_events} events preserved</p>
+      </div>
+      <div className="flex items-center gap-3 text-center">
+        <div>
+          <p className="text-lg font-bold text-white/60">100%</p>
+          <p className="text-[10px] text-white/30">Original</p>
+        </div>
+        <div className="text-white/20 text-lg">→</div>
+        <div>
+          <p className="text-2xl font-bold text-indigo-400">{pct}%</p>
+          <p className="text-[10px] text-indigo-400/60">TCE Summary</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [stats, setStats]   = useState<AnalyticsStats | null>(null);
@@ -432,6 +469,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      <CompressionHero stats={stats!} jobs={jobs} />
+
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map(s => <StatCard key={s.label} {...s} />)}
@@ -569,7 +608,6 @@ export default function DashboardPage() {
       {/* Model Badge */}
       <div className="flex items-center justify-center gap-3 py-2 border-t border-white/[0.05] mt-4">
         <Brain size={12} className="text-indigo-400" />
-        <p className="text-xs text-white/20">
         <p className="text-xs text-white/20">
           Active model: <span className="text-indigo-300/70 font-medium">{activeModel}</span> ·
           {deviceInfo?.cuda_available

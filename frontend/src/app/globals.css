@@ -65,6 +65,14 @@ body {
   animation: slideUp 0.4s ease-out forwards;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
 /* BUG-32 FIX: Define legacy CSS token vars for any remaining usages */
 /* These ensure old code doesn't completely break if token references slip through */
 :root {

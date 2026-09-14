@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.routes import (
     upload, videos, jobs, events, event_graph,
     timeline, summary, analytics, settings, models_registry, health, debug,
-    diagnostics,
+    diagnostics, stories,
 )
 
 api_router = APIRouter()
@@ -20,3 +20,4 @@ api_router.include_router(settings.router, prefix="/settings", tags=["settings"]
 api_router.include_router(models_registry.router, prefix="/models", tags=["models"])
 api_router.include_router(debug.router, prefix="/debug", tags=["debug"])
 api_router.include_router(diagnostics.router, prefix="/jobs", tags=["diagnostics"])
+api_router.include_router(stories.router, prefix="/stories", tags=["stories"])

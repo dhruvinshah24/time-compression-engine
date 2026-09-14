@@ -9,7 +9,7 @@ import {
   Keyboard, Monitor, Camera, ShoppingBag,
   Briefcase, Wallet, Lock, Shield, ChevronDown, ChevronRight,
   Eye, Tag, Layers, Star, TrendingUp, Map,
-  BarChart3, Circle, Minus, PlayCircle,
+  BarChart3, Circle, Minus, PlayCircle, BookOpen,
 } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
@@ -712,6 +712,14 @@ export default function TimelinePage() {
             }`}>
               {data.job_status ?? 'completed'}
             </span>
+            <Link href={`/stories/${videoId}`}>
+              <motion.button
+                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-violet-500/10 border border-violet-500/25 text-violet-300 hover:bg-violet-500/20 transition-colors"
+              >
+                <BookOpen size={12} /> Stories
+              </motion.button>
+            </Link>
           </div>
         </div>
 

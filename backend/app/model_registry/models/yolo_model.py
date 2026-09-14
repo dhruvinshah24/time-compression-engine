@@ -283,6 +283,7 @@ class YOLODetectionModel(BaseDetectionModel):
             return False
         try:
             import torch
+            torch.backends.cudnn.enabled = False
             from ultralytics import YOLO  # type: ignore
             weight = self.spec.weight_path or f"{self.spec.name}.pt"
             device = 0 if torch.cuda.is_available() else "cpu"
@@ -503,6 +504,7 @@ class YOLOWorldDetectionModel(BaseDetectionModel):
             return False
         try:
             import torch
+            torch.backends.cudnn.enabled = False
             from ultralytics import YOLO  # type: ignore
             weight = self.spec.weight_path or f"{self.spec.name}.pt"
             device = 0 if torch.cuda.is_available() else "cpu"

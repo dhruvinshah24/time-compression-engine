@@ -139,6 +139,7 @@ _TCE_SETTINGS = [
 ]
 
 
+@router.get("")
 @router.get("/")
 async def get_settings():
     return _TCE_SETTINGS

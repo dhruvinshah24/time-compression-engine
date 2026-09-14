@@ -214,6 +214,8 @@ def analyze_pose_frames(
         return results
 
     try:
+        import torch
+        torch.backends.cudnn.enabled = False
         model = YOLO(f"{model_name}.pt")
         logger.info("Loaded pose model: %s", model_name)
     except Exception as exc:

@@ -751,7 +751,7 @@ def extract_frames_by_indices(
     frame_indices: list[int],
     output_format: str = "jpg",
     quality: int = 2,
-    batch_size: int = 200,
+    batch_size: int = 40,
 ) -> "FrameExtractionResult":
     """
     Extract specific frame indices from a video using FFmpeg's select filter.
@@ -852,6 +852,8 @@ def extract_frames_by_indices(
         for seq_path, orig_idx in zip(extracted, batch):
             dest_name = f"frame_{orig_idx:08d}.{output_format}"
             dest_path = output_dir / dest_name
+            if dest_path.exists():
+                dest_path.unlink()
             seq_path.rename(dest_path)
             all_frame_paths.append(str(dest_path))
 

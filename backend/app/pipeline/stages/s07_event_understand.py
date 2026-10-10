@@ -787,6 +787,22 @@ async def run(context: PipelineContext) -> StageResult:
                     act_evidence["stair_suppressed"] = True
                     act_evidence["decision_path"] = "scene_stair_guard_suppressed"
 
+            # ── Cycling Sanity Gate ──────────────────────────────────────────
+            if act_label == "cycling":
+                bicycle_present = any(
+                    (t.class_name or "").lower() in ("bicycle", "bike", "motorcycle") and getattr(t, "is_confirmed", False)
+                    for t in confirmed_tracks
+                )
+                if not bicycle_present:
+                    act_label = "walking" if act_evidence.get("mean_speed", 0.0) < 0.04 else "running"
+                    act_confidence = 0.80
+                    act_evidence["cycling_suppressed"] = True
+                    act_evidence["decision_path"] = "no_bicycle_in_scene_fallback"
+                    logs.append(
+                        f"[{STAGE_NAME}] Track {track.track_id} ({label}): "
+                        f"CYCLING SUPPRESSED -> {act_label} (no bicycle tracks in scene)"
+                    )
+
             # Build human-readable description
             descriptions = {
                 "cycling":            f"{label} is cycling across the scene",
@@ -935,6 +951,20 @@ async def run(context: PipelineContext) -> StageResult:
         warnings.append(f"ROI zone analysis failed: {exc}")
 
     # ── Assemble final result ──────────────────────────────────────────────
+    meta = context.metadata.get("video_metadata")
+    max_video_dur_ms = None
+    if meta is not None:
+        max_video_dur_ms = getattr(meta, "duration_ms", None)
+        if max_video_dur_ms is None and getattr(meta, "duration_seconds", None) is not None:
+            max_video_dur_ms = meta.duration_seconds * 1000.0
+
+    if max_video_dur_ms is not None and max_video_dur_ms > 0:
+        for evt in all_events:
+            if getattr(evt, "start_ms", None) is not None:
+                evt.start_ms = min(float(evt.start_ms), float(max_video_dur_ms))
+            if getattr(evt, "end_ms", None) is not None:
+                evt.end_ms = min(float(evt.end_ms), float(max_video_dur_ms))
+
     all_events.sort(key=lambda e: e.start_ms)
 
     merged_result = EventUnderstandingResult(

@@ -110,6 +110,7 @@ class ActivityClassifier:
         cycle_threshold: float = CYCLE_HORIZ_THRESHOLD,
         require_temporal_overlap: bool = False,
         min_activity_observations: Optional[int] = None,
+        require_bicycle_for_cycling: bool = False,
     ) -> None:
         self.fps = fps
         self.frame_skip = frame_skip
@@ -122,6 +123,7 @@ class ActivityClassifier:
         # Experimental parameter (Phase 6E.2): short-track activity guard
         # When None, default baseline threshold (3 observations) is used.
         self._min_activity_observations = min_activity_observations
+        self._require_bicycle_for_cycling = require_bicycle_for_cycling
 
     def classify(
         self,
@@ -424,8 +426,10 @@ class ActivityClassifier:
                     return overlap_conf
 
         # Signal 2: high horizontal velocity + stable vertical position
-        # Uses self._cycle_threshold (Phase 6D.3 experimental parameter).
-        # Default = CYCLE_HORIZ_THRESHOLD (0.018) — baseline preserved.
+        # When require_bicycle_for_cycling is enabled, Signal 2 is suppressed if no bicycle tracks exist.
+        if self._require_bicycle_for_cycling and not bicycle_tracks:
+            return 0.0
+
         if mean_speed >= self._cycle_threshold:
             heights = [o.bbox.height for o in track.observations] if track.observations else [0]
             height_std = float(np.std(heights))

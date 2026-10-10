@@ -87,11 +87,19 @@ async def run(context: PipelineContext) -> StageResult:
     # ── Step 3: Run detection ──────────────────────────────────────────────
     detector = SceneChangeDetector(config=config)
 
+    meta = context.metadata.get("video_metadata")
+    video_duration_ms = None
+    if meta is not None:
+        video_duration_ms = getattr(meta, "duration_ms", None)
+        if video_duration_ms is None and getattr(meta, "duration_seconds", None) is not None:
+            video_duration_ms = meta.duration_seconds * 1000.0
+
     try:
         result = detector.detect(
             frame_paths=frame_paths,
             fps=fps,
             frame_skip_rate=frame_skip_rate,
+            duration_ms=video_duration_ms,
         )
     except ImportError as exc:
         duration_ms = int((time.perf_counter() - start) * 1000)

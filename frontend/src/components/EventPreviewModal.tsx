@@ -9,20 +9,16 @@
  * Fetches from GET /api/v1/events/{event_id}/preview
  * Images served from GET /outputs/{path} (static files)
  * Clip served from GET /api/v1/events/{event_id}/clip
- *
- * Shows empty state with explanation if media is not generated.
- * Never shows placeholder images.
  */
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Loader2, AlertCircle, Play, Clock, User,
-  Shield, ChevronLeft, ChevronRight, Info,
-  Eye, MapPin, TrendingUp, Zap,
+  Shield, Info, Eye, MapPin, TrendingUp, Zap, Sparkles
 } from 'lucide-react';
+import { API_BASE } from '@/lib/api/client';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:8000';
 
 interface EventPreview {
@@ -76,13 +72,13 @@ function FrameImage({
 
   if (!url) {
     return (
-      <div className={`flex flex-col items-center justify-center rounded-xl border text-center p-4
-        ${active ? 'border-indigo-500/40 bg-indigo-500/5' : 'border-white/10 bg-white/[0.02]'}`}
+      <div className={`flex flex-col items-center justify-center rounded-2xl border text-center p-4 transition-all
+        ${active ? 'border-indigo-500/40 surface-card shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'border-white/5 surface-inset'}`}
         style={{ minHeight: 140 }}
       >
-        <AlertCircle size={20} className="text-white/20 mb-2" />
-        <p className="text-xs text-white/25">{label}</p>
-        <p className="text-[10px] text-white/15 mt-1">Not generated</p>
+        <AlertCircle size={18} className="text-white/20 mb-2" />
+        <p className="text-xs font-semibold text-white/50">{label}</p>
+        <p className="text-[10px] font-mono text-white/25 mt-0.5">Telemetry frame pending</p>
       </div>
     );
   }
@@ -91,25 +87,25 @@ function FrameImage({
 
   if (errored) {
     return (
-      <div className={`flex flex-col items-center justify-center rounded-xl border text-center p-4
-        ${active ? 'border-red-500/30 bg-red-500/5' : 'border-white/10 bg-white/[0.02]'}`}
+      <div className={`flex flex-col items-center justify-center rounded-2xl border text-center p-4 transition-all
+        ${active ? 'border-rose-500/30 bg-rose-500/5' : 'border-white/5 surface-inset'}`}
         style={{ minHeight: 140 }}
       >
-        <AlertCircle size={20} className="text-red-400/50 mb-2" />
-        <p className="text-xs text-white/25">{label}</p>
-        <p className="text-[10px] text-red-400/40 mt-1">Image missing from server</p>
+        <AlertCircle size={18} className="text-rose-400/50 mb-2" />
+        <p className="text-xs font-semibold text-white/50">{label}</p>
+        <p className="text-[10px] font-mono text-rose-400/40 mt-0.5">Frame not on storage disk</p>
       </div>
     );
   }
 
   return (
-    <div className={`relative rounded-xl overflow-hidden border
-      ${active ? 'border-indigo-500/40 ring-1 ring-indigo-500/20' : 'border-white/10'}`}
+    <div className={`relative rounded-2xl overflow-hidden border transition-all
+      ${active ? 'border-indigo-500/50 ring-2 ring-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)]' : 'border-white/10'}`}
       style={{ minHeight: 140 }}
     >
       {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/[0.02]">
-          <Loader2 size={16} className="animate-spin text-white/20" />
+        <div className="absolute inset-0 flex items-center justify-center surface-inset">
+          <Loader2 size={16} className="animate-spin text-indigo-400" />
         </div>
       )}
       <img
@@ -120,12 +116,12 @@ function FrameImage({
         onLoad={() => setLoaded(true)}
         onError={() => setErrored(true)}
       />
-      <div className="absolute bottom-0 left-0 right-0 py-1 px-2 bg-black/60 text-[10px] text-white/50 text-center">
+      <div className="absolute bottom-0 left-0 right-0 py-1.5 px-2.5 bg-black/75 backdrop-blur-md text-[10px] font-mono text-white/70 text-center border-t border-white/5">
         {label}
       </div>
       {active && (
-        <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-indigo-500/80 text-[9px] text-white font-semibold">
-          EVENT
+        <div className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-indigo-600 text-[9px] text-white font-mono font-bold shadow-[0_0_10px_rgba(99,102,241,0.5)]">
+          PEAK EVENT
         </div>
       )}
     </div>
@@ -143,7 +139,7 @@ export default function EventPreviewModal({ eventId, eventType, confidence, star
     setLoading(true);
     setError(null);
 
-    fetch(`${API}/events/${eventId}/preview`)
+    fetch(`${API_BASE}/events/${eventId}/preview`)
       .then(r => {
         if (!r.ok) throw new Error(`Preview not available (${r.status})`);
         return r.json();
@@ -158,8 +154,7 @@ export default function EventPreviewModal({ eventId, eventType, confidence, star
       });
   }, [eventId]);
 
-  const clipApiUrl = `${API}/events/${eventId}/clip`;
-  const thumbApiUrl = `${API}/events/${eventId}/thumbnail`;
+  const clipApiUrl = `${API_BASE}/events/${eventId}/clip`;
 
   const displayEventType = preview?.event_type ?? eventType ?? 'Event';
   const displayConf = preview?.confidence ?? confidence;
@@ -176,89 +171,88 @@ export default function EventPreviewModal({ eventId, eventType, confidence, star
       >
         {/* Backdrop */}
         <motion.div
-          className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/80 backdrop-blur-md"
           onClick={onClose}
         />
 
-        {/* Modal */}
+        {/* Modal Window */}
         <motion.div
-          className="relative w-full max-w-2xl bg-[#0f1117] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-10"
-          initial={{ scale: 0.95, opacity: 0, y: 20 }}
+          className="relative w-full max-w-2xl surface-card border rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden z-10"
+          initial={{ scale: 0.96, opacity: 0, y: 15 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          exit={{ scale: 0.96, opacity: 0, y: 15 }}
+          transition={{ type: 'spring', stiffness: 350, damping: 32 }}
         >
           {/* Header */}
-          <div className="flex items-start justify-between p-5 border-b border-white/[0.07]">
+          <div className="flex items-start justify-between p-5 border-b border-white/5 surface-inset">
             <div>
-              <h2 className="text-lg font-bold text-white">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                  Event Verification
+                </span>
+                <span className="text-[10px] font-mono text-white/30">{eventId}</span>
+              </div>
+              <h2 className="text-lg font-bold text-white tracking-tight">
                 {formatEventType(displayEventType)}
               </h2>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="flex items-center gap-1 text-xs text-white/40">
-                  <Clock size={11} /> {formatMs(displayMs)}
+              <div className="flex items-center gap-3 mt-1.5 font-mono text-xs">
+                <span className="flex items-center gap-1.5 text-white/50">
+                  <Clock size={12} className="text-indigo-400" /> {formatMs(displayMs)}
                 </span>
                 {displayConf !== undefined && (
-                  <span className="flex items-center gap-1 text-xs text-indigo-400">
-                    <Zap size={11} /> {Math.round(displayConf * 100)}% confidence
+                  <span className="flex items-center gap-1.5 text-emerald-400">
+                    <Zap size={12} /> {Math.round(displayConf * 100)}% confidence
                   </span>
                 )}
                 {trackLabel && (
-                  <span className="flex items-center gap-1 text-xs text-violet-400">
-                    <User size={11} /> {trackLabel}
+                  <span className="flex items-center gap-1.5 text-violet-300">
+                    <User size={12} /> {trackLabel}
                   </span>
                 )}
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl hover:bg-white/10 text-white/40 hover:text-white/80 transition-colors"
+              className="p-2 rounded-xl surface-card border text-white/40 hover:text-white transition-colors"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
 
-          {/* Body */}
-          <div className="p-5 space-y-5">
+          {/* Modal Content */}
+          <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto scrollbar-thin">
             {loading ? (
-              <div className="flex items-center justify-center py-16 gap-3 text-white/30">
-                <Loader2 size={20} className="animate-spin" />
-                <span className="text-sm">Loading preview...</span>
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-white/40">
+                <Loader2 size={24} className="animate-spin text-indigo-400" />
+                <span className="text-xs font-mono uppercase tracking-wider">Retrieving multi-frame buffer…</span>
               </div>
             ) : error ? (
               <div className="space-y-4">
-                {/* Show thumbnail even if preview endpoint has partial error */}
-                <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="flex flex-col items-center justify-center py-10 text-center">
                   <AlertCircle size={32} className="text-white/20 mb-3" />
-                  <p className="text-sm text-white/40">{error}</p>
-                  <p className="text-xs text-white/25 mt-1">
-                    Preview frames are generated during pipeline processing.
-                    Run a full pipeline job to generate thumbnails.
+                  <p className="text-sm font-semibold text-white/70">{error}</p>
+                  <p className="text-xs text-white/30 mt-1 max-w-sm">
+                    Frame capture artifacts are generated during full video pipeline analysis.
                   </p>
                 </div>
               </div>
             ) : preview ? (
               <>
-                {/* Before / Event / After frames */}
+                {/* Before / Peak / After Frames */}
                 <div>
-                  <p className="text-xs text-white/30 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <Eye size={11} /> Event Context
+                  <p className="text-[10px] font-mono text-white/40 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <Eye size={12} className="text-indigo-400" /> Multi-Frame Verification Context
                   </p>
                   <div className="grid grid-cols-3 gap-3">
-                    <FrameImage url={preview.frames.before.url} label="Before" />
-                    <FrameImage url={preview.frames.event.url}  label="Event"  active={true} />
-                    <FrameImage url={preview.frames.after.url}  label="After" />
+                    <FrameImage url={preview.frames.before.url} label="T-Before" />
+                    <FrameImage url={preview.frames.event.url}  label="T-Event Peak" active={true} />
+                    <FrameImage url={preview.frames.after.url}  label="T-After" />
                   </div>
-                  {!preview.frames.event.available && (
-                    <p className="text-xs text-white/20 mt-2 text-center">
-                      Thumbnails are generated when the pipeline runs with frame_annotator enabled.
-                    </p>
-                  )}
                 </div>
 
                 {/* Clip player */}
                 {clipPlaying ? (
-                  <div className="rounded-xl overflow-hidden border border-white/10 bg-black">
+                  <div className="rounded-2xl overflow-hidden border border-white/10 bg-black shadow-2xl">
                     <video
                       controls
                       autoPlay
@@ -272,55 +266,45 @@ export default function EventPreviewModal({ eventId, eventType, confidence, star
                 ) : (
                   <button
                     onClick={() => setClipPlaying(true)}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 hover:border-indigo-500/40 hover:bg-indigo-500/5 text-white/40 hover:text-indigo-300 transition-all group text-sm"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-indigo-600/20 via-violet-600/20 to-indigo-600/20 border border-indigo-500/30 hover:border-indigo-500/60 text-indigo-300 hover:text-white transition-all text-xs font-mono font-medium shadow-[0_0_15px_rgba(99,102,241,0.15)]"
                   >
-                    <Play size={15} className="group-hover:text-indigo-400" />
-                    Play Event Clip
-                    {!preview.clip_url && (
-                      <span className="text-[10px] text-white/20 ml-1">(unavailable if not generated)</span>
-                    )}
+                    <Play size={14} className="text-indigo-400" />
+                    Stream Event Video Snippet
                   </button>
                 )}
 
-                {/* Evidence / metadata */}
-                <div className="grid grid-cols-2 gap-3 text-xs">
+                {/* Evidence / Telemetry */}
+                <div className="grid grid-cols-2 gap-3 text-xs font-mono">
                   {preview.evidence.description && (
-                    <div className="col-span-2 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                      <p className="text-white/30 uppercase tracking-wider mb-1 flex items-center gap-1">
-                        <Info size={10} /> Description
+                    <div className="col-span-2 p-3.5 rounded-xl surface-inset border border-white/5">
+                      <p className="text-white/40 uppercase tracking-wider text-[10px] mb-1 flex items-center gap-1">
+                        <Info size={10} className="text-indigo-400" /> Synthetic Narrative
                       </p>
-                      <p className="text-white/60">{preview.evidence.description}</p>
+                      <p className="text-white/80 font-sans text-xs">{preview.evidence.description}</p>
                     </div>
                   )}
                   {preview.evidence.zone_id && (
-                    <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                      <p className="text-white/30 uppercase tracking-wider mb-1 flex items-center gap-1">
-                        <MapPin size={10} /> Zone
+                    <div className="p-3.5 rounded-xl surface-inset border border-white/5">
+                      <p className="text-white/40 uppercase tracking-wider text-[10px] mb-1 flex items-center gap-1">
+                        <MapPin size={10} className="text-indigo-400" /> ROI Coordinate Zone
                       </p>
-                      <p className="text-white/60 font-mono">{preview.evidence.zone_id}</p>
+                      <p className="text-indigo-300 font-semibold">{preview.evidence.zone_id}</p>
                     </div>
                   )}
                   {preview.evidence.direction && (
-                    <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                      <p className="text-white/30 uppercase tracking-wider mb-1 flex items-center gap-1">
-                        <TrendingUp size={10} /> Direction
+                    <div className="p-3.5 rounded-xl surface-inset border border-white/5">
+                      <p className="text-white/40 uppercase tracking-wider text-[10px] mb-1 flex items-center gap-1">
+                        <TrendingUp size={10} className="text-indigo-400" /> Vector Direction
                       </p>
-                      <p className="text-white/60">{preview.evidence.direction}</p>
+                      <p className="text-white/80">{preview.evidence.direction}</p>
                     </div>
                   )}
-                  {preview.evidence.lighting_condition && preview.evidence.lighting_condition !== 'unknown' && (
-                    <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                      <p className="text-white/30 uppercase tracking-wider mb-1 flex items-center gap-1">
-                        <Shield size={10} /> Scene Quality
+                  {preview.evidence.lighting_condition && (
+                    <div className="p-3.5 rounded-xl surface-inset border border-white/5">
+                      <p className="text-white/40 uppercase tracking-wider text-[10px] mb-1 flex items-center gap-1">
+                        <Shield size={10} className="text-indigo-400" /> Scene Illumination
                       </p>
-                      <p className={`font-mono ${
-                        preview.evidence.lighting_condition === 'normal' ? 'text-green-400' :
-                        preview.evidence.lighting_condition === 'low_light' ? 'text-amber-400' :
-                        'text-red-400'
-                      }`}>{preview.evidence.lighting_condition}</p>
-                      {preview.evidence.preprocessing_mode && preview.evidence.preprocessing_mode !== 'off' && (
-                        <p className="text-white/20 mt-0.5">Enhanced: {preview.evidence.preprocessing_mode}</p>
-                      )}
+                      <p className="text-emerald-400 font-semibold">{preview.evidence.lighting_condition}</p>
                     </div>
                   )}
                 </div>

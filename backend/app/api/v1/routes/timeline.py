@@ -101,9 +101,19 @@ async def timeline_root():
 @router.get("/crops/{job_id}/{filename}")
 async def serve_crop(job_id: str, filename: str):
     """Serve person crop thumbnails for the frontend."""
-    from app.core.config import settings as app_settings
-    crops_dir = Path(app_settings.OUTPUT_DIR) / job_id / "crops"
+    from app.utils.storage import get_storage_root
+
+    # Try standard upload crops path first: storage/uploads/{job_id}/crops
+    crops_dir = get_storage_root().parent / "storage" / "uploads" / job_id / "crops"
     file_path = crops_dir / filename
+
+    if not file_path.exists():
+        # Fallback to outputs root
+        file_path = get_storage_root() / "crops" / job_id / filename
+
+    if not file_path.exists():
+        # Fallback to local processed dir
+        file_path = get_storage_root().parent / "storage" / "processed" / job_id / "crops" / filename
 
     if not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404, detail=f"Crop not found: {filename}")
@@ -163,11 +173,13 @@ async def get_timeline(video_id: str):
     for label, entry in sorted(person_gallery.items()):
         persons.append({
             "person_label":      label,
+            "description":       entry.get("description"),
             "first_seen_ms":     entry.get("first_seen_ms", 0),
             "last_seen_ms":      entry.get("last_seen_ms", 0),
             "observation_count": entry.get("observation_count", 0),
             "entry_direction":   entry.get("entry_direction"),
             "crop_url":          _make_crop_url(entry.get("best_crop_path"), job_id),
+            "context_url":       _make_crop_url(entry.get("context_path"), job_id),
             "track_ids":         entry.get("track_ids", []),
         })
 
@@ -206,4 +218,5 @@ async def get_timeline(video_id: str):
         "persons":            persons,
         "person_gallery":     person_gallery,
         "unique_persons":     len(persons),
+        "summary":            latest_job.get("summary") if latest_job else None,
     }

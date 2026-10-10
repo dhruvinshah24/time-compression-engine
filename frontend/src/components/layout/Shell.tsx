@@ -21,22 +21,35 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const page = getBreadcrumb(pathname);
 
   return (
-    // BUG-32 FIX: bg-background → explicit bg-[#09090b]
-    <div className="flex h-screen w-full bg-[#09090b] overflow-hidden">
+    <div className="flex h-screen w-full bg-[#08090d] text-slate-100 overflow-hidden font-sans">
       <Sidebar />
-      <div className="flex-1 flex flex-col h-full overflow-y-auto">
-        {/* BUG-27 FIX: Breadcrumb now reflects current route */}
-        {/* BUG-28 FIX: Documentation button removed (was dead) */}
-        <header className="h-16 flex-shrink-0 border-b border-white/[0.07] bg-[#09090b]/80 backdrop-blur-md flex items-center px-8 z-10 sticky top-0">
-          <div className="text-sm text-white/40 font-medium">
-            Time Compression Engine / <span className="text-white/70">{page}</span>
+      <div className="flex-1 flex flex-col h-full overflow-y-auto min-w-0">
+        <header className="h-16 flex-shrink-0 border-b border-white/[0.08] bg-[#090b10]/80 backdrop-blur-xl flex items-center justify-between px-8 z-10 sticky top-0">
+          {/* Breadcrumb path */}
+          <div className="flex items-center gap-2 text-[13px]">
+            <span className="text-slate-400 font-medium">TCE</span>
+            <span className="text-white/20">/</span>
+            <span className="text-slate-200 font-semibold">{page}</span>
           </div>
-          <div className="ml-auto flex items-center gap-4">
-            {/* BUG-32 FIX: bg-accent → bg-gradient explicit */}
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 border border-white/20"></div>
+
+          {/* Right Status / Telemetry bar */}
+          <div className="flex items-center gap-5">
+            <div className="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.07] text-[11px] font-mono text-slate-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+              <span>GPU Accelerated</span>
+              <span className="text-white/20">|</span>
+              <span className="text-indigo-400 font-semibold">5.03× Real-time</span>
+            </div>
+
+            <div className="flex items-center gap-2.5 pl-2 border-l border-white/[0.08]">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 border border-white/20 flex items-center justify-center shadow-md shadow-indigo-500/20 text-xs font-bold text-white">
+                AI
+              </div>
+            </div>
           </div>
         </header>
-        <main className="flex-1 p-8">
+
+        <main className="flex-1 p-8 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

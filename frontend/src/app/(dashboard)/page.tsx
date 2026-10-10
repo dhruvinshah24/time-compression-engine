@@ -1,20 +1,23 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { api } from "@/lib/api/client";
 import {
-  Video, Zap, HardDrive, Plus, Clock, CheckCircle2,
-  XCircle, Loader2, UploadCloud, Activity, Eye, ArrowRight,
-  Sparkles, Play, ChevronRight, Brain, Cpu, Circle,
-  Lightbulb, User, Smartphone, Laptop, Coffee, Package,
-  BarChart3, Film, TrendingUp, Layers,
-  AlertTriangle, Users, Car, DoorOpen, Shield,
-  Backpack, PersonStanding, Luggage, MonitorPlay, BookOpen,
-} from 'lucide-react';
-import Link from 'next/link';
-import { api } from '@/lib/api/client';
+  Film,
+  Zap,
+  TrendingDown,
+  HardDrive,
+  UploadCloud,
+  CheckCircle,
+  Activity,
+  AlertTriangle,
+  Clock,
+  PlaySquare,
+  Server,
+  ActivitySquare,
+} from "lucide-react";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 interface JobRecord {
   id: string;
   video_id: string;
@@ -23,8 +26,13 @@ interface JobRecord {
   progress: number;
   event_count: number;
   current_stage?: string;
-  video_metadata?: { profile?: string; duration_hms?: string; resolution?: string };
+  video_metadata?: {
+    profile?: string;
+    duration_hms?: string;
+    resolution?: string;
+  };
 }
+
 interface AnalyticsStats {
   total_videos: number;
   total_events: number;
@@ -33,6 +41,7 @@ interface AnalyticsStats {
   running_jobs: number;
   has_data: boolean;
 }
+
 interface EventRecord {
   id: string;
   type?: string;
@@ -41,582 +50,439 @@ interface EventRecord {
   start_ms?: number;
   confidence?: number;
   video_id?: string;
+  person_label?: string;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function formatBytes(bytes: number): string {
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-}
+const formatBytes = (bytes: number, decimals = 2) => {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+};
 
-function getEventLabel(et: string): { label: string; icon: React.ElementType; color: string } {
-  const map: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-    // Person motion
-    person_entered_scene:       { label: 'Person Entered',       icon: User,           color: 'text-green-400' },
-    person_left_scene:          { label: 'Person Left',           icon: User,           color: 'text-red-400' },
-    person_walking:             { label: 'Walking',               icon: Activity,       color: 'text-blue-400' },
-    person_running:             { label: 'Running',               icon: Activity,       color: 'text-rose-400' },
-    person_loitering:           { label: 'Loitering',             icon: Clock,          color: 'text-amber-500' },
-    // Person posture
-    person_sitting:             { label: 'Sat Down',              icon: Activity,       color: 'text-amber-400' },
-    person_standing_up:         { label: 'Stood Up',              icon: Activity,       color: 'text-indigo-400' },
-    person_crouching:           { label: 'Crouching',             icon: Activity,       color: 'text-orange-400' },
-    person_fallen:              { label: '⚠ Person Fallen',       icon: AlertTriangle,  color: 'text-red-500' },
-    // Person gestures
-    person_reaching_up:         { label: 'Reached Up',            icon: Zap,            color: 'text-yellow-400' },
-    person_carrying:            { label: 'Carrying Object',        icon: Package,        color: 'text-purple-400' },
-    // Devices
-    person_using_phone:         { label: 'Using Phone',            icon: Smartphone,     color: 'text-cyan-400' },
-    person_using_laptop:        { label: 'Using Laptop',           icon: Laptop,         color: 'text-sky-400' },
-    person_watching_screen:     { label: 'Watching Screen',        icon: MonitorPlay,    color: 'text-sky-300' },
-    person_drinking:            { label: 'Drinking',               icon: Coffee,         color: 'text-emerald-400' },
-    person_reading:             { label: 'Reading',                icon: BookOpen,       color: 'text-orange-400' },
-    person_pocketed_object:     { label: 'Pocketed Object',        icon: Package,        color: 'text-violet-400' },
-    // Security events
-    unattended_bag:             { label: '⚠ Unattended Bag',      icon: AlertTriangle,  color: 'text-red-400' },
-    package_left:               { label: '⚠ Package Left',        icon: AlertTriangle,  color: 'text-orange-500' },
-    person_running_toward:      { label: '⚠ Running Toward Cam',  icon: AlertTriangle,  color: 'text-rose-500' },
-    // Group events
-    group_gathering:            { label: 'Group Gathering',        icon: Users,          color: 'text-violet-400' },
-    group_dispersing:           { label: 'Group Dispersing',       icon: Users,          color: 'text-slate-400' },
-    // Lighting
-    light_turned_on:            { label: 'Light Turned On',        icon: Lightbulb,      color: 'text-yellow-300' },
-    light_turned_off:           { label: 'Light Turned Off',       icon: Lightbulb,      color: 'text-slate-400' },
-    // Door
-    door_opened:                { label: 'Door Opened',            icon: DoorOpen,       color: 'text-teal-400' },
-    door_closed:                { label: 'Door Closed',            icon: DoorOpen,       color: 'text-slate-400' },
-    // Vehicle
-    vehicle_approaching:        { label: 'Vehicle Approaching',    icon: Car,            color: 'text-blue-400' },
-    vehicle_receding:           { label: 'Vehicle Receding',       icon: Car,            color: 'text-slate-400' },
-    vehicle_stationary:         { label: 'Vehicle Parked',         icon: Car,            color: 'text-amber-400' },
-    vehicle_stopped:            { label: 'Vehicle Stopped',        icon: Car,            color: 'text-orange-400' },
-  };
-  if (et.startsWith('person_picked_up_')) {
-    const obj = et.replace('person_picked_up_', '').replace(/_/g, ' ');
-    return { label: `Picked Up ${obj}`, icon: Package, color: 'text-fuchsia-400' };
-  }
-  if (et.startsWith('person_placed_')) {
-    const obj = et.replace('person_placed_', '').replace(/_/g, ' ');
-    return { label: `Put Down ${obj}`, icon: Package, color: 'text-lime-400' };
-  }
-  return map[et] ?? {
-    label: et.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-    icon: Zap,
-    color: 'text-slate-400',
-  };
-}
+const formatTime = (ms: number) => {
+  const seconds = Math.floor(ms / 1000);
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+};
 
-function getStatusBadge(status: string) {
-  // BUG-04 FIX: API returns 'running', UI expected 'processing'
-  const normalized = status === 'running' ? 'processing' : status;
-  switch (normalized) {
-    case 'completed': return { label: 'Done',       cls: 'bg-green-500/15 text-green-400 border-green-500/25',   dot: 'bg-green-400' };
-    case 'failed':    return { label: 'Failed',     cls: 'bg-red-500/15 text-red-400 border-red-500/25',         dot: 'bg-red-400' };
-    case 'processing':return { label: 'Processing', cls: 'bg-blue-500/15 text-blue-400 border-blue-500/25',      dot: 'bg-blue-400 animate-pulse' };
-    case 'queued':    return { label: 'Queued',     cls: 'bg-amber-500/15 text-amber-400 border-amber-500/25',   dot: 'bg-amber-400' };
-    default:          return { label: normalized,   cls: 'bg-white/5 text-white/40 border-white/10',             dot: 'bg-white/30' };
-  }
-}
-
-// ── Empty State ───────────────────────────────────────────────────────────────
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center py-28 text-center">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 200 }}
-        className="relative mb-8"
-      >
-        <div className="w-24 h-24 rounded-3xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-          <Brain size={40} className="text-indigo-400" />
-        </div>
-        <div className="absolute -top-2 -right-2 w-8 h-8 rounded-xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
-          <Sparkles size={14} className="text-violet-400" />
-        </div>
-      </motion.div>
-      <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
-        <h2 className="text-2xl font-bold text-white mb-3">Ready for Intelligence</h2>
-        <p className="text-white/40 text-sm leading-relaxed max-w-md mb-8">
-          Upload any video — TCE will detect every person, object, and activity using
-          <span className="text-indigo-300 font-semibold"> YOLO-World AI </span>
-          (200+ classes) and build a precise event timeline.
-        </p>
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {['Person Tracking','Light Detection','Object Recognition','Interaction AI','194 Classes'].map(tag => (
-            <span key={tag} className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50">
-              {tag}
-            </span>
-          ))}
-        </div>
-        <Link href="/upload">
-          <motion.button
-            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2.5 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl font-semibold transition-colors shadow-lg shadow-indigo-500/25"
-          >
-            <UploadCloud size={18} /> Upload Your First Video
-          </motion.button>
-        </Link>
-      </motion.div>
-    </div>
-  );
-}
-
-// ── Stat Card ─────────────────────────────────────────────────────────────────
-function StatCard({ label, value, icon: Icon, color, delay = 0 }: {
-  label: string; value: string | number; icon: React.ElementType; color: string; delay?: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.07] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all group"
-    >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs text-white/40 uppercase tracking-wider mb-2">{label}</p>
-          <p className="text-3xl font-bold text-white">{value}</p>
-        </div>
-        <div className={`w-10 h-10 rounded-xl bg-black/20 flex items-center justify-center ${color} group-hover:scale-110 transition-transform`}>
-          <Icon size={18} />
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ── Event Feed Row ────────────────────────────────────────────────────────────
-function EventFeedRow({ evt, index }: { evt: EventRecord; index: number }) {
-  const et = evt.event_type ?? evt.type ?? '';
-  const { label, icon: Icon, color } = getEventLabel(et);
-  const t = ((evt.start_ms ?? evt.timestamp_ms ?? 0) / 1000).toFixed(1);
-  const conf = Math.round((evt.confidence ?? 0) * 100);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -8 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.04 }}
-      className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.04] transition-colors group"
-    >
-      <div className={`w-8 h-8 rounded-lg bg-black/20 flex items-center justify-center flex-shrink-0 ${color}`}>
-        <Icon size={14} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm text-white/80 font-medium truncate">{label}</p>
-        <p className="text-xs text-white/30 font-mono">{t}s</p>
-      </div>
-      {conf > 0 && (
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/40 flex-shrink-0">
-          {conf}%
-        </span>
-      )}
-      {evt.video_id && (
-        <Link href={`/timeline/${evt.video_id}`} className="opacity-0 group-hover:opacity-100 transition-opacity">
-          <ChevronRight size={14} className="text-white/30" />
-        </Link>
-      )}
-    </motion.div>
-  );
-}
-
-// ── Job Card ──────────────────────────────────────────────────────────────────
-function JobCard({ job, index }: { job: JobRecord; index: number }) {
-  const badge = getStatusBadge(job.status);
-  // BUG-04 FIX: API returns 'running', not 'processing'
-  const isProcessing = job.status === 'processing' || job.status === 'running';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06 }}
-    >
-      <Link href={job.status === 'completed' && job.video_id ? `/timeline/${job.video_id}` : `/processing/${job.id}`}>
-        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.07] hover:bg-white/[0.06] hover:border-white/[0.14] transition-all group cursor-pointer">
-          <div className="flex items-start gap-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-              job.status === 'completed' ? 'bg-green-500/10' :
-              job.status === 'failed' ? 'bg-red-500/10' : 'bg-blue-500/10'
-            }`}>
-              {job.status === 'completed' ? <CheckCircle2 size={16} className="text-green-400" /> :
-               job.status === 'failed'    ? <XCircle size={16} className="text-red-400" /> :
-               isProcessing               ? <Loader2 size={16} className="text-blue-400 animate-spin" /> :
-                                            <Clock size={16} className="text-amber-400" />}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-sm font-semibold text-white/80 truncate group-hover:text-white transition-colors">
-                  {job.filename?.replace('original.mp4', 'Video') ?? job.id}
-                </p>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full border flex-shrink-0 ${badge.cls}`}>
-                  {badge.label}
-                </span>
-              </div>
-              {job.video_metadata?.duration_hms && (
-                <p className="text-xs text-white/30 mb-2">
-                  {job.video_metadata.duration_hms} · {job.video_metadata.resolution ?? '—'}
-                </p>
-              )}
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${job.progress}%` }}
-                    transition={{ duration: 0.6 }}
-                    className={`h-full rounded-full ${
-                      job.status === 'completed' ? 'bg-green-500' :
-                      job.status === 'failed' ? 'bg-red-500' : 'bg-blue-500'
-                    }`}
-                  />
-                </div>
-                <span className="text-[10px] text-white/30 font-mono flex-shrink-0">{job.progress}%</span>
-              </div>
-              {job.event_count > 0 && (
-                <p className="text-[10px] text-white/30 mt-1.5 flex items-center gap-1">
-                  <Zap size={10} className="text-indigo-400" />
-                  {job.event_count} events detected
-                </p>
-              )}
-            </div>
-            <ChevronRight size={14} className="text-white/20 group-hover:text-white/50 transition-colors mt-1 flex-shrink-0" />
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-}
-
-// ── Compression Hero ──────────────────────────────────────────────────────────
-function CompressionHero({ stats, jobs }: { stats: AnalyticsStats; jobs: JobRecord[] }) {
-  const completed = jobs.filter(j => j.status === 'completed');
-  if (completed.length === 0 || !stats.avg_compression_ratio) return null;
-  
-  const pct = Math.round(stats.avg_compression_ratio * 100);
-  const ratio = (1 / stats.avg_compression_ratio).toFixed(1);
-  
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="p-5 rounded-2xl bg-gradient-to-r from-indigo-500/8 to-violet-500/8 border border-indigo-500/20 flex items-center gap-6"
-    >
-      <div className="flex-1">
-        <p className="text-xs text-indigo-400/70 uppercase tracking-wider mb-1">Average Compression</p>
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold text-white">{pct}%</span>
-          <span className="text-white/40 text-sm">of footage retained</span>
-        </div>
-        <p className="text-xs text-white/30 mt-1">{ratio}× compression · {stats.total_events} events preserved</p>
-      </div>
-      <div className="flex items-center gap-3 text-center">
-        <div>
-          <p className="text-lg font-bold text-white/60">100%</p>
-          <p className="text-[10px] text-white/30">Original</p>
-        </div>
-        <div className="text-white/20 text-lg">→</div>
-        <div>
-          <p className="text-2xl font-bold text-indigo-400">{pct}%</p>
-          <p className="text-[10px] text-indigo-400/60">TCE Summary</p>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ── Main ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
-  const [stats, setStats]   = useState<AnalyticsStats | null>(null);
-  const [jobs, setJobs]     = useState<JobRecord[]>([]);
+  const [jobs, setJobs] = useState<JobRecord[]>([]);
+  const [stats, setStats] = useState<AnalyticsStats | null>(null);
   const [events, setEvents] = useState<EventRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [backendError, setBackendError] = useState<string | null>(null);
-  const [deviceInfo, setDeviceInfo] = useState<{
-    cuda_available?: boolean; gpu_name?: string; vram_gb?: number;
-    device?: string; torch_version?: string;
-  } | null>(null);
-  const [activeModel, setActiveModel] = useState<string>('yolo11x');
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchData = async () => {
+    try {
+      const [jobsData, statsData, eventsData] = await Promise.all([
+        api.jobs.list() as Promise<JobRecord[]>,
+        api.analytics() as Promise<AnalyticsStats>,
+        api.events.list() as Promise<EventRecord[]>,
+      ]);
+      setJobs(jobsData || []);
+      setStats(statsData || null);
+      setEvents(eventsData || []);
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
-        const [s, j, e, h] = await Promise.all([
-          api.analytics() as Promise<AnalyticsStats>,
-          api.jobs.list()  as Promise<JobRecord[]>,
-          api.events.list({ limit: '8' }) as Promise<EventRecord[]>,
-          fetch(`${API}/health`).then(r => r.json()).catch(() => null),
-        ]);
-        setStats(s);
-        setJobs(Array.isArray(j) ? j : []);
-        setEvents(Array.isArray(e) ? e : []);
-        if (h?.device_info) setDeviceInfo(h.device_info);
-        if (h?.experiment_config?.detection_model) setActiveModel(h.experiment_config.detection_model);
-        setBackendError(null);
-      } catch (err) {
-        setBackendError('Cannot reach the backend. Make sure the server is running on port 8000.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-    const iv = setInterval(load, 5000);
-    return () => clearInterval(iv);
+    fetchData();
+    const intervalId = setInterval(fetchData, 30000);
+    return () => clearInterval(intervalId);
   }, []);
 
-
-  if (loading) return (
-    <div className="flex items-center justify-center py-32 gap-3 text-white/30">
-      <Loader2 size={18} className="animate-spin" />
-      <span className="text-sm">Loading intelligence dashboard…</span>
-    </div>
-  );
-
-  const isEmpty = !backendError && !stats?.has_data && jobs.length === 0;
-  if (isEmpty) return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-white/30 text-sm mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#07090e]">
+        <div className="flex flex-col items-center gap-4">
+          <Activity className="h-10 w-10 animate-pulse text-[#00d4ff]" />
+          <p className="font-mono text-sm tracking-wider text-cyan-400">
+            INITIALIZING COMMAND CENTER...
+          </p>
         </div>
-        {/* GPU/CPU device badge */}
-        {deviceInfo && (
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono ${
-            deviceInfo.cuda_available
-              ? 'bg-green-500/10 border-green-500/20 text-green-400'
-              : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-          }`}>
-            <span className={`w-2 h-2 rounded-full ${
-              deviceInfo.cuda_available ? 'bg-green-400 animate-pulse' : 'bg-amber-400'
-            }`} />
-            <span>{deviceInfo.cuda_available ? 'CUDA' : 'CPU'}</span>
-            {deviceInfo.gpu_name && <span className="text-white/40">· {deviceInfo.gpu_name.replace('NVIDIA ', '').replace(' Laptop GPU', '')}</span>}
-            {deviceInfo.vram_gb && <span className="text-white/30">· {deviceInfo.vram_gb}GB</span>}
-            <span className="text-white/20">· {activeModel}</span>
-          </div>
-        )}
       </div>
-      <EmptyState />
-    </div>
-  );
+    );
+  }
 
-
-  // BUG-02 FIX: Replace fake Objects Tracked (total_events*3) with real avg_compression_ratio
-  const compressionDisplay = stats?.avg_compression_ratio
-    ? `${(stats.avg_compression_ratio * 100).toFixed(0)}%`
-    : '—';
-
-  const statCards = [
-    { label: 'Videos Processed', value: stats?.total_videos ?? 0,   icon: Film,       color: 'text-blue-400',    delay: 0 },
-    { label: 'Events Detected',  value: stats?.total_events ?? 0,   icon: Zap,        color: 'text-violet-400',  delay: 0.05 },
-    { label: 'Compression',      value: compressionDisplay,          icon: TrendingUp, color: 'text-cyan-400',    delay: 0.1 },
-    { label: 'Data Processed',   value: formatBytes(stats?.total_bytes_uploaded ?? 0), icon: HardDrive, color: 'text-emerald-400', delay: 0.15 },
-  ];
-
-  // BUG-04 FIX: Handle 'running' API status in sort order
-  const sortedJobs = [...jobs].sort((a, b) => {
-    const order: Record<string, number> = { running: 0, processing: 0, queued: 1, completed: 2, failed: 3 };
-    return (order[a.status] ?? 4) - (order[b.status] ?? 4);
-  });
-
-  const completedJobs = sortedJobs.filter(j => j.status === 'completed');
-  const activeJobs    = sortedJobs.filter(j => j.status !== 'completed' && j.status !== 'failed');
+  const activeJobs = jobs.filter((j) => j.status === "running");
 
   return (
-    <div className="space-y-8">
-      {/* BUG-01 FIX: Backend error banner — shown instead of fake empty state */}
-      {backendError && (
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
-          <XCircle size={18} className="flex-shrink-0 text-red-400" />
-          <span>{backendError}</span>
-        </div>
-      )}
+    <div className="min-h-screen bg-[#07090e] p-6 font-sans text-slate-300">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes subtle-gradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: subtle-gradient 10s ease infinite;
+        }
+      `}} />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-white/30 text-sm mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* GPU / CPU live badge — always visible */}
-          {deviceInfo && (
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono ${
-              deviceInfo.cuda_available
-                ? 'bg-green-500/10 border-green-500/20 text-green-400'
-                : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-            }`}>
-              <span className={`w-2 h-2 rounded-full ${
-                deviceInfo.cuda_available ? 'bg-green-400 animate-pulse' : 'bg-amber-400'
-              }`} />
-              <span>{deviceInfo.cuda_available ? 'CUDA' : 'CPU'}</span>
-              {deviceInfo.gpu_name && <span className="text-white/50">· {deviceInfo.gpu_name.replace('NVIDIA ', '').replace(' Laptop GPU', '')}</span>}
-              {deviceInfo.vram_gb && <span className="text-white/30">· {deviceInfo.vram_gb}GB</span>}
-              <span className="text-white/20">· {activeModel}</span>
+      {/* HERO BANNER */}
+      <section className="animate-gradient relative mb-8 overflow-hidden rounded-xl border border-white/5 bg-gradient-to-r from-cyan-900/20 via-blue-900/20 to-emerald-900/20 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="absolute left-0 top-0 h-full w-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent opacity-30"></div>
+        <div className="relative flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-500/20 ring-1 ring-cyan-500/50">
+              <ActivitySquare className="h-6 w-6 text-cyan-400" />
             </div>
-          )}
-          <Link href="/upload">
-            <motion.button
-              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-indigo-500/20"
-            >
-              <Plus size={16} /> New Upload
-            </motion.button>
-          </Link>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-white">
+                SCENE INTELLIGENCE COMMAND
+              </h1>
+              <p className="font-mono text-sm text-cyan-400">
+                TCE // TIME COMPRESSION ENGINE
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-1 justify-center gap-8 px-8">
+            <div className="text-center">
+              <div className="font-mono text-3xl font-bold text-white">
+                {stats?.total_videos || 0}
+              </div>
+              <div className="text-xs tracking-widest text-slate-400">
+                TOTAL VIDEOS
+              </div>
+            </div>
+            <div className="h-10 w-px bg-white/10" />
+            <div className="text-center">
+              <div className="font-mono text-3xl font-bold text-white">
+                {stats?.total_events || 0}
+              </div>
+              <div className="text-xs tracking-widest text-slate-400">
+                TOTAL EVENTS
+              </div>
+            </div>
+            <div className="h-10 w-px bg-white/10" />
+            <div className="text-center">
+              <div className="font-mono text-3xl font-bold text-white">
+                {activeJobs.length}
+              </div>
+              <div className="text-xs tracking-widest text-slate-400">
+                ACTIVE JOBS
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2">
+            <span className="relative flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500"></span>
+            </span>
+            <span className="font-mono text-sm font-medium text-emerald-400">
+              SYSTEM ONLINE
+            </span>
+          </div>
         </div>
-      </div>
+        <div className="absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r from-cyan-500/0 via-cyan-500 to-cyan-500/0"></div>
+      </section>
 
-      <CompressionHero stats={stats!} jobs={jobs} />
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map(s => <StatCard key={s.label} {...s} />)}
-      </div>
-
-      {/* Active Jobs Banner */}
-      <AnimatePresence>
-        {activeJobs.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-            className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 flex items-center gap-3"
+      {/* ANALYTICS STRIP */}
+      <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          {
+            label: "Total Videos Processed",
+            value: stats?.total_videos || 0,
+            icon: Film,
+            color: "text-blue-400",
+            bg: "bg-blue-400/10",
+            border: "border-blue-400/20",
+          },
+          {
+            label: "Total Events Detected",
+            value: stats?.total_events || 0,
+            icon: Zap,
+            color: "text-cyan-400",
+            bg: "bg-cyan-400/10",
+            border: "border-cyan-400/20",
+          },
+          {
+            label: "Avg Compression Ratio",
+            value: (stats?.avg_compression_ratio || 0).toFixed(1) + "x",
+            icon: TrendingDown,
+            color: "text-emerald-400",
+            bg: "bg-emerald-400/10",
+            border: "border-emerald-400/20",
+          },
+          {
+            label: "Storage Analyzed",
+            value: formatBytes(stats?.total_bytes_uploaded || 0),
+            icon: HardDrive,
+            color: "text-amber-400",
+            bg: "bg-amber-400/10",
+            border: "border-amber-400/20",
+          },
+        ].map((stat, i) => (
+          <div
+            key={i}
+            className={`relative overflow-hidden rounded-xl border border-white/5 bg-[rgba(13,18,24,0.8)] p-6 backdrop-blur-xl transition-colors hover:bg-white/[0.03]`}
           >
-            <div className="w-8 h-8 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
-              <Cpu size={16} className="text-blue-400 animate-pulse" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-blue-300">
-                {activeJobs.length} job{activeJobs.length > 1 ? 's' : ''} running · {activeModel} on {deviceInfo?.cuda_available ? `RTX GPU` : 'CPU'}
-              </p>
-              <p className="text-xs text-blue-400/60 mt-0.5">
-                SAHI tiling · per-class confidence · adaptive frame skip · {deviceInfo?.vram_gb ?? '?'}GB VRAM
-              </p>
-            </div>
-            <Link href={`/processing/${activeJobs[0]?.id}`} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors">
-              View <ChevronRight size={12} />
-            </Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-        {/* Event Feed (3/5 wide) */}
-        <div className="lg:col-span-3 space-y-3">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <BarChart3 size={15} className="text-white/30" />
-              <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider">Recent Events</h2>
-            </div>
-            <Link href="/events" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
-              View all <ArrowRight size={11} />
-            </Link>
-          </div>
-          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-1">
-            {events.length === 0 ? (
-              <div className="py-10 text-center">
-                <Zap size={28} className="mx-auto text-white/10 mb-3" />
-                <p className="text-white/25 text-sm">Events appear here after processing</p>
+            <div className="relative z-10 flex items-start justify-between">
+              <div>
+                <div className="font-mono text-3xl font-bold text-white">
+                  {stat.value}
+                </div>
+                <div className="mt-1 text-sm font-medium text-slate-400">
+                  {stat.label}
+                </div>
               </div>
-            ) : (
-              events.map((evt, i) => <EventFeedRow key={evt.id} evt={evt} index={i} />)
-            )}
-          </div>
-        </div>
-
-        {/* Jobs Panel (2/5 wide) */}
-        <div className="lg:col-span-2 space-y-3">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <Layers size={15} className="text-white/30" />
-              <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider">All Analyses</h2>
-            </div>
-            <span className="text-xs text-white/25 font-mono">{jobs.length} total</span>
-          </div>
-
-          <div className="space-y-2">
-            {sortedJobs.length === 0 ? (
-              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] text-center">
-                <Clock size={24} className="mx-auto text-white/10 mb-2" />
-                <p className="text-white/25 text-sm">No jobs yet</p>
+              <div
+                className={`rounded-lg ${stat.bg} ${stat.border} border p-3`}
+              >
+                <stat.icon className={`h-6 w-6 ${stat.color}`} />
               </div>
-            ) : (
-              sortedJobs.slice(0, 5).map((job, i) => <JobCard key={job.id} job={job} index={i} />)
-            )}
+            </div>
+            {/* Subtle background icon */}
+            <stat.icon
+              className={`absolute -right-4 -top-4 z-0 h-24 w-24 opacity-5 ${stat.color}`}
+            />
           </div>
+        ))}
+      </section>
 
-          <Link href="/upload" className="block">
-            <div className="p-4 rounded-2xl border border-dashed border-white/[0.10] hover:border-indigo-500/40 hover:bg-indigo-500/5 transition-all text-center group cursor-pointer">
-              <Plus size={16} className="mx-auto text-white/20 group-hover:text-indigo-400 mb-1 transition-colors" />
-              <p className="text-xs text-white/25 group-hover:text-indigo-400 transition-colors">Add new video</p>
+      {/* MAIN GRID */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        {/* LEFT COLUMN: 60% */}
+        <div className="flex flex-col gap-8 lg:col-span-7 xl:col-span-8">
+          
+          {/* QUICK UPLOAD */}
+          <Link href="/upload">
+            <div className="group relative cursor-pointer overflow-hidden rounded-xl border border-dashed border-white/20 bg-white/5 p-8 text-center transition-all hover:border-cyan-500/50 hover:bg-cyan-500/5">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="rounded-full bg-cyan-500/10 p-4 transition-transform group-hover:scale-110">
+                  <UploadCloud className="h-8 w-8 text-cyan-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-white">
+                    Drop CCTV footage to analyze
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Or click to browse files
+                  </p>
+                </div>
+              </div>
+              {/* Animated corner reticles */}
+              <div className="absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-cyan-400/0 transition-all group-hover:border-cyan-400/60" />
+              <div className="absolute right-0 top-0 h-4 w-4 border-r-2 border-t-2 border-cyan-400/0 transition-all group-hover:border-cyan-400/60" />
+              <div className="absolute bottom-0 left-0 h-4 w-4 border-b-2 border-l-2 border-cyan-400/0 transition-all group-hover:border-cyan-400/60" />
+              <div className="absolute bottom-0 right-0 h-4 w-4 border-b-2 border-r-2 border-cyan-400/0 transition-all group-hover:border-cyan-400/60" />
             </div>
           </Link>
-        </div>
-      </div>
 
-      {/* Completed Timelines */}
-      {completedJobs.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp size={15} className="text-white/30" />
-              <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider">Completed Timelines</h2>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {completedJobs.map((job, i) => (
-              <motion.div key={job.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <Link href={`/timeline/${job.video_id}`}>
-                  <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.07] hover:bg-white/[0.06] hover:border-indigo-500/25 transition-all group cursor-pointer">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                        <Film size={16} className="text-indigo-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white/80 group-hover:text-white transition-colors truncate">
-                          {job.filename?.replace('original.mp4','Video') ?? 'Video'}
-                        </p>
-                        {job.video_metadata?.duration_hms && (
-                          <p className="text-xs text-white/30">{job.video_metadata.duration_hms}</p>
-                        )}
-                      </div>
-                      <ArrowRight size={14} className="text-white/20 group-hover:text-indigo-400 transition-colors flex-shrink-0" />
+          {/* ACTIVE PIPELINES */}
+          {activeJobs.length > 0 && (
+            <div className="rounded-xl border border-amber-500/20 bg-[rgba(13,18,24,0.8)] p-6 backdrop-blur-xl">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="relative flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-500"></span>
+                </div>
+                <h2 className="text-lg font-semibold tracking-wide text-white">
+                  ACTIVE PIPELINES
+                </h2>
+              </div>
+              <div className="space-y-4">
+                {activeJobs.map((job) => (
+                  <div key={job.id} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium text-slate-300">
+                        {job.filename}
+                      </span>
+                      <span className="font-mono text-amber-400">
+                        {job.current_stage || "PROCESSING"} {job.progress}%
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-500/10 border border-green-500/20">
-                        <Circle size={6} className="text-green-400 fill-green-400" />
-                        <span className="text-[10px] text-green-400 font-semibold">Complete</span>
-                      </div>
-                      {job.event_count > 0 && (
-                        <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5">
-                          <Zap size={10} className="text-violet-400" />
-                          <span className="text-[10px] text-white/40">{job.event_count} events</span>
-                        </div>
-                      )}
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        className="h-full bg-amber-500 transition-all duration-500 ease-in-out"
+                        style={{ width: `${job.progress}%` }}
+                      />
                     </div>
                   </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
+                ))}
+              </div>
+            </div>
+          )}
 
-      {/* Model Badge */}
-      <div className="flex items-center justify-center gap-3 py-2 border-t border-white/[0.05] mt-4">
-        <Brain size={12} className="text-indigo-400" />
-        <p className="text-xs text-white/20">
-          Active model: <span className="text-indigo-300/70 font-medium">{activeModel}</span> ·
-          {deviceInfo?.cuda_available
-            ? <span className="text-green-400/70 font-medium"> CUDA ({deviceInfo?.gpu_name?.replace('NVIDIA ', '').replace(' Laptop GPU', '') ?? 'GPU'}) </span>
-            : <span className="text-amber-400/70 font-medium"> CPU mode </span>
-          }
-          · Quality analyzer · Low-light preprocessing · ROI zone detection
-        </p>
+          {/* RECENT INTELLIGENCE REPORTS */}
+          <div className="rounded-xl border border-white/5 bg-[rgba(13,18,24,0.8)] backdrop-blur-xl">
+            <div className="border-b border-white/5 p-6">
+              <h2 className="text-lg font-semibold tracking-wide text-white">
+                RECENT INTELLIGENCE REPORTS
+              </h2>
+            </div>
+            <div className="divide-y divide-white/5 p-2">
+              {jobs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-12 text-center">
+                  <Film className="mb-4 h-12 w-12 text-slate-600" />
+                  <p className="text-lg font-medium text-slate-300">
+                    No videos processed yet.
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Upload your first CCTV footage to begin.
+                  </p>
+                </div>
+              ) : (
+                jobs.map((job) => (
+                  <div
+                    key={job.id}
+                    className="flex flex-col gap-4 p-4 transition-colors hover:bg-white/[0.02] sm:flex-row sm:items-center"
+                  >
+                    <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded border border-white/10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgZmlsbD0iIzIyMiIgLz4KPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjUiIGhlaWdodD0iMTAiIGZpbGw9IiMzMzMiIC8+CjxyZWN0IHg9IjM1IiB5PSIwIiB3aWR0aD0iNSIgaGVpZ2h0PSIxMCIgZmlsbD0iIzMzMyIgLz4KPC9zdmc+')] bg-repeat-y text-slate-500">
+                      <PlaySquare className="h-6 w-6" />
+                    </div>
+                    
+                    <div className="flex-1 space-y-1">
+                      <h4 className="font-medium text-white line-clamp-1">
+                        {job.filename}
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                        {job.status === "completed" && (
+                          <span className="flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-400">
+                            <CheckCircle className="h-3 w-3" />
+                            COMPLETED
+                          </span>
+                        )}
+                        {job.status === "running" && (
+                          <span className="flex items-center gap-1 rounded bg-amber-500/10 px-2 py-0.5 font-medium text-amber-400">
+                            <Activity className="h-3 w-3 animate-spin" />
+                            RUNNING
+                          </span>
+                        )}
+                        {job.status === "failed" && (
+                          <span className="flex items-center gap-1 rounded bg-rose-500/10 px-2 py-0.5 font-medium text-rose-400">
+                            <AlertTriangle className="h-3 w-3" />
+                            FAILED
+                          </span>
+                        )}
+                        
+                        <span className="flex items-center gap-1">
+                          <Zap className="h-3 w-3 text-cyan-500" />
+                          {job.event_count} Events
+                        </span>
+                        
+                        {job.video_metadata?.duration_hms && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {job.video_metadata.duration_hms}
+                          </span>
+                        )}
+                        {job.video_metadata?.profile && (
+                          <span className="rounded bg-white/10 px-1.5 py-0.5 uppercase">
+                            {job.video_metadata.profile}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 gap-2">
+                      <Link href={`/timeline/${job.video_id}`}>
+                        <button
+                          disabled={job.status !== "completed"}
+                          className="rounded border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-sm font-medium text-cyan-400 transition-colors hover:bg-cyan-500/20 disabled:opacity-50"
+                        >
+                          View Timeline
+                        </button>
+                      </Link>
+                      <Link href={`/processing/${job.id}`}>
+                        <button className="rounded border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/10">
+                          Inspect Pipeline
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT COLUMN: 40% */}
+        <div className="flex flex-col gap-8 lg:col-span-5 xl:col-span-4">
+          
+          {/* LIVE EVENT FEED */}
+          <div className="flex h-full flex-col rounded-xl border border-white/5 bg-[rgba(13,18,24,0.8)] backdrop-blur-xl">
+            <div className="flex items-center justify-between border-b border-white/5 p-6">
+              <h2 className="flex items-center gap-3 text-lg font-semibold tracking-wide text-white">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
+                </span>
+                LIVE INTELLIGENCE FEED
+              </h2>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4">
+              {events.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+                  <Zap className="mb-4 h-10 w-10 text-slate-600" />
+                  <p className="text-sm text-slate-500">
+                    No recent events detected.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {events.slice(0, 10).map((event) => (
+                    <div
+                      key={event.id}
+                      className="group relative flex gap-4 rounded-lg border border-transparent p-3 transition-colors hover:border-white/5 hover:bg-white/[0.02]"
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-slate-800">
+                        <Zap className="h-5 w-5 text-cyan-400" />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-start justify-between">
+                          <p className="font-medium text-slate-200">
+                            {event.event_type || event.type || "Unknown Event"}
+                          </p>
+                          <span className="font-mono text-xs text-slate-500">
+                            {event.start_ms !== undefined
+                              ? formatTime(event.start_ms)
+                              : ""}
+                          </span>
+                        </div>
+                        {event.person_label && (
+                          <span className="inline-block rounded bg-indigo-500/20 px-2 py-0.5 text-xs text-indigo-300">
+                            {event.person_label}
+                          </span>
+                        )}
+                        <div className="flex justify-between pt-1">
+                          {event.video_id && (
+                            <Link
+                              href={`/timeline/${event.video_id}?time=${event.start_ms}`}
+                              className="text-xs text-cyan-500 opacity-0 transition-opacity hover:underline group-hover:opacity-100"
+                            >
+                              Jump to Event &rarr;
+                            </Link>
+                          )}
+                          {event.confidence !== undefined && (
+                            <span className="font-mono text-xs text-slate-500">
+                              {(event.confidence * 100).toFixed(0)}% CONF
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          
+        </div>
       </div>
     </div>
   );
 }
+

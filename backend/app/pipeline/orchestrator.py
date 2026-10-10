@@ -229,8 +229,36 @@ class PipelineOrchestrator:
             cn = getattr(track, "class_name", None)
             if not cn:
                 continue
-            cid = getattr(track, "class_id", -1)
+
+            # ORC FILTER FIX: Discard unconfirmed tracks & single-frame false positives
+            if not getattr(track, "is_confirmed", False):
+                continue
+
+            # Discard notorious COCO toy/sports hallucinations in indoor/security footage (e.g. teddy bear, sports ball)
+            cn_clean = cn.lower().replace(" ", "_")
+            if cn_clean in {
+                "sports_ball", "teddy_bear", "frisbee", "kite",
+                "baseball_bat", "baseball_glove", "skateboard", "surfboard",
+                "tennis_racket", "snowboard", "skis", "bow_tie", "vase",
+            }:
+                continue
+
+            obs = getattr(track, "observations", [])
+            obs_cnt = getattr(track, "total_observations", len(obs))
+            if obs_cnt < 3:
+                continue
+
             avg_conf = getattr(track, "avg_confidence", 0.0)
+            max_conf = max((getattr(o, "detection_confidence", 0.0) for o in obs), default=avg_conf)
+            is_person = cn.lower() in ("person", "pedestrian", "man", "woman")
+
+            # Non-person objects require higher confidence to avoid noisy COCO false positives
+            if not is_person and (avg_conf < 0.35 or max_conf < 0.45):
+                continue
+            if is_person and max_conf < 0.25:
+                continue
+
+            cid = getattr(track, "class_id", -1)
             created_ms = getattr(track, "created_timestamp_ms", 0.0)
 
             if cn not in detected_objects:
@@ -249,7 +277,7 @@ class PipelineOrchestrator:
                 }
             detected_objects[cn]["instance_count"] += 1
             detected_objects[cn]["max_confidence"] = round(max(
-                detected_objects[cn]["max_confidence"], avg_conf
+                detected_objects[cn]["max_confidence"], max_conf
             ), 4)
             detected_objects[cn]["first_seen_ms"] = min(
                 detected_objects[cn]["first_seen_ms"], created_ms

@@ -174,12 +174,17 @@ def extract_and_save_crops(
 
         embedding = embedder.compute(crop)
 
+        last_obs = track.observations[-1]
+        obs_count = len(track.observations)
+
         # Match/register in gallery
         label = gallery.match_or_register(
             crop_bgr=crop,
             track_id=track.track_id,
             timestamp_ms=first_obs.timestamp_ms,
             entry_direction=entry_dir,
+            last_timestamp_ms=last_obs.timestamp_ms,
+            observation_count=obs_count,
         )
 
         # Save crop JPEG
@@ -210,9 +215,20 @@ def extract_and_save_crops(
             exit_dir = _get_exit_direction(last_obs.bbox)
             track.exit_direction = exit_dir
 
+    # Consolidate any over-segmented identities with high appearance similarity
+    merges = gallery.consolidate_gallery(threshold=0.72)
+    if merges > 0:
+        logger.info("[CropExtractor] Post-ReID consolidation merged %d fragmented person identities", merges)
+        # Refresh track_to_label mappings from gallery
+        for track in person_tracks:
+            lbl = gallery.get_label(track.track_id)
+            if lbl:
+                track_to_label[track.track_id] = lbl
+                track.person_label = lbl
+
     logger.info(
-        "[CropExtractor] ReID complete: %d person labels assigned",
-        len(set(track_to_label.values())),
+        "[CropExtractor] ReID complete: %d unique verified person identities assigned",
+        len(gallery.all_entries()),
     )
     return track_to_label
 

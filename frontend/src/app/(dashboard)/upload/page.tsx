@@ -5,19 +5,19 @@ import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload as UploadIcon, FileVideo, AlertCircle, CheckCircle2,
-  Clock, Cpu, Layers, Maximize2, Film, Zap
+  Clock, Cpu, Layers, Maximize2, Film, Zap, Sparkles, ArrowRight
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api/client';
+import { API_BASE } from '@/lib/api/client';
 
 // ── Processing profile badge colours ──────────────────────────────────────────
 const PROFILE_COLOURS: Record<string, string> = {
-  'Quick Test':         'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
-  'Short Clip':         'text-blue-400 bg-blue-400/10 border-blue-400/20',
-  'Standard':           'text-purple-400 bg-purple-400/10 border-purple-400/20',
-  'Long Recording':     'text-amber-400 bg-amber-400/10 border-amber-400/20',
-  'Extended Recording': 'text-red-400 bg-red-400/10 border-red-400/20',
-  'Custom':             'text-muted bg-surface border-border',
+  'Quick Test':         'text-emerald-400 bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]',
+  'Short Clip':         'text-blue-400 bg-blue-500/10 border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]',
+  'Standard':           'text-purple-400 bg-purple-500/10 border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.15)]',
+  'Long Recording':     'text-amber-400 bg-amber-500/10 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.15)]',
+  'Extended Recording': 'text-red-400 bg-red-500/10 border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.15)]',
+  'Custom':             'text-white/40 bg-white/5 border-white/10',
 };
 
 interface UploadResult {
@@ -84,7 +84,6 @@ export default function UploadPage() {
     setUploadError(null);
     setUploadResult(null);
 
-    // Use XHR for real upload progress tracking
     const formData = new FormData();
     formData.append('file', file);
     formData.append('source_domain', domain);
@@ -111,7 +110,7 @@ export default function UploadPage() {
         xhr.onerror = () => reject(new Error('Network error during upload'));
         xhr.onabort = () => reject(new Error('Upload cancelled'));
 
-        xhr.open('POST', `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'}/upload/`);
+        xhr.open('POST', `${API_BASE}/upload/`);
         xhr.send(formData);
       });
 
@@ -142,20 +141,23 @@ export default function UploadPage() {
   };
 
   const domains = [
-    { value: 'general',     label: 'General' },
-    { value: 'cctv',        label: 'CCTV / Surveillance' },
-    { value: 'sports',      label: 'Sports' },
-    { value: 'medical',     label: 'Medical / Lab' },
-    { value: 'drone',       label: 'Drone / Aerial' },
-    { value: 'dashcam',     label: 'Dashcam' },
-    { value: 'screencast',  label: 'Screencast / Tutorial' },
+    { value: 'general',     label: 'General Video' },
+    { value: 'cctv',        label: 'CCTV / Security Surveillance' },
+    { value: 'sports',      label: 'Sports Analytics' },
+    { value: 'medical',     label: 'Medical / Laboratory' },
+    { value: 'drone',       label: 'Aerial / Drone Flight' },
+    { value: 'dashcam',     label: 'Dashcam Roadway' },
+    { value: 'screencast',  label: 'Screencast Telemetry' },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-slide-up">
-      <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">Upload Video for Analysis</h1>
-        <p className="text-muted mt-2">Submit footage to the Time Compression Engine pipeline.</p>
+    <div className="max-w-4xl mx-auto space-y-7 animate-slide-up">
+      {/* Header */}
+      <div className="pb-2 border-b border-white/5">
+        <h1 className="text-2xl font-bold text-white tracking-tight">Ingest Video Stream</h1>
+        <p className="text-white/40 text-xs mt-1 font-mono">
+          Submit raw video footage into the 12-stage temporal analysis pipeline
+        </p>
       </div>
 
       {/* Error banner */}
@@ -163,126 +165,135 @@ export default function UploadPage() {
         {uploadError && (
           <motion.div
             initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-            className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-300"
+            className="flex items-start gap-3 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-300"
           >
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-400" />
             <div className="flex-1">
-              <p className="text-sm font-medium">Upload failed</p>
-              <p className="text-xs mt-0.5 text-red-400 font-mono">{uploadError}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider font-mono">Upload Error</p>
+              <p className="text-xs mt-0.5 text-rose-300/80 font-mono">{uploadError}</p>
             </div>
-            <button onClick={() => setUploadError(null)} className="text-red-400 hover:text-red-300 text-xs">✕</button>
+            <button onClick={() => setUploadError(null)} className="text-rose-400 hover:text-white text-xs">✕</button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Success: metadata card ──────────────────────────────────────── */}
+      {/* ── Metadata Success Card ────────────────────────────────────────── */}
       <AnimatePresence>
         {uploadResult && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
-            className="glass-strong rounded-2xl border border-border p-6 space-y-5"
+            initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+            className="surface-card rounded-3xl border p-7 space-y-6"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-400/10 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                <CheckCircle2 size={22} />
               </div>
               <div>
-                <p className="text-white font-semibold">Upload successful</p>
-                <p className="text-xs text-muted font-mono">{uploadResult.job_id}</p>
+                <p className="text-base font-bold text-white tracking-tight">Ingestion & Probing Complete</p>
+                <p className="text-xs text-white/40 font-mono mt-0.5">{uploadResult.job_id}</p>
               </div>
-              <div className={`ml-auto px-3 py-1 rounded-full border text-xs font-medium ${
+              <div className={`ml-auto px-3.5 py-1 rounded-full border text-xs font-mono font-semibold ${
                 PROFILE_COLOURS[uploadResult.metadata.profile] ?? PROFILE_COLOURS['Custom']
               }`}>
                 {uploadResult.metadata.profile}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
               {[
-                { icon: FileVideo,  label: 'Filename',         value: uploadResult.filename },
                 { icon: Clock,      label: 'Duration',         value: uploadResult.metadata.duration_hms },
-                { icon: Film,       label: 'Frames',           value: uploadResult.metadata.estimated_frames?.toLocaleString() ?? '—' },
-                { icon: Zap,        label: 'FPS',              value: uploadResult.metadata.fps?.toFixed(2) ?? '—' },
+                { icon: Film,       label: 'Frame Count',      value: uploadResult.metadata.estimated_frames?.toLocaleString() ?? '—' },
+                { icon: Zap,        label: 'Framerate',        value: uploadResult.metadata.fps ? `${uploadResult.metadata.fps.toFixed(1)} fps` : '—' },
                 { icon: Maximize2,  label: 'Resolution',       value: uploadResult.metadata.resolution },
                 { icon: Cpu,        label: 'Est. Processing',  value: formatEst(uploadResult.metadata.estimated_processing_s) },
-                { icon: Layers,     label: 'Codec',            value: uploadResult.metadata.codec },
+                { icon: Layers,     label: 'Video Codec',      value: uploadResult.metadata.codec },
                 { icon: FileVideo,  label: 'File Size',        value: formatBytes(uploadResult.metadata.file_size_bytes) },
+                { icon: Sparkles,   label: 'Keyframes',        value: uploadResult.metadata.estimated_keyframes?.toLocaleString() ?? '—' },
               ].map(({ icon: Icon, label, value }) => (
-                <div key={label} className="bg-surface rounded-lg border border-border px-4 py-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Icon className="w-3.5 h-3.5 text-muted" />
-                    <span className="text-xs text-muted">{label}</span>
+                <div key={label} className="surface-inset rounded-xl p-3.5 border border-white/5">
+                  <div className="flex items-center gap-1.5 mb-1.5 text-white/40 text-[10px] font-mono uppercase tracking-wider">
+                    <Icon size={12} className="text-indigo-400" />
+                    <span>{label}</span>
                   </div>
-                  <p className="text-sm font-medium text-white truncate">{value ?? '—'}</p>
+                  <p className="text-sm font-semibold text-white font-mono truncate">{value ?? '—'}</p>
                 </div>
               ))}
             </div>
 
             <div className="flex gap-3 pt-2">
               <motion.button
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
                 onClick={handleStartProcessing}
-                className="flex-1 bg-accent hover:bg-accent-hover text-white py-3 rounded-lg font-semibold transition-colors glow-blue"
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 hover:from-indigo-500 hover:to-violet-500 text-white py-3 rounded-xl font-semibold text-sm shadow-[0_0_20px_rgba(99,102,241,0.35)] transition-all"
               >
-                Start Processing →
+                Launch Pipeline Processing <ArrowRight size={16} />
               </motion.button>
               <button
                 onClick={handleCancel}
-                className="px-6 py-3 rounded-lg border border-border text-muted hover:text-white hover:bg-white/5 transition-colors text-sm"
+                className="px-5 py-3 rounded-xl surface-inset border border-white/10 text-white/60 hover:text-white transition-colors text-xs font-mono"
               >
-                Upload Another
+                Upload Different File
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Upload area (hidden once result arrives) ───────────────────── */}
+      {/* ── Dropzone & Upload Form ────────────────────────────────────────── */}
       {!uploadResult && (
         <>
           {!file ? (
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-2xl p-20 flex flex-col items-center justify-center cursor-pointer transition-all ${
-                isDragActive ? 'border-accent bg-accent/5 glow-blue' : 'border-border hover:border-accent/50 bg-surface'
+              className={`surface-card border-2 border-dashed rounded-3xl p-16 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                isDragActive
+                  ? 'border-indigo-500 bg-indigo-500/5 shadow-[0_0_30px_rgba(99,102,241,0.2)]'
+                  : 'border-white/10 hover:border-indigo-500/50 hover:bg-white/[0.01]'
               }`}
             >
               <input {...getInputProps()} />
-              <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-6">
-                <UploadIcon className="w-8 h-8 text-accent" />
+              <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5 text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+                <UploadIcon size={28} />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Drag & drop your video here</h3>
-              <p className="text-muted mb-6">or click to browse from your computer</p>
-              <p className="text-xs text-muted">Supports MP4, AVI, MOV, MKV, WebM · Any length</p>
+              <h3 className="text-lg font-bold text-white mb-1.5 tracking-tight">Drop video archive here</h3>
+              <p className="text-white/40 text-xs mb-5 font-mono">or click to browse local filesystem</p>
+              <span className="text-[11px] font-mono px-3 py-1 rounded-full surface-inset border border-white/10 text-white/50">
+                MP4 · AVI · MOV · MKV · WEBM
+              </span>
             </div>
           ) : (
-            <div className="glass rounded-2xl border border-border p-8 space-y-6">
-              {/* File info */}
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <FileVideo className="w-7 h-7 text-accent" />
+            <div className="surface-card rounded-3xl border p-7 space-y-6">
+              {/* Selected File Card */}
+              <div className="flex items-center gap-4 surface-inset p-4 rounded-2xl border border-white/5">
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 flex-shrink-0">
+                  <FileVideo size={22} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white truncate">{file.name}</p>
-                  <p className="text-sm text-muted">{formatBytes(file.size)}</p>
+                  <p className="font-semibold text-white truncate text-sm">{file.name}</p>
+                  <p className="text-xs text-white/40 font-mono mt-0.5">{formatBytes(file.size)}</p>
                 </div>
                 {!uploading && (
-                  <button onClick={handleCancel} className="text-muted hover:text-white text-sm">Remove</button>
+                  <button
+                    onClick={handleCancel}
+                    className="text-xs text-white/40 hover:text-white px-3 py-1.5 rounded-lg surface-card border"
+                  >
+                    Change
+                  </button>
                 )}
               </div>
 
-              {/* Progress bar */}
+              {/* Upload Progress */}
               {uploading && (
                 <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted">Uploading…</span>
-                    <span className="text-white font-mono">{uploadProgress}%</span>
+                  <div className="flex justify-between text-xs font-mono">
+                    <span className="text-white/50">Uploading stream to ingest buffer…</span>
+                    <span className="text-indigo-400 font-bold">{uploadProgress}%</span>
                   </div>
-                  <div className="h-2 w-full bg-surface rounded-full overflow-hidden">
+                  <div className="h-2 w-full surface-inset rounded-full overflow-hidden border border-white/5">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${uploadProgress}%` }}
-                      className="h-full bg-accent rounded-full relative overflow-hidden"
+                      className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full relative overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-white/20 animate-pulse" />
                     </motion.div>
@@ -290,41 +301,43 @@ export default function UploadPage() {
                 </div>
               )}
 
-              {/* Domain selector */}
+              {/* Domain Selector */}
               {!uploading && (
                 <div>
-                  <label htmlFor="source-domain" className="block text-sm font-medium text-white mb-2">
-                    Source Domain
+                  <label htmlFor="source-domain" className="block text-xs font-mono uppercase tracking-wider text-white/60 mb-2">
+                    Analytical Context Domain
                   </label>
                   <select
                     id="source-domain"
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
-                    className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-white outline-none focus:border-accent transition-colors"
+                    className="w-full surface-inset border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-indigo-500 font-mono transition-colors"
                   >
                     {domains.map((d) => (
-                      <option key={d.value} value={d.value}>{d.label}</option>
+                      <option key={d.value} value={d.value} className="bg-[#090b10] text-white">
+                        {d.label}
+                      </option>
                     ))}
                   </select>
                 </div>
               )}
 
-              {/* Upload / Cancel */}
-              <div className="flex gap-3">
+              {/* Actions */}
+              <div className="flex gap-3 pt-1">
                 {!uploading ? (
                   <motion.button
-                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
                     onClick={handleUpload}
-                    className="flex-1 bg-accent hover:bg-accent-hover text-white py-3 rounded-lg font-semibold transition-colors glow-blue"
+                    className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white py-3 rounded-xl font-semibold text-xs shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all"
                   >
-                    Upload & Probe Metadata
+                    Upload & Probe Stream Telemetry
                   </motion.button>
                 ) : (
                   <button
                     onClick={handleCancel}
-                    className="flex-1 py-3 rounded-lg border border-border text-muted hover:text-white hover:bg-white/5 transition-colors"
+                    className="flex-1 py-3 rounded-xl surface-inset border border-white/10 text-white/50 hover:text-white transition-colors text-xs font-mono"
                   >
-                    Cancel
+                    Abort Upload
                   </button>
                 )}
               </div>

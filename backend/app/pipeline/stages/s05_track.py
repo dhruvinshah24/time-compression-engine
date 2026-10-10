@@ -231,12 +231,14 @@ async def run(context: PipelineContext) -> StageResult:
         min_activity_observations = (
             int(min_activity_obs_raw) if min_activity_obs_raw is not None else None
         )
+        require_bicycle = bool(context.settings.get("require_bicycle_for_cycling", True))
         clf = ActivityClassifier(
             fps=fps,
             frame_skip=frame_skip,
             cycle_threshold=cycle_threshold,
             require_temporal_overlap=require_temporal_overlap,
             min_activity_observations=min_activity_observations,
+            require_bicycle_for_cycling=require_bicycle,
         )
 
         confirmed_person_tracks = [

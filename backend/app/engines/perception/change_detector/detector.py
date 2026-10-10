@@ -191,6 +191,7 @@ class SceneChangeDetector(IntelligenceModule):
         frame_paths: list[str],
         fps: float = 25.0,
         frame_skip_rate: int = 5,
+        duration_ms: float | None = None,
     ) -> SceneChangeResult:
         """
         Run scene change detection on a list of frame paths.
@@ -199,6 +200,7 @@ class SceneChangeDetector(IntelligenceModule):
             frame_paths:      Ordered list of frame paths (output of s02_extract).
             fps:              Video FPS (used to compute timestamps).
             frame_skip_rate:  Skip rate used during extraction (for timestamp recovery).
+            duration_ms:      Total video duration in ms (for bounds clamping).
 
         Returns:
             SceneChangeResult with full scoring and classification.
@@ -215,11 +217,22 @@ class SceneChangeDetector(IntelligenceModule):
         scores: list[FrameScore] = []
         prev_frame_array = None
 
+        # Determine if filenames encode original video frame numbers (e.g. from adaptive skip)
+        # or sequential 1-based indices (from standard extract_frames).
+        last_frame_num = _extract_frame_number(frame_paths[-1], len(frame_paths) - 1) if frame_paths else 0
+        filenames_are_source_indices = (last_frame_num > len(frame_paths))
+
         # Process frames one at a time — O(1) memory
         for idx, path in enumerate(frame_paths):
-            # Recover original frame number from filename (frame_XXXXXXXX.jpg)
-            frame_number = _extract_frame_number(path, idx)
-            timestamp_ms = (frame_number * frame_skip_rate * 1000.0) / fps
+            raw_num = _extract_frame_number(path, idx)
+            if filenames_are_source_indices:
+                frame_number = raw_num
+            else:
+                frame_number = max(0, (raw_num - 1) * frame_skip_rate) if raw_num >= 1 else idx * frame_skip_rate
+
+            timestamp_ms = (frame_number * 1000.0) / max(fps, 1.0)
+            if duration_ms is not None and duration_ms > 0:
+                timestamp_ms = min(timestamp_ms, float(duration_ms))
 
             try:
                 curr_array = load_frame(path)

@@ -3,16 +3,16 @@
 /**
  * Settings page — /settings
  *
- * Displays the TCE pipeline configuration fetched from GET /api/v1/settings.
- * All settings are read-only in v1.1. Each setting shows its key, current
- * value, description, category, and unit.
+ * Displays the frozen TCE pipeline configuration fetched from GET /api/v1/settings.
+ * Precision-styled as an enterprise AI runtime inspector.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   Loader2, AlertCircle, Lock, Cpu, Zap, Activity,
   BookOpen, Shield, Settings2, TrendingUp, CheckCircle2,
+  Search, SlidersHorizontal, Terminal
 } from 'lucide-react';
 import { api } from '@/lib/api/client';
 
@@ -37,15 +37,15 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   System:      Settings2,
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Detection:   'text-blue-400   bg-blue-400/10   border-blue-400/20',
-  Tracking:    'text-violet-400 bg-violet-400/10 border-violet-400/20',
-  Performance: 'text-amber-400  bg-amber-400/10  border-amber-400/20',
-  Compression: 'text-cyan-400   bg-cyan-400/10   border-cyan-400/20',
-  Events:      'text-indigo-400 bg-indigo-400/10 border-indigo-400/20',
-  Story:       'text-pink-400   bg-pink-400/10   border-pink-400/20',
-  Quality:     'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
-  System:      'text-white/40   bg-white/5       border-white/10',
+const CATEGORY_STYLES: Record<string, { color: string; bg: string; border: string; glow: string }> = {
+  Detection:   { color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/30',   glow: 'shadow-[0_0_12px_rgba(59,130,246,0.15)]' },
+  Tracking:    { color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30', glow: 'shadow-[0_0_12px_rgba(168,85,247,0.15)]' },
+  Performance: { color: 'text-amber-400',  bg: 'bg-amber-500/10',  border: 'border-amber-500/30',  glow: 'shadow-[0_0_12px_rgba(245,158,11,0.15)]' },
+  Compression: { color: 'text-cyan-400',   bg: 'bg-cyan-500/10',   border: 'border-cyan-500/30',   glow: 'shadow-[0_0_12px_rgba(6,182,212,0.15)]' },
+  Events:      { color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', glow: 'shadow-[0_0_12px_rgba(99,102,241,0.15)]' },
+  Story:       { color: 'text-pink-400',   bg: 'bg-pink-500/10',   border: 'border-pink-500/30',   glow: 'shadow-[0_0_12px_rgba(236,72,153,0.15)]' },
+  Quality:     { color: 'text-emerald-400',bg: 'bg-emerald-500/10',border: 'border-emerald-500/30',glow: 'shadow-[0_0_12px_rgba(16,185,129,0.15)]' },
+  System:      { color: 'text-slate-400',  bg: 'bg-slate-500/10',  border: 'border-slate-500/30',  glow: 'shadow-[0_0_12px_rgba(148,163,184,0.15)]' },
 };
 
 function ValueBadge({ value }: { value: string }) {
@@ -53,46 +53,63 @@ function ValueBadge({ value }: { value: string }) {
   const isFalse = value === 'False';
   const isNumber = !isNaN(parseFloat(value)) && !['True', 'False', 'adaptive'].includes(value);
 
-  if (isTrue)  return <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 text-xs font-mono border border-emerald-500/20">True</span>;
-  if (isFalse) return <span className="px-2 py-0.5 rounded-md bg-red-500/10 text-red-400/70 text-xs font-mono border border-red-500/15">False</span>;
-  if (isNumber) return <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 text-xs font-mono border border-indigo-500/15">{value}</span>;
-  return <span className="px-2 py-0.5 rounded-md bg-white/5 text-white/60 text-xs font-mono border border-white/10">{value}</span>;
+  if (isTrue)
+    return <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-mono font-medium border border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.2)]">True</span>;
+  if (isFalse)
+    return <span className="px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-400 text-xs font-mono font-medium border border-rose-500/30">False</span>;
+  if (isNumber)
+    return <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 text-xs font-mono font-medium border border-cyan-500/30">{value}</span>;
+  return (
+    <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-mono font-medium border border-indigo-500/30">
+      {value}
+    </span>
+  );
 }
 
 function SettingCard({ setting, idx }: { setting: SettingRecord; idx: number }) {
+  const style = CATEGORY_STYLES[setting.category] ?? CATEGORY_STYLES.System;
   const Icon = CATEGORY_ICONS[setting.category] ?? Settings2;
-  const colorClass = CATEGORY_COLORS[setting.category] ?? CATEGORY_COLORS.System;
-  const [color] = colorClass.split(' ');
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: idx * 0.025 }}
-      className="p-4 rounded-2xl bg-white/[0.025] border border-white/[0.07] hover:bg-white/[0.04] transition-colors"
+      transition={{ delay: Math.min(0.3, idx * 0.02) }}
+      className="p-4 rounded-xl surface-card border hover:border-white/20 transition-all group flex flex-col justify-between"
     >
-      <div className="flex items-start gap-3">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${colorClass.split(' ').slice(1).join(' ')}`}>
-          <Icon size={14} className={color} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2 flex-wrap">
-            <div>
-              <p className="text-sm font-medium text-white">{setting.display_name}</p>
-              <p className="text-[10px] text-white/25 font-mono mt-0.5">{setting.key}</p>
+      <div>
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-8 h-8 rounded-lg ${style.bg} ${style.border} border flex items-center justify-center ${style.color} ${style.glow} flex-shrink-0`}>
+              <Icon size={14} />
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <ValueBadge value={setting.value} />
-              {setting.unit && (
-                <span className="text-[9px] text-white/20 font-mono">{setting.unit}</span>
-              )}
-              {setting.readonly && (
-                <Lock size={10} className="text-white/15" />
-              )}
+            <div>
+              <p className="text-sm font-semibold text-white tracking-tight">{setting.display_name}</p>
+              <p className="text-[10px] font-mono text-white/30 truncate mt-0.5">{setting.key}</p>
             </div>
           </div>
-          <p className="text-xs text-white/40 mt-2 leading-relaxed">{setting.description}</p>
+
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <ValueBadge value={setting.value} />
+            {setting.unit && (
+              <span className="text-[10px] font-mono text-white/40">{setting.unit}</span>
+            )}
+            {setting.readonly && (
+              <div className="p-1 rounded bg-white/5 text-white/30" title="Locked runtime parameter">
+                <Lock size={10} />
+              </div>
+            )}
+          </div>
         </div>
+
+        <p className="text-xs text-white/50 leading-relaxed mt-2.5">
+          {setting.description}
+        </p>
+      </div>
+
+      <div className="mt-3 pt-2.5 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono text-white/30">
+        <span className="uppercase tracking-wider">{setting.category}</span>
+        <span className="text-white/20">Read-only runtime</span>
       </div>
     </motion.div>
   );
@@ -102,6 +119,8 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<SettingRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
+  const [search, setSearch]   = useState('');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   useEffect(() => {
     (api.settings.list() as Promise<SettingRecord[]>)
@@ -109,86 +128,124 @@ export default function SettingsPage() {
       .catch(e => { setError(e.message); setLoading(false); });
   }, []);
 
-  // Group by category
-  const grouped: Record<string, SettingRecord[]> = {};
-  for (const s of settings) {
-    if (!grouped[s.category]) grouped[s.category] = [];
-    grouped[s.category].push(s);
-  }
+  const categories = useMemo(() => {
+    const list = Array.from(new Set(settings.map(s => s.category)));
+    const order = ['Detection', 'Tracking', 'Performance', 'Compression', 'Events', 'Story', 'Quality', 'System'];
+    return list.sort((a, b) => (order.indexOf(a) ?? 99) - (order.indexOf(b) ?? 99));
+  }, [settings]);
 
-  const categoryOrder = ['Detection', 'Tracking', 'Performance', 'Compression', 'Events', 'Story', 'Quality', 'System'];
-  const sortedCategories = Object.keys(grouped).sort(
-    (a, b) => (categoryOrder.indexOf(a) ?? 99) - (categoryOrder.indexOf(b) ?? 99)
+  const filteredSettings = useMemo(() => {
+    return settings.filter(s => {
+      const matchesSearch = s.display_name.toLowerCase().includes(search.toLowerCase()) ||
+        s.key.toLowerCase().includes(search.toLowerCase()) ||
+        s.description.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = !activeCategory || s.category === activeCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [settings, search, activeCategory]);
+
+  if (loading) return (
+    <div className="min-h-[70vh] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+        <p className="text-white/40 text-xs font-mono uppercase tracking-widest animate-pulse">Inspecting frozen config…</p>
+      </div>
+    </div>
   );
 
-  let cardIdx = 0;
+  if (error) return (
+    <div className="min-h-[70vh] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4 text-center p-8 max-w-md surface-card rounded-3xl border border-red-500/20">
+        <AlertCircle className="w-12 h-12 text-red-400" />
+        <h2 className="text-lg font-bold text-white">Config Stream Failed</h2>
+        <p className="text-white/50 text-xs">{error}</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7 animate-slide-up">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/5">
         <div>
-          <h1 className="text-2xl font-bold text-white">Settings</h1>
-          <p className="text-white/30 text-sm mt-1">
-            TCE v1.1-dev · Pipeline configuration reference
+          <h1 className="text-2xl font-bold text-white tracking-tight">Pipeline Reference Configuration</h1>
+          <p className="text-white/40 text-xs mt-1 font-mono">
+            TCE v1.1-dev · Frozen reference hyperparameters validated in Phase 6E
           </p>
         </div>
-        {settings.length > 0 && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.07] text-xs text-white/30">
-            <CheckCircle2 size={12} className="text-emerald-400" />
-            {settings.length} settings · read-only
-          </div>
-        )}
+        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full surface-card border text-xs text-white/50 font-mono">
+          <Lock size={12} className="text-indigo-400" />
+          <span>{settings.length} parameters immutable</span>
+        </div>
       </div>
 
-      {/* Info banner */}
-      {!loading && settings.length > 0 && (
-        <div className="flex items-start gap-3 p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/15 text-sm text-indigo-300/70">
-          <Lock size={14} className="text-indigo-400 flex-shrink-0 mt-0.5" />
-          <p>
-            Settings are read-only in v1.1. These reflect the frozen TCE_V1_REFERENCE configuration
-            validated in Phase 6E.14. Modify production parameters directly in the codebase.
-          </p>
+      {/* Info notice banner */}
+      <div className="p-4 rounded-2xl surface-card border border-indigo-500/20 flex items-start gap-3.5 text-xs text-indigo-300/80">
+        <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 flex-shrink-0 mt-0.5">
+          <Terminal size={15} />
+        </div>
+        <div className="leading-relaxed">
+          <span className="font-semibold text-white block mb-0.5">Immutable Reference Standard</span>
+          These settings govern all 12 pipeline stages including YOLO11x detection thresholds, ByteTrack tracker persistence, cosine similarity re-identification margins, and synthesis compression curves.
+        </div>
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="relative w-full sm:w-80">
+          <input
+            type="text"
+            placeholder="Search parameters or keys…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full px-4 py-2 pl-9 rounded-xl surface-inset border border-white/10 text-xs text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 font-mono"
+          />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+        </div>
+
+        {/* Category switcher */}
+        <div className="flex flex-wrap gap-1.5 w-full sm:w-auto">
+          <button
+            onClick={() => setActiveCategory(null)}
+            className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
+              !activeCategory
+                ? 'bg-indigo-600/30 border-indigo-500/50 text-indigo-200'
+                : 'bg-white/[0.02] border-white/5 text-white/40 hover:text-white'
+            }`}
+          >
+            All ({settings.length})
+          </button>
+          {categories.map(cat => {
+            const style = CATEGORY_STYLES[cat] ?? CATEGORY_STYLES.System;
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+                className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
+                  activeCategory === cat
+                    ? `${style.bg} ${style.border} ${style.color} font-medium`
+                    : 'bg-white/[0.02] border-white/5 text-white/40 hover:text-white'
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Setting Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredSettings.map((s, idx) => (
+          <SettingCard key={s.key} setting={s} idx={idx} />
+        ))}
+      </div>
+
+      {filteredSettings.length === 0 && (
+        <div className="p-12 text-center surface-card rounded-2xl border">
+          <p className="text-white/40 text-xs font-mono">No configuration parameters match query &ldquo;{search}&rdquo;</p>
         </div>
       )}
-
-      {loading && (
-        <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
-        </div>
-      )}
-
-      {error && (
-        <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
-          <AlertCircle className="w-10 h-10 text-red-400" />
-          <p className="text-white font-medium">Failed to load settings</p>
-          <p className="text-white/40 text-sm">{error}</p>
-        </div>
-      )}
-
-      {/* Settings grouped by category */}
-      {!loading && !error && sortedCategories.map(cat => {
-        const Icon = CATEGORY_ICONS[cat] ?? Settings2;
-        const colorClass = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.System;
-        const [color, bg, border] = colorClass.split(' ');
-
-        return (
-          <div key={cat} className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${bg} ${border} border`}>
-                <Icon size={12} className={color} />
-              </div>
-              <h2 className="text-sm font-semibold text-white/60 uppercase tracking-wider">{cat}</h2>
-              <div className="flex-1 h-px bg-white/[0.05]" />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              {grouped[cat].map(s => (
-                <SettingCard key={s.key} setting={s} idx={cardIdx++} />
-              ))}
-            </div>
-          </div>
-        );
-      })}
     </div>
   );
 }

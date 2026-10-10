@@ -100,24 +100,50 @@ async def run(context: PipelineContext) -> StageResult:
     frame_skip_rate = int(context.metadata.get("frame_skip_rate", 5))
     processing_profile = context.metadata.get("processing_profile", "STANDARD")
 
+    meta = context.metadata.get("video_metadata")
+    video_dur_ms = None
+    if meta is not None:
+        video_dur_ms = getattr(meta, "duration_ms", None)
+        if video_dur_ms is None and getattr(meta, "duration_seconds", None) is not None:
+            video_dur_ms = meta.duration_seconds * 1000.0
+
     # Build path → frame_number and path → timestamp_ms lookups
     path_to_frame: dict[str, int] = {}
     path_to_ts: dict[str, float] = {}
     if scene_change_result:
         for score in scene_change_result.all_scores:
             path_to_frame[score.frame_path] = score.frame_number
-            path_to_ts[score.frame_path] = score.timestamp_ms
+            ts = score.timestamp_ms
+            if video_dur_ms is not None and video_dur_ms > 0:
+                ts = min(ts, float(video_dur_ms))
+            path_to_ts[score.frame_path] = ts
+
+    # Check whether filenames are source frame indices
+    def _parse_frame_num(p: str, fallback: int) -> int:
+        s = _Path(p).stem
+        if s.startswith("frame_"):
+            try:
+                return int(s.split("_")[1])
+            except (IndexError, ValueError):
+                pass
+        return fallback
+
+    last_num = _parse_frame_num(frames_to_detect[-1], len(frames_to_detect) - 1) if frames_to_detect else 0
+    filenames_are_source_indices = (last_num > len(frames_to_detect))
 
     # Fill in any frames not covered by s03 scores
     for idx, path in enumerate(frames_to_detect):
         if path not in path_to_frame:
-            stem = _Path(path).stem
-            try:
-                frame_num = int(stem.split("_")[1]) if stem.startswith("frame_") else idx
-            except (IndexError, ValueError):
-                frame_num = idx * frame_skip_rate
+            extracted_num = _parse_frame_num(path, idx)
+            if filenames_are_source_indices:
+                frame_num = extracted_num
+            else:
+                frame_num = max(0, (extracted_num - 1) * frame_skip_rate) if extracted_num >= 1 else idx * frame_skip_rate
             path_to_frame[path] = frame_num
-            path_to_ts[path] = (frame_num / max(fps, 1.0)) * 1000.0
+            ts = (frame_num / max(fps, 1.0)) * 1000.0
+            if video_dur_ms is not None and video_dur_ms > 0:
+                ts = min(ts, float(video_dur_ms))
+            path_to_ts[path] = ts
 
     logs.append(
         f"[{STAGE_NAME}] Running detection on {len(frames_to_detect)} frames "

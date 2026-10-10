@@ -66,6 +66,7 @@ outputs/reports/**
 outputs/logs/**
 outputs/thumbnails/**
 outputs/clips/**
+outputs/PHASE*
 !outputs/**/.gitkeep
 
 # Datasets — keep folder structure, ignore raw video files

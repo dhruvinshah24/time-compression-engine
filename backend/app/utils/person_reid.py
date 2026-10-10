@@ -224,25 +224,33 @@ class PersonGallery:
         track_id: int,
         timestamp_ms: float = 0.0,
         entry_direction: Optional[str] = None,
+        last_timestamp_ms: Optional[float] = None,
+        observation_count: int = 1,
     ) -> str:
         """
         Find the best matching gallery person for a crop, or create a new one.
 
         Args:
-            crop_bgr:         Person crop (BGR).
-            track_id:         Track ID from the tracker.
-            timestamp_ms:     When this was observed (ms from video start).
-            entry_direction:  "left", "right", "top", "bottom" or None.
+            crop_bgr:          Person crop (BGR).
+            track_id:          Track ID from the tracker.
+            timestamp_ms:      When this was observed (ms from video start).
+            entry_direction:   "left", "right", "top", "bottom" or None.
+            last_timestamp_ms: Last seen timestamp (ms).
+            observation_count: Total frames observed in this track.
 
         Returns:
             Person label string, e.g. "Person 1".
         """
+        end_ts = last_timestamp_ms if last_timestamp_ms is not None else timestamp_ms
+        add_obs = max(1, observation_count)
+
         # If track already has a label → just update timing
         if track_id in self._track_to_label:
             label = self._track_to_label[track_id]
             if label in self._entries:
-                self._entries[label].last_seen_ms = timestamp_ms
-                self._entries[label].observation_count += 1
+                entry = self._entries[label]
+                entry.first_seen_ms = min(entry.first_seen_ms, timestamp_ms)
+                entry.last_seen_ms = max(entry.last_seen_ms, end_ts)
             return label
 
         embedding = self._embedder.compute(crop_bgr)
@@ -252,6 +260,16 @@ class PersonGallery:
 
         if best_label is not None and best_sim >= self._threshold:
             label = best_label
+            entry = self._entries[label]
+            n = len(entry.track_ids)
+            entry.embedding = (entry.embedding * n + embedding) / (n + 1)
+            # Re-normalize to unit length so cosine similarity is preserved
+            entry.embedding = entry.embedding / (np.linalg.norm(entry.embedding) + 1e-8)
+            entry.first_seen_ms = min(entry.first_seen_ms, timestamp_ms)
+            entry.last_seen_ms = max(entry.last_seen_ms, end_ts)
+            entry.observation_count += add_obs
+            if track_id not in entry.track_ids:
+                entry.track_ids.append(track_id)
             logger.debug(
                 "[ReID] Track %d re-identified as %s (cosine_sim=%.3f)",
                 track_id, label, best_sim,
@@ -263,8 +281,8 @@ class PersonGallery:
                 person_label=label,
                 embedding=embedding,
                 first_seen_ms=timestamp_ms,
-                last_seen_ms=timestamp_ms,
-                observation_count=1,
+                last_seen_ms=end_ts,
+                observation_count=add_obs,
                 entry_direction=entry_direction,
                 track_ids=[track_id],
             )
@@ -272,16 +290,6 @@ class PersonGallery:
                 "[ReID] New person registered: %s (track %d, sim=%.3f)",
                 label, track_id, best_sim or 0.0,
             )
-
-        # Update gallery entry with new embedding (running mean)
-        if label in self._entries:
-            entry = self._entries[label]
-            n = entry.observation_count
-            entry.embedding = (entry.embedding * n + embedding) / (n + 1)
-            entry.last_seen_ms = timestamp_ms
-            entry.observation_count += 1
-            if track_id not in entry.track_ids:
-                entry.track_ids.append(track_id)
 
         self._track_to_label[track_id] = label
         return label
@@ -313,6 +321,50 @@ class PersonGallery:
                 "track_ids": entry.track_ids,
             }
         return out
+
+    def consolidate_gallery(self, threshold: float = 0.72) -> int:
+        """
+        Merge gallery entries that represent the same person (cosine_sim >= threshold).
+        Returns number of merges performed.
+        """
+        labels = list(self._entries.keys())
+        merged_count = 0
+        to_delete = set()
+
+        for i in range(len(labels)):
+            l1 = labels[i]
+            if l1 in to_delete or l1 not in self._entries:
+                continue
+            e1 = self._entries[l1]
+
+            for j in range(i + 1, len(labels)):
+                l2 = labels[j]
+                if l2 in to_delete or l2 not in self._entries:
+                    continue
+                e2 = self._entries[l2]
+
+                sim = float(np.dot(e1.embedding, e2.embedding))
+                if sim >= threshold:
+                    # Merge e2 into e1
+                    n1 = len(e1.track_ids)
+                    n2 = len(e2.track_ids)
+                    e1.embedding = (e1.embedding * n1 + e2.embedding * n2) / (n1 + n2)
+                    e1.embedding = e1.embedding / (np.linalg.norm(e1.embedding) + 1e-8)
+                    e1.first_seen_ms = min(e1.first_seen_ms, e2.first_seen_ms)
+                    e1.last_seen_ms = max(e1.last_seen_ms, e2.last_seen_ms)
+                    e1.observation_count += e2.observation_count
+                    for tid in e2.track_ids:
+                        if tid not in e1.track_ids:
+                            e1.track_ids.append(tid)
+                        self._track_to_label[tid] = l1
+                    to_delete.add(l2)
+                    merged_count += 1
+                    logger.info("[ReID] Consolidated %s into %s (cosine_sim=%.3f)", l2, l1, sim)
+
+        for l in to_delete:
+            del self._entries[l]
+
+        return merged_count
 
     # ── Internal ────────────────────────────────────────────────────────────
 

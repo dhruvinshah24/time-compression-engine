@@ -41,11 +41,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <span className="text-indigo-400 font-semibold">5.03× Real-time</span>
             </div>
 
-            <div className="flex items-center gap-2.5 pl-2 border-l border-white/[0.08]">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 border border-white/20 flex items-center justify-center shadow-md shadow-indigo-500/20 text-xs font-bold text-white">
-                AI
-              </div>
-            </div>
           </div>
         </header>
 

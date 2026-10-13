@@ -60,6 +60,7 @@ export default function UploadPage() {
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [domain, setDomain] = useState('general');
+  const [modelProfile, setModelProfile] = useState('balanced');
   const xhrRef = useRef<XMLHttpRequest | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -87,6 +88,7 @@ export default function UploadPage() {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('source_domain', domain);
+    formData.append('model_profile', modelProfile);
 
     try {
       const result = await new Promise<UploadResult>((resolve, reject) => {
@@ -301,24 +303,55 @@ export default function UploadPage() {
                 </div>
               )}
 
-              {/* Domain Selector */}
+              {/* Domain & Profile Selectors */}
               {!uploading && (
-                <div>
-                  <label htmlFor="source-domain" className="block text-xs font-mono uppercase tracking-wider text-white/60 mb-2">
-                    Analytical Context Domain
-                  </label>
-                  <select
-                    id="source-domain"
-                    value={domain}
-                    onChange={(e) => setDomain(e.target.value)}
-                    className="w-full surface-inset border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-indigo-500 font-mono transition-colors"
-                  >
-                    {domains.map((d) => (
-                      <option key={d.value} value={d.value} className="bg-[#090b10] text-white">
-                        {d.label}
-                      </option>
-                    ))}
-                  </select>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="source-domain" className="block text-xs font-mono uppercase tracking-wider text-white/60 mb-2">
+                      Analytical Context Domain
+                    </label>
+                    <select
+                      id="source-domain"
+                      value={domain}
+                      onChange={(e) => setDomain(e.target.value)}
+                      className="w-full surface-inset border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-indigo-500 font-mono transition-colors"
+                    >
+                      {domains.map((d) => (
+                        <option key={d.value} value={d.value} className="bg-[#090b10] text-white">
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="model-profile" className="block text-xs font-mono uppercase tracking-wider text-white/60 mb-2">
+                      Processing Engine Profile
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { id: 'fast', name: 'Ultra Fast', desc: '80 FPS · Quick Ingestion' },
+                        { id: 'balanced', name: 'Balanced', desc: '32 FPS · Standard Surveillance' },
+                        { id: 'accuracy', name: 'Max Precision', desc: 'Deep Multi-Scale Analysis' },
+                      ].map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setModelProfile(p.id)}
+                          className={`p-3 rounded-xl border text-left transition-all ${
+                            modelProfile === p.id
+                              ? 'border-indigo-500 bg-indigo-500/15 shadow-[0_0_15px_rgba(99,102,241,0.2)]'
+                              : 'border-white/5 bg-white/[0.02] hover:border-white/10'
+                          }`}
+                        >
+                          <div className={`text-xs font-bold ${modelProfile === p.id ? 'text-indigo-300' : 'text-white'}`}>
+                            {p.name}
+                          </div>
+                          <div className="text-[10px] text-white/40 font-mono mt-0.5">{p.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 

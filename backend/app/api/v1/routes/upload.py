@@ -73,7 +73,7 @@ _MODEL_PROFILES: dict[str, dict] = {
     },
 }
 
-_DEFAULT_PROFILE = "accuracy"
+_DEFAULT_PROFILE = "balanced"
 
 
 @router.post("/")
@@ -262,7 +262,8 @@ async def upload_video(
             },
 
             # ── SAHI sliced inference ─────────────────────────────────────────
-            "use_sahi":                     True,
+            # Disabled by default for rapid processing; can be turned on for extreme micro-objects
+            "use_sahi":                     False,
             "sahi_tile_size":               640,
             "sahi_overlap":                 0.2,
 

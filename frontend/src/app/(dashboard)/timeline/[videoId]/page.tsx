@@ -549,6 +549,14 @@ export default function TimelinePage() {
                 <FileText size={14} />
                 <span>Text Summary & Executive Dossier</span>
               </button>
+
+              <Link
+                href={`/stories/${videoId}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold text-purple-300 hover:text-white bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 transition-all shadow-[0_0_10px_rgba(168,85,247,0.15)]"
+              >
+                <Sparkles size={14} className="text-purple-400" />
+                <span>Story Arcs Studio</span>
+              </Link>
             </div>
 
             <span className="text-[10px] font-mono text-white/40 hidden sm:inline">
@@ -653,7 +661,11 @@ export default function TimelinePage() {
                 </h3>
                 <p className="text-xs text-white/80 leading-relaxed font-sans">
                   {data.summary?.narrative || (
-                    "Person 1 entered the office from the doorway at 0.2s. Person 3 and Person 4 were seated at background workstations A and B. Person 1 moved towards the central desk area. At 13.6s, Person 2 entered the room from the corridor. Person 1 walked towards Person 2 and both interacted at the desk space. At 37.5s, Person 2 left the room. Person 5 walked through the rear corridor at 42.3s. Person 1 sat down on the office chair at 46.5s and finally exited at 56.0s."
+                    displayEvents.length > 0 ? (
+                      `Scene timeline for ${data.filename || videoId}: detected ${data.event_count} key chronological events across ${data.unique_persons || (data.persons?.length || 0)} tracked actors and ${data.detected_objects?.length || 0} object classes. Key sequence begins with ${displayEvents[0]?.display_name || displayEvents[0]?.event_type?.replace(/_/g, ' ')} at ${fmtTimeSec(getEventTime(displayEvents[0]))}s, spanning a compressed duration of ${data.metadata?.duration_hms || `${durationSeconds.toFixed(1)}s`}.`
+                    ) : (
+                      "No critical anomalies or human activities were observed in this video stream."
+                    )
                   )}
                 </p>
               </div>
@@ -664,7 +676,14 @@ export default function TimelinePage() {
                   Chronological Milestone Sequence
                 </h4>
                 <div className="divide-y divide-white/[0.04] border border-white/[0.06] rounded-xl overflow-hidden bg-black/30">
-                  {(data.summary?.key_milestones || []).map((m, idx) => (
+                  {((data.summary?.key_milestones && data.summary.key_milestones.length > 0)
+                    ? data.summary.key_milestones
+                    : displayEvents.slice(0, 15).map((evt) => ({
+                        time: fmtTimeSec(getEventTime(evt)),
+                        event: evt.display_name || evt.event_type?.replace(/_/g, ' ') || 'Event',
+                        actor: evt.person_label || (evt.evidence?.person_label) || 'Scene'
+                      }))
+                  ).map((m, idx) => (
                     <div key={idx} className="p-3 flex items-center justify-between text-xs font-mono hover:bg-white/[0.02] transition-colors">
                       <div className="flex items-center gap-3">
                         <span className="text-cyan-300 font-bold w-16">{m.time}</span>

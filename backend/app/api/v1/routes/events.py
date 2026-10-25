@@ -33,6 +33,7 @@ _IMAGE_MIME = {
 }
 
 
+@router.get("")
 @router.get("/")
 async def list_events(video_id: str | None = None, limit: int = 50):
     repo = get_event_repo()

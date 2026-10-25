@@ -694,3 +694,19 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 outputs_dir = Path("outputs")
 outputs_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/outputs", StaticFiles(directory=str(outputs_dir)), name="outputs")
+
+# ── Compatibility routes for legacy status / events polling ──
+@app.get("/api/status")
+@app.get("/status")
+async def legacy_status():
+    return {"status": "idle", "progress": 100}
+
+@app.get("/api/events")
+@app.get("/events")
+async def legacy_events(since: int = 0):
+    return []
+
+@app.get("/api/export/summary")
+@app.get("/export/summary")
+async def legacy_export_summary():
+    return {"summary": {}}

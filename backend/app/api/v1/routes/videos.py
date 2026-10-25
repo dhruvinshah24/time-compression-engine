@@ -10,6 +10,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+@router.get("")
 @router.get("/")
 async def list_videos():
     repo = get_video_repo()

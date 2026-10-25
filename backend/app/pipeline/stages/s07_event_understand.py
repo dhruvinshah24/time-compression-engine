@@ -965,7 +965,61 @@ async def run(context: PipelineContext) -> StageResult:
             if getattr(evt, "end_ms", None) is not None:
                 evt.end_ms = min(float(evt.end_ms), float(max_video_dur_ms))
 
-    all_events.sort(key=lambda e: e.start_ms)
+    # ── Semantic Event Deduplication & Salience Filtering ──
+    # Filters micro-jitter, merges duplicate posture flips, and consolidates high-value events
+    filtered_events = []
+    last_event_time = {}  # (actor, event_type) -> (end_ms, event_ref)
+
+    all_events.sort(key=lambda e: (getattr(e, "start_ms", 0.0) or 0.0, getattr(e, "end_ms", 0.0) or 0.0))
+
+    for evt in all_events:
+        etype = getattr(evt, "event_type", "")
+        actor = (getattr(evt, "evidence", {}) or {}).get("person_label") or getattr(evt, "person_label", None) or f"track_{getattr(evt, 'track_id', 0)}"
+        s_ms = float(getattr(evt, "start_ms", 0.0) or 0.0)
+        e_ms = float(getattr(evt, "end_ms", 0.0) or 0.0)
+        dur_s = (e_ms - s_ms) / 1000.0
+
+        # Filter 1: Video-spanning spurious running narrative or stair climbing in flat office
+        if etype in ("running", "walking_downstairs", "walking_upstairs") and dur_s > 5.0:
+            continue
+        if etype == "walking_downstairs":
+            continue
+
+        # Filter 2: Suppress excessive pose keypoint reaching_up events
+        if etype == "person_reaching_up":
+            curr_reaches = sum(
+                1 for x in filtered_events
+                if getattr(x, "event_type", "") == "person_reaching_up"
+                and ((getattr(x, "evidence", {}) or {}).get("person_label") or getattr(x, "person_label", None)) == actor
+            )
+            if curr_reaches >= 2:
+                continue
+
+        # Filter 3: Temporal deduplication & coalescence (4.0s cooldown per actor per event type)
+        key = (actor, etype)
+        if key in last_event_time:
+            prev_end, prev_evt = last_event_time[key]
+            if s_ms - prev_end < 4000.0:
+                prev_evt.end_ms = max(float(getattr(prev_evt, "end_ms", 0.0) or 0.0), e_ms)
+                prev_evt.end_frame = max(int(getattr(prev_evt, "end_frame", 0) or 0), int(getattr(evt, "end_frame", 0) or 0))
+                prev_evt.confidence = max(float(getattr(prev_evt, "confidence", 0.0) or 0.0), float(getattr(evt, "confidence", 0.0) or 0.0))
+                last_event_time[key] = (float(prev_evt.end_ms), prev_evt)
+                continue
+
+        # Filter 4: Filter posture rapid flip-flops (sitting/standing within 1.5s)
+        if etype in ("person_sitting", "person_standing_up"):
+            opp_type = "person_standing_up" if etype == "person_sitting" else "person_sitting"
+            opp_key = (actor, opp_type)
+            if opp_key in last_event_time:
+                opp_end, opp_evt = last_event_time[opp_key]
+                if s_ms - opp_end < 1500.0:
+                    continue
+
+        last_event_time[key] = (e_ms, evt)
+        filtered_events.append(evt)
+
+    all_events = filtered_events
+    all_events.sort(key=lambda e: getattr(e, "start_ms", 0.0) or 0.0)
 
     merged_result = EventUnderstandingResult(
         events=all_events,

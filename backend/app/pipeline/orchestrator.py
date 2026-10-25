@@ -202,6 +202,11 @@ class PipelineOrchestrator:
                 d["event_id"] = evt_id
                 d["video_id"] = video_id
                 d["job_id"] = job_id
+                t_label = context.metadata.get("track_to_label", {}).get(d.get("track_id"))
+                if t_label:
+                    d["person_label"] = t_label
+                    if "evidence" in d and isinstance(d["evidence"], dict):
+                        d["evidence"]["person_label"] = t_label
                 event_records.append(d)
             except Exception:
                 pass
@@ -308,25 +313,40 @@ class PipelineOrchestrator:
         if not isinstance(summary, dict):
             summary = {}
 
+        video_meta = context.metadata.get("video_metadata", {})
+        video_meta_dict = (
+            video_meta if isinstance(video_meta, dict)
+            else getattr(video_meta, "to_dict", lambda: {})()
+        )
+
         # ── Synthesize dynamic narrative and key milestones for ANY newly processed video ──
         if not summary.get("narrative") or not summary.get("key_milestones"):
             sorted_evts = sorted(
                 event_records,
                 key=lambda e: (e.get("start_ms") or e.get("timestamp_ms") or 0.0)
             )
-            key_milestones = []
-            for evt in sorted_evts[:15]:
-                t_ms = evt.get("start_ms") or evt.get("timestamp_ms") or 0.0
-                m = int(t_ms // 60000)
-                s = (t_ms % 60000) / 1000.0
+            milestone_candidates = []
+            last_m_key = None
+            for evt in sorted_evts:
+                t_ms = float(evt.get("start_ms") or evt.get("timestamp_ms") or 0.0)
                 ev_name = evt.get("display_name") or (evt.get("event_type") or "").replace("_", " ").title()
                 evidence = evt.get("evidence") or {}
-                actor = evidence.get("person_label") or evt.get("person_label") or "Scene Entity"
-                key_milestones.append({
+                actor = evidence.get("person_label") or evt.get("person_label") or f"Person {evt.get('track_id', 1)}"
+                m_key = (actor, ev_name)
+                if milestone_candidates and m_key == last_m_key:
+                    prev_ms = milestone_candidates[-1]["_t_ms"]
+                    if t_ms - prev_ms < 4000.0:
+                        continue
+                last_m_key = m_key
+                m = int(t_ms // 60000)
+                s = (t_ms % 60000) / 1000.0
+                milestone_candidates.append({
                     "time": f"{m:02d}:{s:04.1f}",
                     "event": ev_name,
                     "actor": actor,
+                    "_t_ms": t_ms,
                 })
+            key_milestones = [{"time": x["time"], "event": x["event"], "actor": x["actor"]} for x in milestone_candidates[:15]]
 
             persons_count = len(set(context.metadata.get("track_to_label", {}).values()))
             obj_classes_count = len(detected_objects_list)

@@ -118,6 +118,10 @@ export default function UploadPage() {
 
       setUploadResult(result);
       setUploading(false);
+      // Auto-navigate to live pipeline processing monitor
+      setTimeout(() => {
+        router.push(`/processing/${result.job_id}`);
+      }, 700);
     } catch (err) {
       setUploading(false);
       setUploadError(err instanceof Error ? err.message : 'Upload failed');

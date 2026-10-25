@@ -368,6 +368,7 @@ def run_activity_state_machine(
                 state_start_obs = o
 
         elif state == ActivityState.STANDING:
+            state_dur_ms = o.timestamp_ms - state_start_obs.timestamp_ms
             if vel >= WALK_VELOCITY_THRESHOLD:
                 if at_edge:
                     # Moving toward edge = about to exit
@@ -388,7 +389,7 @@ def run_activity_state_machine(
                         },
                     ))
                 state_start_obs = o
-            elif near_chair or pose_label == "sitting":
+            elif (near_chair or pose_label == "sitting") and state_dur_ms >= 6000.0:
                 state = ActivityState.SITTING
                 standing_cy = o.bbox.cy - SITTING_CY_DROP
                 events.append(ActivityEvent(
@@ -410,15 +411,14 @@ def run_activity_state_machine(
                 state_start_obs = o
 
         elif state == ActivityState.SITTING:
-            # Check if person stood up.
-            # ASM-1 FIX: Y increases DOWNWARD in image coords, so "rising" (standing
-            # up) means cy DECREASING. Old check used +SITTING_CY_DROP which was
-            # the opposite direction.
+            # Check if person stood up with temporal hysteresis (must sit for at least 2.5s)
+            state_dur_ms = o.timestamp_ms - state_start_obs.timestamp_ms
             cy_rose = (
                 standing_cy is not None
-                and o.bbox.cy < standing_cy - SITTING_CY_DROP  # cy moved UP = person rose
+                and o.bbox.cy < standing_cy - 1.5 * SITTING_CY_DROP  # cy moved UP = person rose
             )
-            if (vel >= WALK_VELOCITY_THRESHOLD
+            can_stand = state_dur_ms >= 7000.0 and (cy_rose or vel >= WALK_VELOCITY_THRESHOLD)
+            if can_stand and (vel >= WALK_VELOCITY_THRESHOLD
                     or cy_rose
                     or (not near_chair and pose_label in ("standing", "walking"))):
                 state = ActivityState.WALKING if vel >= WALK_VELOCITY_THRESHOLD else ActivityState.STANDING

@@ -7,6 +7,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+@router.get("")
 @router.get("/")
 async def list_jobs():
     repo = get_job_repo()

@@ -76,6 +76,7 @@ _MODEL_PROFILES: dict[str, dict] = {
 _DEFAULT_PROFILE = "balanced"
 
 
+@router.post("")
 @router.post("/")
 async def upload_video(
     file: UploadFile = File(...),
@@ -111,15 +112,21 @@ async def upload_video(
         model_profile, resolved_detection_model, resolved_pose_model or "disabled",
     )
 
-    # ── 1. Save file to disk ───────────────────────────────────────────────
+    # ── 1. Save file to disk (streamed in 1MB chunks to avoid RAM spikes) ─
     try:
-        content = await file.read()
         dest_path = get_upload_path(job_id, file.filename)
         import hashlib as _hashlib
-        sha256 = _hashlib.sha256(content).hexdigest()
+        hasher = _hashlib.sha256()
+        file_size_bytes = 0
         with open(dest_path, "wb") as f_out:
-            f_out.write(content)
-        file_size_bytes = len(content)
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                f_out.write(chunk)
+                hasher.update(chunk)
+                file_size_bytes += len(chunk)
+        sha256 = hasher.hexdigest()
     except Exception as exc:
         logger.exception("[%s] Failed to save upload", job_id)
         raise HTTPException(status_code=500, detail=f"File save failed: {exc}") from exc

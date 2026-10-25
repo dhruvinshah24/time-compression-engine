@@ -43,7 +43,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
-SIMILARITY_THRESHOLD = 0.52      # cosine sim threshold (lowered from 0.62 — same person
+SIMILARITY_THRESHOLD = 0.65      # cosine sim threshold (lowered from 0.62 — same person
                                   # from different angles scores ~0.55-0.70 on MobileNetV3)
 MAX_GALLERY_AGE_MS   = 300_000   # remember person for 5 min of absence (was 2 min)
 EMBEDDING_DIM_HIST   = 144       # 6 bands × 3 channels × 8 bins
@@ -214,6 +214,7 @@ class PersonGallery:
         self._threshold = similarity_threshold
         self._entries: dict[str, GalleryEntry] = {}   # label → entry
         self._track_to_label: dict[int, str] = {}     # track_id → label
+        self._track_intervals: dict[int, tuple[float, float]] = {}  # track_id → (start_ms, end_ms)
         self._next_id: int = 1
 
     # ── Public API ──────────────────────────────────────────────────────────
@@ -253,10 +254,11 @@ class PersonGallery:
                 entry.last_seen_ms = max(entry.last_seen_ms, end_ts)
             return label
 
+        self._track_intervals[track_id] = (timestamp_ms, end_ts)
         embedding = self._embedder.compute(crop_bgr)
 
-        # Try to match against gallery
-        best_label, best_sim = self._find_best_match(embedding)
+        # Try to match against gallery (enforcing temporal non-overlap so simultaneous persons never merge)
+        best_label, best_sim = self._find_best_match(embedding, start_ms=timestamp_ms, end_ms=end_ts)
 
         if best_label is not None and best_sim >= self._threshold:
             label = best_label
@@ -343,6 +345,21 @@ class PersonGallery:
                     continue
                 e2 = self._entries[l2]
 
+                # Cannot consolidate two entries if they were present in the scene at the same time
+                co_present = False
+                for tid1 in e1.track_ids:
+                    t1 = self._track_intervals.get(tid1)
+                    if not t1: continue
+                    for tid2 in e2.track_ids:
+                        t2 = self._track_intervals.get(tid2)
+                        if not t2: continue
+                        if max(0.0, min(t1[1], t2[1]) - max(t1[0], t2[0])) > 1200.0:
+                            co_present = True
+                            break
+                    if co_present: break
+                if co_present:
+                    continue
+
                 sim = float(np.dot(e1.embedding, e2.embedding))
                 if sim >= threshold:
                     # Merge e2 into e1
@@ -369,9 +386,9 @@ class PersonGallery:
     # ── Internal ────────────────────────────────────────────────────────────
 
     def _find_best_match(
-        self, embedding: np.ndarray
+        self, embedding: np.ndarray, start_ms: float = 0.0, end_ms: float = 0.0
     ) -> tuple[Optional[str], float]:
-        """Find gallery entry with highest cosine similarity."""
+        """Find gallery entry with highest cosine similarity, strictly excluding co-present people."""
         if not self._entries:
             return None, 0.0
 
@@ -379,6 +396,19 @@ class PersonGallery:
         best_sim: float = 0.0
 
         for label, entry in self._entries.items():
+            # Invariant: A single person CANNOT be in two separate tracks at the same moment in time
+            if start_ms is not None and end_ms is not None:
+                overlaps = False
+                for tid in entry.track_ids:
+                    ti = self._track_intervals.get(tid)
+                    if ti is not None:
+                        ov = max(0.0, min(end_ms, ti[1]) - max(start_ms, ti[0]))
+                        if ov > 1200.0:  # overlapping by > 1.2s in the scene
+                            overlaps = True
+                            break
+                if overlaps:
+                    continue  # Co-present in the scene at the same time: cannot be the same person!
+
             sim = float(np.dot(embedding, entry.embedding))  # both L2-normalised
             if sim > best_sim:
                 best_sim = sim

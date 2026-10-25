@@ -94,7 +94,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData();
-    const intervalId = setInterval(fetchData, 30000);
+    const intervalId = setInterval(fetchData, 10000);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -115,20 +115,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#07090e] p-6 font-sans text-slate-300">
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes subtle-gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .animate-gradient {
-          background-size: 200% 200%;
-          animation: subtle-gradient 10s ease infinite;
-        }
-      `}} />
-
       {/* HERO BANNER */}
-      <section className="animate-gradient relative mb-8 overflow-hidden rounded-xl border border-white/5 bg-gradient-to-r from-cyan-900/20 via-blue-900/20 to-emerald-900/20 p-8 shadow-2xl backdrop-blur-xl">
+      <section className="relative mb-8 overflow-hidden rounded-xl border border-cyan-500/20 bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-emerald-950/30 p-8 shadow-xl backdrop-blur-md">
         <div className="absolute left-0 top-0 h-full w-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent opacity-30"></div>
         <div className="relative flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
           <div className="flex items-center gap-4">
@@ -225,7 +213,7 @@ export default function DashboardPage() {
         ].map((stat, i) => (
           <div
             key={i}
-            className={`relative overflow-hidden rounded-xl border border-white/5 bg-[rgba(13,18,24,0.8)] p-6 backdrop-blur-xl transition-colors hover:bg-white/[0.03]`}
+            className={`relative overflow-hidden rounded-xl border border-white/5 bg-[rgba(13,18,24,0.8)] p-6 backdrop-blur-md transition-colors hover:bg-white/[0.03]`}
           >
             <div className="relative z-10 flex items-start justify-between">
               <div>
@@ -281,7 +269,7 @@ export default function DashboardPage() {
 
           {/* ACTIVE PIPELINES */}
           {activeJobs.length > 0 && (
-            <div className="rounded-xl border border-amber-500/20 bg-[rgba(13,18,24,0.8)] p-6 backdrop-blur-xl">
+            <div className="rounded-xl border border-amber-500/20 bg-[rgba(13,18,24,0.8)] p-6 backdrop-blur-md">
               <div className="mb-4 flex items-center gap-3">
                 <div className="relative flex h-3 w-3">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
@@ -315,7 +303,7 @@ export default function DashboardPage() {
           )}
 
           {/* RECENT INTELLIGENCE REPORTS */}
-          <div className="rounded-xl border border-white/5 bg-[rgba(13,18,24,0.8)] backdrop-blur-xl">
+          <div className="rounded-xl border border-white/5 bg-[rgba(13,18,24,0.8)] backdrop-blur-md">
             <div className="border-b border-white/5 p-6">
               <h2 className="text-lg font-semibold tracking-wide text-white">
                 RECENT INTELLIGENCE REPORTS
@@ -412,7 +400,7 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-8 lg:col-span-5 xl:col-span-4">
           
           {/* LIVE EVENT FEED */}
-          <div className="flex h-full flex-col rounded-xl border border-white/5 bg-[rgba(13,18,24,0.8)] backdrop-blur-xl">
+          <div className="flex h-full flex-col rounded-xl border border-white/5 bg-[rgba(13,18,24,0.8)] backdrop-blur-md">
             <div className="flex items-center justify-between border-b border-white/5 p-6">
               <h2 className="flex items-center gap-3 text-lg font-semibold tracking-wide text-white">
                 <span className="relative flex h-2 w-2">

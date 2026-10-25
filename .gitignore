@@ -11,8 +11,9 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
+!frontend/src/lib/**
 parts/
 sdist/
 var/
@@ -58,16 +59,14 @@ $RECYCLE.BIN/
 # Storage & Data
 uploads/
 storage/
+**/storage/**
+**/uploads/**
 
 # Outputs — keep folder structure, ignore generated content
-outputs/highlight_videos/**
-outputs/timelines/**
-outputs/reports/**
-outputs/logs/**
-outputs/thumbnails/**
-outputs/clips/**
-outputs/PHASE*
+outputs/**
+backend/outputs/**
 !outputs/**/.gitkeep
+!backend/outputs/**/.gitkeep
 
 # Datasets — keep folder structure, ignore raw video files
 datasets/raw/**
@@ -88,6 +87,13 @@ datasets/benchmarks/**
 *.pth
 *.bin
 
+# Build caches, logs & accidental locks
+*.tsbuildinfo
+backend/package-lock.json
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # IDEs
 .idea/

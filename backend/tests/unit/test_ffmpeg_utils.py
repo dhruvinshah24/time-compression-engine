@@ -332,3 +332,18 @@ class TestVideoMetadata:
     def test_is_long_video_boundary(self):
         assert self._make_meta(duration_seconds=3600.0).is_long_video is True
         assert self._make_meta(duration_seconds=3599.9).is_long_video is False
+
+
+class TestGetVfrArgs:
+    def test_get_vfr_args_returns_valid_flag(self):
+        from app.utils.ffmpeg import get_vfr_args
+        args = get_vfr_args()
+        assert len(args) == 2
+        assert args[0] in ("-fps_mode", "-vsync")
+        assert args[1] == "vfr"
+
+    def test_ffmpeg_error_includes_stderr_in_message(self):
+        err = FFmpegError("Extraction failed", returncode=1, stderr="Unrecognized option 'vsync'")
+        assert "Unrecognized option 'vsync'" in str(err)
+        assert err.returncode == 1
+        assert err.stderr == "Unrecognized option 'vsync'"

@@ -1,25 +1,17 @@
 'use client';
 
-/**
- * Stories Page — /stories/[videoId]
- *
- * Visualizes multi-track story arcs per person/track detected by the TCE pipeline.
- * Precision-styled as a video/audio DAW sequencer interface.
- * Real data only — strictly bound to GET /api/v1/stories/{videoId}.
- */
-
 import { useEffect, useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Loader2, AlertCircle, User, Zap, Clock, ChevronRight,
-  ArrowRight, Activity, Radio, BookOpen, Layers, Sparkles, Play
+  ArrowRight, Activity, Radio, BookOpen, Layers, Play,
+  ChevronDown, ExternalLink, ShieldCheck, Eye, Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { API_BASE } from '@/lib/api/client';
+import { useParams, useRouter } from 'next/navigation';
+import { api, API_BASE, BACKEND_URL } from '@/lib/api/client';
 import EventPreviewModal from '@/components/EventPreviewModal';
+import { StoriesSkeleton } from '@/components/skeletons/StoriesSkeleton';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 interface SlimEvent {
   event_id: string;
   event_type: string;
@@ -58,384 +50,450 @@ interface StoriesResponse {
   total_events: number;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function fmtMs(ms: number): string {
+  const s = ms / 1000;
+  const m = Math.floor(s / 60);
+  const remS = Math.floor(s % 60);
+  return `${String(m).padStart(2, '0')}:${String(remS).padStart(2, '0')}`;
+}
+
+function formatDuration(ms: number): string {
   const s = ms / 1000;
   const m = Math.floor(s / 60);
   return m > 0 ? `${m}m ${(s % 60).toFixed(0)}s` : `${s.toFixed(1)}s`;
 }
 
-function confColor(c: number): string {
-  if (c >= 0.9) return 'bg-emerald-400';
-  if (c >= 0.7) return 'bg-indigo-400';
-  if (c >= 0.5) return 'bg-amber-400';
-  return 'bg-rose-400';
+function formatLabel(str: string): string {
+  return str.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function eventDotConfig(eventType: string): { bg: string; ring: string; glow: string } {
-  if (eventType.includes('enter') || eventType.includes('entered'))
-    return { bg: 'bg-emerald-400', ring: 'ring-emerald-400/40', glow: 'shadow-[0_0_10px_rgba(16,185,129,0.4)]' };
-  if (eventType.includes('left') || eventType.includes('exit'))
-    return { bg: 'bg-rose-400', ring: 'ring-rose-400/40', glow: 'shadow-[0_0_10px_rgba(244,63,94,0.4)]' };
-  if (eventType.includes('run'))
-    return { bg: 'bg-pink-400', ring: 'ring-pink-400/40', glow: 'shadow-[0_0_10px_rgba(236,72,153,0.4)]' };
-  if (eventType.includes('loiter'))
-    return { bg: 'bg-amber-400', ring: 'ring-amber-400/40', glow: 'shadow-[0_0_10px_rgba(245,158,11,0.4)]' };
-  if (eventType.includes('phone') || eventType.includes('laptop'))
-    return { bg: 'bg-cyan-400', ring: 'ring-cyan-400/40', glow: 'shadow-[0_0_10px_rgba(6,182,212,0.4)]' };
-  if (eventType.includes('light'))
-    return { bg: 'bg-yellow-400', ring: 'ring-yellow-400/40', glow: 'shadow-[0_0_10px_rgba(234,179,8,0.4)]' };
-  return { bg: 'bg-indigo-400', ring: 'ring-indigo-400/40', glow: 'shadow-[0_0_10px_rgba(99,102,241,0.4)]' };
-}
+export default function StoriesPage() {
+  const router = useRouter();
+  const params = useParams();
+  const videoId = params.videoId as string;
 
-// ── Multi-track Story Arc Row ──────────────────────────────────────────────────
-function StoryArcRow({
-  arc, totalDurationMs, onEventClick, idx,
-}: {
-  arc: StoryArc;
-  totalDurationMs: number;
-  onEventClick: (eventId: string, eventType: string, startMs: number, confidence?: number) => void;
-  idx: number;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const isScene = arc.key.startsWith('scene:');
+  const [data, setData] = useState<StoriesResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [previewEventId, setPreviewEventId] = useState<string | null>(null);
+  const [selectedEventData, setSelectedEventData] = useState<SlimEvent | null>(null);
+  const [activeStory, setActiveStory] = useState<StoryArc | null>(null);
 
-  const spanLeftPct = totalDurationMs > 0 ? (arc.start_ms / totalDurationMs) * 100 : 0;
-  const spanWidthPct = totalDurationMs > 0 ? Math.max(1, (arc.duration_ms / totalDurationMs) * 100) : 0;
+  useEffect(() => {
+    let mounted = true;
+    (api.stories(videoId) as Promise<StoriesResponse>)
+      .then((res) => {
+        if (mounted) {
+          setData(res);
+          if (res.stories && res.stories.length > 0) {
+            setActiveStory(res.stories[0]);
+          }
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (mounted) {
+          setError(err.message);
+          setLoading(false);
+        }
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [videoId]);
+
+  const totalDurationMs = useMemo(() => {
+    if (!data?.stories?.length) return 60000;
+    const maxEnd = Math.max(...data.stories.map((s) => s.end_ms), 60000);
+    return Math.max(maxEnd, 60000);
+  }, [data]);
+
+  // Generate 5 calibration ruler points across duration
+  const rulerTicks = useMemo(() => {
+    const ticks = [];
+    const count = 6;
+    for (let i = 0; i <= count; i++) {
+      const ms = Math.round((totalDurationMs / count) * i);
+      ticks.push({ ms, pct: (i / count) * 100, label: fmtMs(ms) });
+    }
+    return ticks;
+  }, [totalDurationMs]);
+
+  if (loading) {
+    return <StoriesSkeleton />;
+  }
+
+  if (error || !data) {
+    return (
+      <div style={{ padding: 40, textAlign: 'center' }}>
+        <div className="card" style={{ maxWidth: 440, margin: '0 auto', padding: 24 }}>
+          <AlertCircle size={28} style={{ color: 'var(--warning)', margin: '0 auto 10px' }} />
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>Story Arcs Not Available</h3>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14 }}>{error || 'No story arc telemetry generated for this recording.'}</p>
+          <Link href="/" className="btn btn-secondary" style={{ textDecoration: 'none' }}>
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: idx * 0.04 }}
-      className={`
-        surface-card rounded-2xl border transition-all duration-300 overflow-hidden
-        ${expanded ? 'border-indigo-500/40 bg-[#0c0e16]' : 'hover:border-white/20'}
-      `}
-    >
-      {/* Header bar */}
-      <div
-        className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-white/[0.02] transition-colors select-none"
-        onClick={() => setExpanded(x => !x)}
-      >
-        {/* Avatar or Icon */}
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 relative overflow-hidden ${
-          isScene ? 'bg-white/5 border border-white/10' : 'bg-violet-500/10 border border-violet-500/25'
-        }`}>
-          {arc.crop_url ? (
-            <img
-              src={arc.crop_url.startsWith('http') ? arc.crop_url : `${API_BASE}${arc.crop_url}`}
-              alt={arc.person_label ?? 'Actor'}
-              className="w-full h-full object-cover"
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-          ) : isScene ? (
-            <Radio size={18} className="text-white/40" />
-          ) : (
-            <User size={18} className="text-violet-400" />
-          )}
-          <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-indigo-400 ring-2 ring-[#08090d]" />
-        </div>
-
-        {/* Identity & summary */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2.5">
-            <span className="text-sm font-bold text-white tracking-tight">
-              {arc.person_label ?? (arc.track_id != null ? `Track #${arc.track_id}` : 'Scene Global')}
-            </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/40">
-              {arc.story_id}
-            </span>
-            {arc.entry_direction && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                in: {arc.entry_direction}
-              </span>
-            )}
-            {arc.exit_direction && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300">
-                out: {arc.exit_direction}
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-white/50 truncate mt-1">{arc.summary}</p>
-        </div>
-
-        {/* Sequence Metrics */}
-        <div className="hidden sm:flex items-center gap-5 flex-shrink-0">
-          <div className="text-right">
-            <p className="text-xs font-mono text-white/80 font-medium">{arc.start_formatted} → {arc.end_formatted}</p>
-            <p className="text-[10px] font-mono text-white/30">{fmtMs(arc.duration_ms)} active span</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 1400, margin: '0 auto', width: '100%' }}>
+      {/* ── Breadcrumb & Header ────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <div style={{
+            fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+            marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6
+          }}>
+            <Link href="/" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Dashboard</Link>
+            <span>/</span>
+            <Link href={`/timeline/${videoId}`} style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Forensic Timeline</Link>
+            <span>/</span>
+            <span style={{ color: 'var(--text-secondary)' }}>Temporal Sequencer</span>
           </div>
 
-          <div className="text-right">
-            <p className="text-sm font-mono font-bold text-white">{arc.event_count}</p>
-            <p className="text-[10px] text-white/30 uppercase tracking-wider">events</p>
-          </div>
-
-          {arc.avg_confidence > 0 && (
-            <div className="flex items-center gap-2">
-              <div className="w-14 h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
-                <div
-                  className={`h-full rounded-full ${confColor(arc.avg_confidence)}`}
-                  style={{ width: `${Math.round(arc.avg_confidence * 100)}%` }}
-                />
-              </div>
-              <span className="text-[10px] text-white/50 font-mono font-medium">
-                {Math.round(arc.avg_confidence * 100)}%
-              </span>
-            </div>
-          )}
+          <h1 style={{
+            fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
+            letterSpacing: '-0.02em', margin: 0
+          }}>
+            Actor Continuity & Story Sequencer
+          </h1>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2, marginBottom: 0 }}>
+            DAW-style multi-track timeline tracking each actor's entry, dwell duration, object interactions, and trajectory exit.
+          </p>
         </div>
 
-        <div className="text-white/30 hover:text-white transition-colors flex-shrink-0 ml-1">
-          <ChevronRight
-            size={16}
-            className={`transition-transform duration-300 ${expanded ? 'rotate-90' : ''}`}
-          />
+        {/* Right Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Link href={`/timeline/${videoId}`} style={{ textDecoration: 'none' }}>
+            <button className="btn btn-primary" style={{ fontSize: 12, padding: '8px 18px', fontWeight: 700 }}>
+              <Play size={13} />
+              <span>Launch Forensic Timeline</span>
+            </button>
+          </Link>
         </div>
       </div>
 
-      {/* Expanded Sequencer Track view */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="border-t border-white/5 px-5 py-5 space-y-5 surface-inset">
+      {/* ── Summary Operational Metrics Strip ───────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+        <div className="card" style={{ padding: '16px 18px' }}>
+          <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Tracked Personas
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4 }}>
+            {data.total_stories} Identities
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+            Discrete re-identified tracks
+          </div>
+        </div>
 
-              {/* Horizontal DAW Multi-track Sequencer */}
-              {totalDurationMs > 0 && arc.events.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[10px] font-mono text-white/40 uppercase tracking-wider">
-                    <span>Sequencer Track</span>
-                    <span>Span: {fmtMs(arc.duration_ms)}</span>
+        <div className="card" style={{ padding: '16px 18px' }}>
+          <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Causal Event Chains
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4 }}>
+            {data.total_events} Synthesized
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+            Inter-object interactions
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: '16px 18px' }}>
+          <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Total Surveillance Span
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--accent)', marginTop: 4 }}>
+            {formatDuration(totalDurationMs)}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+            Calibrated time axis
+          </div>
+        </div>
+      </div>
+
+      {/* ── Main DAW Timeline Sequencer Workspace ───────────────────────── */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--border)' }}>
+        {/* Sequencer Toolbar & Shared Time Ruler */}
+        <div style={{
+          backgroundColor: 'var(--bg-raised)',
+          borderBottom: '1px solid var(--border)',
+          padding: '12px 18px',
+          display: 'grid',
+          gridTemplateColumns: '280px 1fr',
+          gap: 16,
+          alignItems: 'center'
+        }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Layers size={14} style={{ color: 'var(--accent)' }} />
+            <span>Actor Identity Tracks</span>
+          </div>
+
+          {/* Shared Time Ruler with Ticks */}
+          <div style={{ position: 'relative', height: 24, display: 'flex', alignItems: 'center' }}>
+            <div style={{ position: 'absolute', left: 0, right: 0, height: 1, backgroundColor: 'var(--border)' }} />
+            {rulerTicks.map((tick, i) => (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute',
+                  left: `${tick.pct}%`,
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}
+              >
+                <div style={{ width: 1, height: 6, backgroundColor: 'var(--border)' }} />
+                <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 2 }}>
+                  {tick.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Multi-Track Swimlanes List */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {data.stories.length === 0 ? (
+            <div style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <Layers size={32} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                No Actor Story Arcs Detected
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, maxWidth: 420, margin: '4px auto 0' }}>
+                Continuous tracks in this stream have not produced separated story arcs. Verify that actors are present and tracked across sufficient frame duration.
+              </p>
+            </div>
+          ) : (
+            data.stories.map((arc, idx) => {
+            const startPct = Math.max(0, Math.min(100, (arc.start_ms / totalDurationMs) * 100));
+            const endPct = Math.max(startPct + 3, Math.min(100, (arc.end_ms / totalDurationMs) * 100));
+            const widthPct = Math.max(4, endPct - startPct);
+            const isSelected = activeStory?.story_id === arc.story_id;
+
+            return (
+              <div
+                key={arc.story_id || idx}
+                onClick={() => setActiveStory(arc)}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '280px 1fr',
+                  gap: 16,
+                  padding: '16px 18px',
+                  borderBottom: idx === data.stories.length - 1 ? 'none' : '1px solid var(--border-dim)',
+                  backgroundColor: isSelected ? 'var(--selected-surface)' : idx % 2 === 1 ? 'rgba(255,255,255,0.015)' : 'transparent',
+                  transition: 'background-color 0.15s ease',
+                  cursor: 'pointer'
+                }}
+              >
+                {/* Left Track Identity Info */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{
+                    width: 38, height: 38, borderRadius: 5,
+                    backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    overflow: 'hidden', flexShrink: 0
+                  }}>
+                    {arc.crop_url ? (
+                      <img
+                        src={arc.crop_url.startsWith('http') ? arc.crop_url : `${BACKEND_URL}${arc.crop_url}`}
+                        alt={arc.person_label || 'Actor'}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <User size={18} style={{ color: 'var(--accent)' }} />
+                    )}
                   </div>
 
-                  <div className="relative h-10 bg-[#090b10] rounded-xl overflow-visible border border-white/10 p-1 flex items-center">
-                    {/* Background grid notches */}
-                    <div className="absolute inset-0 flex justify-between px-2 pointer-events-none opacity-20">
-                      {[...Array(11)].map((_, i) => (
-                        <div key={i} className="h-full w-[1px] bg-white/20" />
-                      ))}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {arc.person_label || `Actor (Track #${arc.track_id})`}
+                      </span>
+                      <span className="badge badge-accent" style={{ fontSize: 9 }}>
+                        {arc.event_count} evts
+                      </span>
                     </div>
 
-                    {/* Active span region */}
+                    <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 2 }}>
+                      {fmtMs(arc.start_ms)} → {fmtMs(arc.end_ms)} ({formatDuration(arc.duration_ms)})
+                    </div>
+
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                      {arc.entry_direction ? `In: ${arc.entry_direction}` : ''}
+                      {arc.exit_direction ? ` • Out: ${arc.exit_direction}` : ''}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Swimlane Timeline Track */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
+                  <div style={{
+                    position: 'relative', height: 36,
+                    backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-dim)',
+                    borderRadius: 6, overflow: 'hidden'
+                  }}>
+                    {/* Active In-Scene Presence Span */}
                     <div
-                      className="absolute top-1 bottom-1 bg-gradient-to-r from-indigo-500/20 via-violet-500/25 to-indigo-500/20 rounded-lg border border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)]"
                       style={{
-                        left: `${spanLeftPct}%`,
-                        width: `${spanWidthPct}%`,
+                        position: 'absolute',
+                        left: `${startPct}%`,
+                        width: `${widthPct}%`,
+                        top: 4, bottom: 4,
+                        backgroundColor: 'rgba(98, 221, 176, 0.15)',
+                        border: '1px solid var(--accent-dim)',
+                        borderRadius: 4,
                       }}
                     />
 
-                    {/* Interactive Event Nodes */}
-                    {arc.events.map((evt) => {
-                      const cfg = eventDotConfig(evt.event_type);
-                      const leftPos = (evt.start_ms / totalDurationMs) * 100;
+                    {/* Event Nodes plotted on the timeline */}
+                    {arc.events.map((evt, eIdx) => {
+                      const evtPos = Math.max(0, Math.min(100, (evt.start_ms / totalDurationMs) * 100));
+
                       return (
-                        <button
-                          key={evt.event_id}
-                          title={`${evt.display_name} @ ${fmtMs(evt.start_ms)}`}
+                        <div
+                          key={evt.event_id || eIdx}
                           onClick={(e) => {
                             e.stopPropagation();
-                            onEventClick(evt.event_id, evt.event_type, evt.start_ms, evt.confidence);
+                            setSelectedEventData(evt);
+                            setPreviewEventId(evt.event_id);
                           }}
-                          className={`
-                            absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full
-                            ring-2 ring-offset-1 ring-offset-[#090b10]
-                            hover:scale-150 transition-all z-20 cursor-pointer
-                            ${cfg.bg} ${cfg.ring} ${cfg.glow}
-                          `}
-                          style={{ left: `calc(${leftPos}% - 7px)` }}
+                          title={`${evt.display_name || formatLabel(evt.event_type)} at ${fmtMs(evt.start_ms)} (Click to inspect)`}
+                          style={{
+                            position: 'absolute',
+                            left: `${evtPos}%`,
+                            top: 6,
+                            width: 10, height: 22,
+                            borderRadius: 2,
+                            backgroundColor: 'var(--accent)',
+                            cursor: 'pointer',
+                            transform: 'translateX(-50%)',
+                            boxShadow: '0 0 8px rgba(98, 221, 176, 0.5)',
+                            zIndex: 10,
+                            transition: 'transform 0.1s ease',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateX(-50%) scale(1.25)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateX(-50%) scale(1.0)')}
                         />
                       );
                     })}
                   </div>
 
-                  <div className="flex justify-between text-[9px] font-mono text-white/30 px-1">
-                    <span>0:00</span>
-                    <span>{fmtMs(totalDurationMs)}</span>
-                  </div>
+                  {/* Summary preview on selected */}
+                  {isSelected && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      fontSize: 11, color: 'var(--text-secondary)', padding: '4px 6px'
+                    }}>
+                      <span>{arc.summary}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/timeline/${videoId}?time=${arc.start_ms}`);
+                        }}
+                        className="btn btn-secondary"
+                        style={{ fontSize: 10, padding: '2px 8px', height: 22 }}
+                      >
+                        <span>Seek to Ingress ({fmtMs(arc.start_ms)})</span>
+                        <ArrowRight size={10} />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-
-              {/* Event Stream List */}
-              <div className="space-y-1.5 pt-1">
-                <p className="text-[10px] font-mono uppercase tracking-wider text-white/40 mb-2">Event Sequence</p>
-                {arc.events.map((evt) => {
-                  const cfg = eventDotConfig(evt.event_type);
-                  return (
-                    <button
-                      key={evt.event_id}
-                      onClick={() => onEventClick(evt.event_id, evt.event_type, evt.start_ms, evt.confidence)}
-                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl surface-card hover:border-indigo-500/40 hover:bg-[#121622] transition-all text-left group border border-white/5"
-                    >
-                      <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${cfg.bg} ${cfg.glow}`} />
-                      <span className="text-xs font-medium text-white/80 group-hover:text-white flex-1 truncate">
-                        {evt.display_name}
-                      </span>
-                      <span className="text-[10px] font-mono text-white/40">{fmtMs(evt.start_ms)}</span>
-                      {evt.confidence !== undefined && (
-                        <span className="text-[10px] font-mono text-indigo-300/70 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
-                          {Math.round(evt.confidence * 100)}%
-                        </span>
-                      )}
-                      <div className="p-1 rounded bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 text-white/60">
-                        <Play size={10} />
-                      </div>
-                    </button>
-                  );
-                })}
               </div>
-
-            </div>
-          </motion.div>
+            );
+          })
         )}
-      </AnimatePresence>
-    </motion.div>
-  );
-}
-
-// ── Main Page ─────────────────────────────────────────────────────────────────
-export default function StoriesPage() {
-  const { videoId } = useParams<{ videoId: string }>();
-  const [data, setData] = useState<StoriesResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [modalEvent, setModalEvent] = useState<{
-    id: string; type: string; startMs: number; confidence?: number;
-  } | null>(null);
-
-  useEffect(() => {
-    if (!videoId) return;
-    let mounted = true;
-    fetch(`${API_BASE}/stories/${videoId}`)
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(d => { if (mounted) { setData(d); setLoading(false); } })
-      .catch(e => { if (mounted) { setError(e.message); setLoading(false); } });
-    return () => { mounted = false; };
-  }, [videoId]);
-
-  const totalDurationMs = useMemo(() => {
-    if (!data?.stories.length) return 0;
-    return Math.max(...data.stories.map(s => s.end_ms));
-  }, [data]);
-
-  const handleEventClick = (id: string, type: string, startMs: number, confidence?: number) => {
-    setModalEvent({ id, type, startMs, confidence });
-  };
-
-  if (loading) return (
-    <div className="min-h-[70vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-        <p className="text-white/40 text-xs font-mono uppercase tracking-widest animate-pulse">Constructing story arcs…</p>
-      </div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="min-h-[70vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4 text-center p-8 max-w-md surface-card rounded-3xl border border-red-500/20">
-        <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
-          <AlertCircle size={26} />
         </div>
-        <h2 className="text-lg font-bold text-white">Story Arcs Inaccessible</h2>
-        <p className="text-white/50 text-xs">{error}</p>
-        <Link href={`/timeline/${videoId}`} className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white/80 hover:bg-white/10 transition-colors">
-          Return to Timeline
-        </Link>
       </div>
-    </div>
-  );
 
-  return (
-    <div className="space-y-7 animate-slide-up">
-      {/* Header & Breadcrumb */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/5">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5 text-xs">
-            <Link href="/" className="text-white/40 hover:text-white/70 transition-colors">Dashboard</Link>
-            <span className="text-white/20">›</span>
-            <Link href={`/timeline/${videoId}`} className="text-white/40 hover:text-white/70 transition-colors">Timeline</Link>
-            <span className="text-white/20">›</span>
-            <span className="text-indigo-400 font-medium">Story Studio</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
-            Multi-Track Story Arcs
-            <span className="text-xs font-mono font-normal px-2.5 py-1 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
-              {videoId}
-            </span>
-          </h1>
-        </div>
-
-        {data && data.total_stories > 0 && (
-          <div className="flex items-center gap-3">
-            <div className="surface-card px-4 py-2 rounded-xl border text-center">
-              <p className="text-lg font-mono font-bold text-white">{data.total_stories}</p>
-              <p className="text-[10px] text-white/40 uppercase tracking-wider font-mono">Tracks</p>
+      {/* ── Active Story Arc Inspector Drawer ───────────────────────────── */}
+      {activeStory && (
+        <div className="card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Sparkles size={16} style={{ color: 'var(--accent)' }} />
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+                Identity Arc Dossier: {activeStory.person_label || `Actor #${activeStory.track_id}`}
+              </div>
             </div>
-            <div className="surface-card px-4 py-2 rounded-xl border text-center">
-              <p className="text-lg font-mono font-bold text-indigo-400">{data.total_events}</p>
-              <p className="text-[10px] text-white/40 uppercase tracking-wider font-mono">Total Events</p>
+
+            <button
+              onClick={() => router.push(`/timeline/${videoId}?time=${activeStory.start_ms}`)}
+              className="btn btn-primary"
+              style={{ fontSize: 11, padding: '5px 12px' }}
+            >
+              <span>Play Arc in Timeline</span>
+              <Play size={11} />
+            </button>
+          </div>
+
+          <div className="card-inset" style={{ padding: 14 }}>
+            <div style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--text-primary)' }}>
+              {activeStory.summary}
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Guide Banner */}
-      {data && data.total_stories > 0 && (
-        <div className="p-4 rounded-2xl surface-card border border-indigo-500/20 flex items-center gap-3 text-xs text-indigo-300/80">
-          <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 flex-shrink-0">
-            <Layers size={16} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+              Sequence of Causal Events in Arc ({activeStory.events.length})
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 }}>
+              {activeStory.events.map((evt, i) => (
+                <div
+                  key={evt.event_id || i}
+                  onClick={() => {
+                    setSelectedEventData(evt);
+                    setPreviewEventId(evt.event_id);
+                  }}
+                  className="card-inset"
+                  style={{
+                    padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    cursor: 'pointer', transition: 'all 0.15s'
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      {evt.display_name || formatLabel(evt.event_type)}
+                    </div>
+                    <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--accent)', marginTop: 2 }}>
+                      {fmtMs(evt.start_ms)}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/timeline/${videoId}?time=${evt.start_ms}`);
+                    }}
+                    className="btn btn-ghost"
+                    style={{ fontSize: 10, padding: '2px 6px' }}
+                    title="Seek to this timestamp in timeline"
+                  >
+                    <ArrowRight size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-          <p className="leading-relaxed">
-            Each timeline channel corresponds to a distinct tracked person or global scene entity.
-            Nodes indicate discrete detected actions. Expand any channel to inspect chronological event progression and inspect raw visual frames.
-          </p>
-        </div>
-      )}
-
-      {/* Zero stories state */}
-      {data && data.total_stories === 0 && (
-        <div className="surface-card p-12 rounded-3xl border flex flex-col items-center justify-center text-center gap-3">
-          <BookOpen className="w-12 h-12 text-white/20 mb-2" />
-          <h3 className="text-base font-semibold text-white">Zero Story Arcs Formed</h3>
-          <p className="text-xs text-white/40 max-w-sm">
-            No person tracking tracks or discrete activity events were synthesized for this video feed.
-          </p>
-          <Link href={`/timeline/${videoId}`} className="mt-2 text-xs text-indigo-400 hover:text-indigo-300">
-            ← View Raw Timeline
-          </Link>
-        </div>
-      )}
-
-      {/* Multi-Track Channel Arcs */}
-      {data && data.stories.length > 0 && (
-        <div className="space-y-3.5">
-          {data.stories.map((arc, idx) => (
-            <StoryArcRow
-              key={arc.story_id}
-              arc={arc}
-              totalDurationMs={totalDurationMs}
-              onEventClick={handleEventClick}
-              idx={idx}
-            />
-          ))}
         </div>
       )}
 
       {/* Modal */}
-      {modalEvent && (
+      {previewEventId && (
         <EventPreviewModal
-          eventId={modalEvent.id}
-          eventType={modalEvent.type}
-          startMs={modalEvent.startMs}
-          confidence={modalEvent.confidence}
-          onClose={() => setModalEvent(null)}
+          eventId={previewEventId}
+          eventType={selectedEventData?.event_type}
+          confidence={selectedEventData?.confidence}
+          startMs={selectedEventData?.start_ms}
+          onClose={() => {
+            setPreviewEventId(null);
+            setSelectedEventData(null);
+          }}
         />
       )}
     </div>

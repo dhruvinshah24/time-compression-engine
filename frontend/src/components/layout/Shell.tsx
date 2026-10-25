@@ -1,55 +1,101 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
+import { api } from '@/lib/api/client';
 
 const ROUTE_LABELS: Record<string, string> = {
-  '/':           'Dashboard',
-  '/upload':     'Upload Video',
-  '/events':     'Events',
-  '/analytics':  'Analytics',
-  '/settings':   'Settings',
+  '/':          'Dashboard',
+  '/upload':    'Upload',
+  '/events':    'Events',
+  '/analytics': 'Analytics',
+  '/settings':  'Settings',
 };
 
 function getBreadcrumb(pathname: string): string {
-  if (pathname.startsWith('/timeline/'))   return 'Timeline';
+  if (pathname.startsWith('/timeline/'))   return 'Forensic Timeline';
   if (pathname.startsWith('/processing/')) return 'Processing';
+  if (pathname.startsWith('/stories/'))    return 'Story Arcs';
+  if (pathname.startsWith('/summary/'))    return 'Summary';
   return ROUTE_LABELS[pathname] ?? 'Dashboard';
 }
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const page = getBreadcrumb(pathname);
+  const isTimeline = pathname.startsWith('/timeline/');
+  const [health, setHealth] = useState<any>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    api.health()
+      .then((res) => { if (mounted) setHealth(res); })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
+  const isOnline = health?.status === 'ok';
+  const isCuda = health?.device_info?.cuda_available;
+  const deviceLabel = isCuda
+    ? `CUDA · ${health?.device_info?.gpu_name ?? 'Accelerated'}`
+    : health?.device_info?.device === 'cpu'
+    ? `CPU Mode · Pipeline v${health?.pipeline_version || '1.0.1'}`
+    : 'TCE Engine Online';
 
   return (
-    <div className="flex h-screen w-full bg-[#08090d] text-slate-100 overflow-hidden font-sans">
+    <div style={{ display: 'flex', height: '100vh', width: '100%', overflow: 'hidden', backgroundColor: 'var(--bg-main)' }}>
       <Sidebar />
-      <div className="flex-1 flex flex-col h-full overflow-y-auto min-w-0">
-        <header className="h-16 flex-shrink-0 border-b border-white/[0.08] bg-[#090b10]/80 backdrop-blur-xl flex items-center justify-between px-8 z-10 sticky top-0">
-          {/* Breadcrumb path */}
-          <div className="flex items-center gap-2 text-[13px]">
-            <span className="text-slate-400 font-medium">TCE</span>
-            <span className="text-white/20">/</span>
-            <span className="text-slate-200 font-semibold">{page}</span>
-          </div>
 
-          {/* Right Status / Telemetry bar */}
-          <div className="flex items-center gap-5">
-            <div className="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.07] text-[11px] font-mono text-slate-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
-              <span>GPU Accelerated</span>
-              <span className="text-white/20">|</span>
-              <span className="text-indigo-400 font-semibold">5.03× Real-time</span>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', minWidth: 0 }}>
+        {/* Top bar — only on standard dashboard pages */}
+        {!isTimeline && (
+          <header style={{
+            height: 50,
+            flexShrink: 0,
+            borderBottom: '1px solid var(--border)',
+            backgroundColor: 'var(--bg-sidebar)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 24px',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+          }}>
+            {/* Breadcrumb */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+              <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: 11 }}>TCE</span>
+              <span style={{ color: 'var(--border)', fontSize: 11 }}>/</span>
+              <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{page}</span>
             </div>
 
-            <div className="flex items-center gap-2.5 pl-2 border-l border-white/[0.08]">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 border border-white/20 flex items-center justify-center shadow-md shadow-indigo-500/20 text-xs font-bold text-white">
-                AI
+            {/* Status bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '4px 10px',
+                borderRadius: 4,
+                backgroundColor: 'var(--bg-inset)',
+                border: '1px solid var(--border-dim)',
+                fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+              }}>
+                <span className={`status-dot ${isOnline ? 'status-dot-success' : 'status-dot-warning'} animate-pulse-subtle`} />
+                <span>{deviceLabel}</span>
+                <span style={{ color: 'var(--border)' }}>·</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 500 }}>System Active</span>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
 
-        <main className="flex-1 p-8 max-w-7xl w-full mx-auto">
+        <main style={{
+          flex: 1,
+          padding: isTimeline ? '16px 20px' : '24px 28px',
+          maxWidth: isTimeline ? '100%' : 1400,
+          width: '100%',
+          margin: isTimeline ? '0' : '0 auto',
+          boxSizing: 'border-box'
+        }}>
           {children}
         </main>
       </div>

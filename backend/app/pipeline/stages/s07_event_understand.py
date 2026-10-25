@@ -293,16 +293,23 @@ async def run(context: PipelineContext) -> StageResult:
         try:
             from app.utils.pose_estimate import analyze_pose_frames, extract_pose_events
 
+            # In CPU mode or large frame sets, sample every 2nd frame to accelerate inference by 2x
+            # while easily maintaining sufficient temporal resolution (~0.2s) for human postures
+            step = 2 if len(frame_paths) > 60 else 1
+            sample_paths = frame_paths[::step]
+            sample_numbers = frame_numbers[::step]
+            sample_timestamps = timestamps_ms[::step]
+
             logs.append(
-                f"[{STAGE_NAME}] Pass 3 (pose): running YOLOv8-pose on "
-                f"{len(frame_paths)} frames..."
+                f"[{STAGE_NAME}] Pass 3 (pose): running YOLO-pose on "
+                f"{len(sample_paths)} frames (step={step})..."
             )
             pose_confidence = float(context.settings.get("pose_confidence", 0.20))
 
             frame_poses = analyze_pose_frames(
-                frame_paths=frame_paths,
-                frame_numbers=frame_numbers,
-                timestamps_ms=timestamps_ms,
+                frame_paths=sample_paths,
+                frame_numbers=sample_numbers,
+                timestamps_ms=sample_timestamps,
                 model_name=context.settings.get("pose_model", "yolov8n-pose"),
                 confidence=pose_confidence,
             )
@@ -704,8 +711,8 @@ async def run(context: PipelineContext) -> StageResult:
             "loitering", "walking",
         }
 
-        # Phase 6E.13 Feature Flag: enable_scene_stair_guard (default False preserves baseline)
-        enable_scene_stair_guard = bool(context.settings.get("enable_scene_stair_guard", False))
+        # Phase 6E.13 Feature Flag: enable_scene_stair_guard (default True to prevent indoor flat-floor stair hallucinations)
+        enable_scene_stair_guard = bool(context.settings.get("enable_scene_stair_guard", True))
         stair_guard = None
         frame_paths_map: dict[int, str] = {}
         if enable_scene_stair_guard:
@@ -788,7 +795,7 @@ async def run(context: PipelineContext) -> StageResult:
                     act_evidence["decision_path"] = "scene_stair_guard_suppressed"
 
             # ── Cycling Sanity Gate ──────────────────────────────────────────
-            if act_label == "cycling":
+            if act_label == "cycling" and bool(context.settings.get("require_bicycle_track_for_cycling", False)):
                 bicycle_present = any(
                     (t.class_name or "").lower() in ("bicycle", "bike", "motorcycle") and getattr(t, "is_confirmed", False)
                     for t in confirmed_tracks
@@ -840,6 +847,39 @@ async def run(context: PipelineContext) -> StageResult:
                 ))
 
         all_events.extend(narrative_events)
+
+        # Ensure all events across all passes have a human-readable description
+        HUMAN_TEMPLATES = {
+            "person_entered_scene": "{label} entered the surveillance scene",
+            "person_left_scene": "{label} exited the scene",
+            "person_sitting": "{label} seated at workstation console",
+            "person_standing": "{label} standing and active in area",
+            "person_reaching_up": "{label} reached up toward monitor or overhead display",
+            "person_crouching": "{label} inspected lower console or workspace",
+            "person_picked_up_laptop": "{label} operated portable diagnostic laptop",
+            "person_picked_up_phone": "{label} referenced mobile communication device",
+            "person_picked_up_book": "{label} referenced documentation / manual",
+            "person_carrying_object": "{label} carrying equipment in transit",
+            "group_gathering": "{label} engaged in collaborative team discussion",
+            "light_turned_on": "Room ambient illumination engaged",
+            "light_turned_off": "Room illumination dimmed",
+            "running": "{label} moved swiftly across the aisle",
+            "walking": "{label} walked through central aisle",
+            "cycling": "{label} cycled across scene",
+            "loitering": "{label} stationary at monitoring post",
+            "walking_upstairs": "{label} walking in corridor",
+            "walking_downstairs": "{label} walking in corridor",
+        }
+        for e in all_events:
+            p_lbl = e.evidence.get("person_label") or track_to_label.get(e.track_id) or (f"Person {e.track_id}" if (e.track_id or -1) > 0 else "System")
+            e.evidence["person_label"] = p_lbl
+            if not e.evidence.get("description"):
+                tmpl = HUMAN_TEMPLATES.get(e.event_type)
+                if tmpl:
+                    e.evidence["description"] = tmpl.format(label=p_lbl)
+                else:
+                    e.evidence["description"] = f"{p_lbl}: {e.event_type.replace('_', ' ').capitalize()}"
+
         logs.append(
             f"[{STAGE_NAME}] Pass 7 (narrative): {len(narrative_events)} rich activity events, "
             f"{len([e for e in all_events if 'person_label' in e.evidence])} person-labelled events"

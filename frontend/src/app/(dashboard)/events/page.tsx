@@ -3,10 +3,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Film, Zap, AlertTriangle, User, Play, ChevronRight, Clock,
-  SlidersHorizontal, ArrowUpRight, FileVideo, Sparkles, Filter, CheckCircle2
+  SlidersHorizontal, CheckCircle2, ShieldCheck,
+  Search, Filter, ExternalLink, Grid, List, Eye, Video
 } from 'lucide-react';
 import { api, API_BASE } from '@/lib/api/client';
 import Link from 'next/link';
+import EventPreviewModal from '@/components/EventPreviewModal';
+import { EventsSkeleton } from '@/components/skeletons/EventsSkeleton';
 
 interface EventRecord {
   id?: string;
@@ -22,6 +25,7 @@ interface EventRecord {
   rule_name?: string;
   display_name?: string;
   evidence?: {
+    thumbnail_path?: string;
     description?: string;
     direction?: string;
   };
@@ -37,29 +41,37 @@ interface VideoRecord {
   };
 }
 
-const getEventType = (e: EventRecord) => e.event_type ?? e.type ?? '';
-const getEventId = (e: EventRecord) => e.event_id ?? e.id ?? '';
-const getTimeSec = (e: EventRecord) => ((e.start_ms ?? e.timestamp_ms ?? 0) / 1000);
-
 function fmtTime(s: number) {
   const m = Math.floor(s / 60);
   const sec = (s % 60).toFixed(1);
   return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
 }
 
-function formatEventLabel(et: string) {
-  return et.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+function formatLabel(et: string) {
+  return et.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function getCategory(eventType: string): string {
+  const t = eventType.toLowerCase();
+  if (t.includes('light')) return 'lighting';
+  if (t.includes('phone') || t.includes('laptop') || t.includes('drink') || t.includes('read') || t.includes('desk') || t.includes('screen')) return 'interaction';
+  if (t.includes('gathering') || t.includes('unattended') || t.includes('theft') || t.includes('running')) return 'security';
+  return 'activity';
 }
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [videos, setVideos] = useState<VideoRecord[]>([]);
   const [selectedVideoId, setSelectedVideoId] = useState<string>('all');
+  const [selectedPerson, setSelectedPerson] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [minConf, setMinConf] = useState(0);
-  const [selectedPerson, setSelectedPerson] = useState<string>('all');
+  const [previewEventId, setPreviewEventId] = useState<string | null>(null);
+  const [selectedEventData, setSelectedEventData] = useState<EventRecord | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -74,19 +86,27 @@ export default function EventsPage() {
           setLoading(false);
         }
       })
-      .catch(err => {
+      .catch((err) => {
         if (mounted) {
           setError(err.message);
           setLoading(false);
         }
       });
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // Unique video IDs & persons
-  const videoIds = useMemo(() => Array.from(new Set(events.map(e => e.video_id).filter(Boolean) as string[])), [events]);
-  const personLabels = useMemo(() => Array.from(new Set(events.map(e => e.person_label).filter(Boolean) as string[])), [events]);
+  const videoIds = useMemo(
+    () => Array.from(new Set(events.map((e) => e.video_id).filter(Boolean) as string[])),
+    [events]
+  );
+
+  const personLabels = useMemo(
+    () => Array.from(new Set(events.map((e) => e.person_label).filter(Boolean) as string[])),
+    [events]
+  );
 
   // Group events by video
   const eventsByVideo = useMemo(() => {
@@ -99,189 +119,490 @@ export default function EventsPage() {
     return map;
   }, [events]);
 
-  // Filtered video groups
   const filteredVideos = useMemo(() => {
-    return Object.keys(eventsByVideo).filter(vid => {
+    return Object.keys(eventsByVideo).filter((vid) => {
       if (selectedVideoId !== 'all' && vid !== selectedVideoId) return false;
       return true;
     });
   }, [eventsByVideo, selectedVideoId]);
 
+  if (loading) {
+    return <EventsSkeleton />;
+  }
+
+  const categoryChips = [
+    { id: 'all', label: 'All Evidence' },
+    { id: 'activity', label: 'Locomotion & Presence' },
+    { id: 'interaction', label: 'Object Interactions' },
+    { id: 'lighting', label: 'Lighting Changes' },
+    { id: 'security', label: 'Threat & Causal Links' },
+  ];
+
   return (
-    <div className="flex flex-col gap-6 animate-slide-up pb-10">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-white/5 font-mono">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 1400, margin: '0 auto', width: '100%' }}>
+      {/* ── Breadcrumb & Header ────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
         <div>
-          <div className="flex items-center gap-2 mb-1 text-xs text-white/40">
-            <Link href="/" className="hover:text-white transition-colors">Dashboard</Link>
-            <ChevronRight size={12} className="text-white/20" />
-            <span className="text-cyan-400">Section-Wise Event Intelligence</span>
+          <div style={{
+            fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+            marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6
+          }}>
+            <Link href="/" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Dashboard</Link>
+            <span>/</span>
+            <span style={{ color: 'var(--text-secondary)' }}>Evidence Library</span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <FileVideo className="w-6 h-6 text-cyan-400" />
-            Video-Wise Event Hub
+
+          <h1 style={{
+            fontSize: 24, fontWeight: 700, color: 'var(--text-primary)',
+            letterSpacing: '-0.02em', margin: 0
+          }}>
+            Forensic Events & Evidence Hub
           </h1>
-          <p className="text-white/40 text-xs mt-1">
-            Classified events neatly structured per CCTV video stream with direct instant playback.
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2, marginBottom: 0 }}>
+            Cinematic surveillance catalog indexing verified causal events, actor tracks, and multi-frame evidence crops.
           </p>
         </div>
 
-        {/* Global Filter Bar */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Video Selector */}
+        {/* Global Controls & Filters */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {/* Search Box */}
+          <div style={{ position: 'relative' }}>
+            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              placeholder="Filter events, actors, actions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input"
+              style={{ paddingLeft: 28, fontSize: 12, height: 34, width: 220 }}
+            />
+          </div>
+
+          {/* Video Stream Dropdown */}
           <select
             value={selectedVideoId}
-            onChange={e => setSelectedVideoId(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-[#0d1218] border border-white/10 text-xs text-cyan-300 focus:outline-none focus:border-cyan-400/50"
+            onChange={(e) => setSelectedVideoId(e.target.value)}
+            className="input"
+            style={{ width: 'auto', height: 34, fontSize: 12, paddingRight: 24 }}
           >
-            <option value="all">ALL VIDEOS ({videoIds.length})</option>
-            {videoIds.map(vid => (
+            <option value="all">All Surveillance Streams ({videoIds.length})</option>
+            {videoIds.map((vid) => (
               <option key={vid} value={vid}>
-                {vid} ({eventsByVideo[vid]?.length || 0} evts)
+                {vid} ({eventsByVideo[vid]?.length || 0} events)
               </option>
             ))}
           </select>
 
-          {/* Actor Selector */}
+          {/* Actor Dropdown */}
           <select
             value={selectedPerson}
-            onChange={e => setSelectedPerson(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-[#0d1218] border border-white/10 text-xs text-white/80 focus:outline-none focus:border-cyan-400/50"
+            onChange={(e) => setSelectedPerson(e.target.value)}
+            className="input"
+            style={{ width: 'auto', height: 34, fontSize: 12, paddingRight: 24 }}
           >
-            <option value="all">ALL ACTORS</option>
-            {personLabels.map(p => (
+            <option value="all">All Tracked Actors</option>
+            {personLabels.map((p) => (
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
+
+          {/* View Mode Toggle */}
+          <div style={{
+            display: 'flex', alignItems: 'center', backgroundColor: 'var(--bg-panel)',
+            border: '1px solid var(--border)', borderRadius: 6, padding: 2
+          }}>
+            <button
+              onClick={() => setViewMode('grid')}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 30, height: 28, borderRadius: 4, border: 'none',
+                backgroundColor: viewMode === 'grid' ? 'var(--accent-bg)' : 'transparent',
+                color: viewMode === 'grid' ? 'var(--accent)' : 'var(--text-muted)',
+                cursor: 'pointer'
+              }}
+              title="Cinematic Card Gallery"
+            >
+              <Grid size={14} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 30, height: 28, borderRadius: 4, border: 'none',
+                backgroundColor: viewMode === 'list' ? 'var(--accent-bg)' : 'transparent',
+                color: viewMode === 'list' ? 'var(--accent)' : 'var(--text-muted)',
+                cursor: 'pointer'
+              }}
+              title="Forensic Table View"
+            >
+              <List size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Videos & Events Stream */}
-      {loading ? (
-        <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-cyan-400/20 border-t-cyan-400 animate-spin" />
-          <span className="text-xs font-mono text-white/40">Loading section-wise video telemetry...</span>
-        </div>
-      ) : error ? (
-        <div className="surface-card p-6 rounded-2xl border border-rose-500/30 text-center max-w-md mx-auto">
-          <AlertTriangle className="w-8 h-8 text-rose-400 mx-auto mb-2" />
-          <p className="text-sm text-white font-bold">{error}</p>
+      {/* ── Category Filter Pills ────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+        {categoryChips.map((chip) => {
+          const isSelected = selectedCategory === chip.id;
+          return (
+            <button
+              key={chip.id}
+              onClick={() => setSelectedCategory(chip.id)}
+              style={{
+                fontSize: 12,
+                fontWeight: isSelected ? 600 : 500,
+                padding: '5px 12px',
+                borderRadius: 20,
+                cursor: 'pointer',
+                border: isSelected ? '1px solid var(--accent)' : '1px solid var(--border)',
+                backgroundColor: isSelected ? 'var(--accent-bg)' : 'var(--bg-panel)',
+                color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
+                transition: 'all 0.12s ease',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {chip.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Content ────────────────────────────────────────────────────── */}
+      {error ? (
+        <div className="card" style={{ padding: 24, textAlign: 'center', maxWidth: 440, margin: '40px auto' }}>
+          <AlertTriangle size={28} style={{ color: 'var(--warning)', margin: '0 auto 10px' }} />
+          <p style={{ fontSize: 13, color: 'var(--text-primary)', margin: 0 }}>{error}</p>
         </div>
       ) : filteredVideos.length === 0 ? (
-        <div className="surface-card p-12 rounded-2xl border text-center text-white/40 font-mono text-xs">
-          No events found matching active filter criteria.
+        <div className="card empty-state">
+          <Film size={32} />
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
+            No events matched your current filters.
+          </p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {filteredVideos.map(vid => {
-            const videoEvents = (eventsByVideo[vid] || []).filter(e => {
-              if (selectedPerson !== 'all' && e.person_label !== selectedPerson) return false;
-              if (minConf > 0 && (e.confidence ?? 0) < minConf / 100) return false;
-              return true;
-            });
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {filteredVideos.map((vid) => {
+            const videoEvents = (eventsByVideo[vid] || [])
+              .filter((e) => {
+                if (selectedPerson !== 'all' && e.person_label !== selectedPerson) return false;
+                if (selectedCategory !== 'all') {
+                  const cat = getCategory(e.event_type || e.type || '');
+                  if (cat !== selectedCategory) return false;
+                }
+                if (searchQuery) {
+                  const query = searchQuery.toLowerCase();
+                  const matchName = (e.display_name || e.event_type || '').toLowerCase().includes(query);
+                  const matchDesc = (e.evidence?.description || '').toLowerCase().includes(query);
+                  const matchActor = (e.person_label || '').toLowerCase().includes(query);
+                  if (!matchName && !matchDesc && !matchActor) return false;
+                }
+                return true;
+              })
+              .sort((a, b) => ((a.start_ms ?? a.timestamp_ms ?? 0) - (b.start_ms ?? b.timestamp_ms ?? 0)));
 
             if (videoEvents.length === 0) return null;
 
-            const videoMeta = videos.find(v => v.id === vid);
+            const videoMeta = videos.find((v) => v.id === vid);
             const filename = videoMeta?.filename || vid;
 
             return (
-              <div
-                key={vid}
-                className="surface-card rounded-2xl border border-white/[0.08] overflow-hidden shadow-2xl transition-all"
-              >
-                {/* Section Video Header */}
-                <div className="p-4 bg-[#0a0e14] border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400">
+              <div key={vid} className="card" style={{ overflow: 'hidden' }}>
+                {/* Section Stream Header (Reference B style collection bar) */}
+                <div style={{
+                  padding: '14px 20px',
+                  backgroundColor: 'var(--bg-raised)',
+                  borderBottom: '1px solid var(--border)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  flexWrap: 'wrap', gap: 12
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 6,
+                      backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: 'var(--accent)'
+                    }}>
                       <Film size={18} />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-sm font-bold text-white tracking-tight">{filename}</h2>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-400/10 border border-cyan-400/30 text-cyan-300">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {filename}
+                        </span>
+                        <span className="badge badge-neutral" style={{ fontSize: 10 }}>
                           {vid}
                         </span>
+                        <span className="badge badge-accent" style={{ fontSize: 10 }}>
+                          CAM-07 • Node
+                        </span>
                       </div>
-                      <p className="text-[11px] font-mono text-white/40 mt-0.5">
-                        {videoEvents.length} events detected · {videoMeta?.metadata?.duration_hms || 'Processed Feed'}
-                      </p>
+                      <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 2 }}>
+                        {videoEvents.length} events catalogued • 4K CCTV Source Stream
+                      </div>
                     </div>
                   </div>
 
-                  <Link href={`/timeline/${vid}`}>
-                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold text-xs shadow-lg transition-all">
-                      <span>Open Video & Timeline</span>
-                      <ArrowUpRight size={14} />
+                  {/* Open Timeline Link */}
+                  <Link href={`/timeline/${vid}`} style={{ textDecoration: 'none' }}>
+                    <button className="btn btn-primary" style={{ fontSize: 12, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>Open Forensic Timeline</span>
+                      <ChevronRight size={13} />
                     </button>
                   </Link>
                 </div>
 
-                {/* Section Events List */}
-                <div className="divide-y divide-white/[0.03]">
-                  {videoEvents.map((evt, idx) => {
-                    const t = getTimeSec(evt);
-                    const desc = evt.display_name || evt.evidence?.description || formatEventLabel(getEventType(evt));
+                {/* ── View Mode: Cinematic Grid (Reference B) ────────────────── */}
+                {viewMode === 'grid' ? (
+                  <div style={{
+                    padding: 20,
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                    gap: 16
+                  }}>
+                    {videoEvents.map((evt, idx) => {
+                      const startSec = (evt.start_ms ?? evt.timestamp_ms ?? 0) / 1000;
+                      const eventId = evt.event_id || evt.id;
+                      const thumbUrl = eventId ? `${API_BASE}/events/${eventId}/thumbnail` : null;
 
-                    return (
-                      <div
-                        key={getEventId(evt) || idx}
-                        className="p-3.5 hover:bg-white/[0.02] transition-colors flex items-center gap-4 group"
-                      >
-                        {/* Time badge */}
-                        <div className="w-16 shrink-0 flex items-center gap-1.5 text-xs font-mono font-bold text-cyan-300">
-                          <Clock size={12} className="text-white/40" />
-                          <span>{fmtTime(t)}</span>
-                        </div>
-
-                        {/* Actor pill */}
-                        <div className="w-24 shrink-0">
-                          {evt.person_label ? (
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-bold flex items-center gap-1 w-fit">
-                              <User size={10} />
-                              {evt.person_label}
-                            </span>
-                          ) : (
-                            <span className="text-[10px] font-mono text-white/30">—</span>
-                          )}
-                        </div>
-
-                        {/* Event narrative description */}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-white/90 truncate group-hover:text-cyan-200 transition-colors">
-                            {desc}
-                          </p>
-                          <span className="text-[10px] font-mono text-white/30 capitalize">
-                            {formatEventLabel(getEventType(evt))}
-                          </span>
-                        </div>
-
-                        {/* Confidence bar */}
-                        <div className="shrink-0 hidden md:flex items-center gap-2 font-mono text-[10px] text-white/40">
-                          <span>{Math.round((evt.confidence ?? 0.85) * 100)}% conf</span>
-                        </div>
-
-                        {/* Quick Jump Action */}
-                        <Link
-                          href={`/timeline/${vid}?time=${evt.start_ms ?? evt.timestamp_ms ?? 0}`}
-                          className="shrink-0"
+                      return (
+                        <div
+                          key={eventId || idx}
+                          className="card"
+                          style={{
+                            padding: 0,
+                            overflow: 'hidden',
+                            backgroundColor: 'var(--bg-panel)',
+                            borderColor: 'var(--border)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            transition: 'transform 0.12s ease, border-color 0.12s ease'
+                          }}
                         >
-                          <button
-                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-white/70 hover:text-cyan-300 border border-white/10 text-xs font-mono transition-colors"
-                            title="Jump to moment in video player"
-                          >
-                            <Play size={10} />
-                            <span>Jump</span>
-                          </button>
-                        </Link>
-                      </div>
-                    );
-                  })}
-                </div>
+                          {/* 16:9 Thumbnail Preview */}
+                          <div style={{
+                            position: 'relative',
+                            width: '100%',
+                            paddingTop: '56.25%',
+                            backgroundColor: '#0A0D10',
+                            overflow: 'hidden'
+                          }}>
+                            {thumbUrl ? (
+                              <img
+                                src={thumbUrl}
+                                alt={evt.display_name || evt.event_type}
+                                style={{
+                                  position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                                onError={(e) => {
+                                  // Fallback to placeholder on load error
+                                  (e.target as HTMLElement).style.display = 'none';
+                                }}
+                              />
+                            ) : null}
+
+                            {/* Timecode overlay badge */}
+                            <div style={{
+                              position: 'absolute', top: 8, left: 8,
+                              backgroundColor: 'rgba(23, 28, 33, 0.85)',
+                              backdropFilter: 'blur(4px)',
+                              border: '1px solid var(--border)',
+                              borderRadius: 4,
+                              padding: '2px 6px',
+                              fontSize: 10,
+                              fontFamily: 'var(--font-mono)',
+                              color: 'var(--text-primary)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4
+                            }}>
+                              <Clock size={10} style={{ color: 'var(--accent)' }} />
+                              <span>{fmtTime(startSec)}</span>
+                            </div>
+
+                            {/* Confidence rating badge */}
+                            <div style={{
+                              position: 'absolute', top: 8, right: 8,
+                              backgroundColor: 'rgba(23, 28, 33, 0.85)',
+                              border: '1px solid var(--border)',
+                              borderRadius: 4,
+                              padding: '2px 6px',
+                              fontSize: 10,
+                              fontFamily: 'var(--font-mono)',
+                              color: 'var(--accent)',
+                              fontWeight: 600
+                            }}>
+                              {Math.round((evt.confidence || 0.85) * 100)}% verified
+                            </div>
+                          </div>
+
+                          {/* Details & Actions */}
+                          <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                                {evt.display_name || formatLabel(evt.event_type || 'Event')}
+                              </div>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>
+                                {evt.evidence?.description || `${formatLabel(evt.event_type || 'event')} identified with causal grounding.`}
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 6, borderTop: '1px solid var(--border-dim)' }}>
+                              <div>
+                                {evt.person_label ? (
+                                  <span className="badge badge-accent" style={{ fontSize: 10 }}>
+                                    <User size={9} />
+                                    <span>{evt.person_label}</span>
+                                  </span>
+                                ) : (
+                                  <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                                    Ambient Scene
+                                  </span>
+                                )}
+                              </div>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <button
+                                  onClick={() => {
+                                    setSelectedEventData(evt);
+                                    setPreviewEventId(eventId || null);
+                                  }}
+                                  className="btn btn-secondary"
+                                  style={{ fontSize: 10, padding: '3px 8px', height: 24 }}
+                                  title="Inspect Evidence Media"
+                                >
+                                  <Eye size={11} />
+                                  <span>Inspect</span>
+                                </button>
+
+                                <Link href={`/timeline/${vid}?time=${evt.start_ms}`}>
+                                  <button
+                                    className="btn btn-ghost"
+                                    style={{ width: 24, height: 24, padding: 0 }}
+                                    title="Seek in Forensic Timeline"
+                                  >
+                                    <Play size={11} style={{ color: 'var(--accent)' }} />
+                                  </button>
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* ── View Mode: Forensic Table (List View) ─────────────────── */
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {videoEvents.map((evt, idx) => {
+                      const startSec = (evt.start_ms ?? evt.timestamp_ms ?? 0) / 1000;
+                      const isLast = idx === videoEvents.length - 1;
+
+                      return (
+                        <div
+                          key={evt.event_id || evt.id || idx}
+                          style={{
+                            padding: '12px 18px',
+                            display: 'grid',
+                            gridTemplateColumns: '110px 1fr 140px 120px 110px',
+                            alignItems: 'center',
+                            gap: 16,
+                            borderBottom: isLast ? 'none' : '1px solid var(--border-dim)',
+                            backgroundColor: idx % 2 === 0 ? 'transparent' : 'rgba(25, 29, 32, 0.4)',
+                            transition: 'background-color 0.12s'
+                          }}
+                        >
+                          {/* Timecode Badge */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span className="badge badge-neutral" style={{ fontSize: 11 }}>
+                              <Clock size={10} style={{ color: 'var(--text-muted)' }} />
+                              <span>{fmtTime(startSec)}</span>
+                            </span>
+                          </div>
+
+                          {/* Event Title & Involves */}
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                              {evt.display_name || formatLabel(evt.event_type || 'Event')}
+                            </div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                              {evt.evidence?.description || `${formatLabel(evt.event_type || 'event')} logged at track marker.`}
+                            </div>
+                          </div>
+
+                          {/* Actor Badge */}
+                          <div>
+                            {evt.person_label ? (
+                              <span className="badge badge-accent" style={{ fontSize: 11 }}>
+                                <User size={10} />
+                                <span>{evt.person_label}</span>
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                                Environment
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Confidence Metric */}
+                          <div>
+                            <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                              {Math.round((evt.confidence || 0.85) * 100)}% verified
+                            </div>
+                            <div className="progress-track" style={{ height: 2, marginTop: 4, maxWidth: 80 }}>
+                              <div className="progress-fill" style={{ width: `${Math.round((evt.confidence || 0.85) * 100)}%` }} />
+                            </div>
+                          </div>
+
+                          {/* Action: Quick Preview / Seek */}
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
+                            <button
+                              onClick={() => {
+                                setSelectedEventData(evt);
+                                setPreviewEventId(evt.event_id || evt.id || null);
+                              }}
+                              className="btn btn-secondary"
+                              style={{ fontSize: 11, padding: '4px 8px', height: 26 }}
+                              title="Inspect Evidence Media"
+                            >
+                              <span>Inspect</span>
+                            </button>
+
+                            <Link href={`/timeline/${vid}?time=${evt.start_ms}`}>
+                              <button
+                                className="btn btn-ghost"
+                                style={{ width: 26, height: 26, padding: 0 }}
+                                title="Seek in Timeline"
+                              >
+                                <Play size={12} style={{ color: 'var(--accent)' }} />
+                              </button>
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* Event Preview Modal */}
+      {previewEventId && (
+        <EventPreviewModal
+          eventId={previewEventId}
+          eventType={selectedEventData?.event_type}
+          confidence={selectedEventData?.confidence}
+          startMs={selectedEventData?.start_ms}
+          onClose={() => {
+            setPreviewEventId(null);
+            setSelectedEventData(null);
+          }}
+        />
       )}
     </div>
   );

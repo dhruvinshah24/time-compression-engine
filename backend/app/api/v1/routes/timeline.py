@@ -60,13 +60,31 @@ def _categorize(event_type: str) -> str:
     return "other"
 
 
+def _normalize_media_path(path: str | None) -> str | None:
+    """Normalize local disk paths to FastAPI static web paths (/storage/ or /outputs/)."""
+    if not path:
+        return None
+    if path.startswith("http://") or path.startswith("https://"):
+        return path
+    clean = str(path).replace("\\", "/")
+    storage_idx = clean.lower().find("storage/")
+    if storage_idx != -1:
+        return "/" + clean[storage_idx:]
+    outputs_idx = clean.lower().find("outputs/")
+    if outputs_idx != -1:
+        return "/" + clean[outputs_idx:]
+    return clean if clean.startswith("/") else f"/{clean}"
+
+
 def _make_crop_url(crop_path: str | None, job_id: str) -> str | None:
     """Convert absolute crop path to a frontend-accessible full URL."""
     if not crop_path:
         return None
     try:
+        norm = _normalize_media_path(crop_path)
+        if norm and ("storage/" in norm.lower() or "outputs/" in norm.lower()):
+            return f"http://localhost:8000{norm}"
         p = Path(crop_path)
-        # Return full URL so the frontend doesn't double-prefix it
         return f"http://localhost:8000/api/v1/timeline/crops/{job_id}/{p.name}"
     except Exception:
         return None
@@ -74,7 +92,12 @@ def _make_crop_url(crop_path: str | None, job_id: str) -> str | None:
 
 def _enrich_event(evt: dict, job_id: str) -> dict:
     """Add frontend-friendly fields to an event dict."""
-    evidence = evt.get("evidence") or {}
+    evidence = dict(evt.get("evidence") or {})
+
+    # Normalize evidence media paths for static serving
+    for key in ("thumbnail_path", "before_frame_path", "event_frame_path", "after_frame_path", "clip_path"):
+        if evidence.get(key):
+            evidence[key] = _normalize_media_path(evidence[key])
 
     # Person label from evidence
     person_label = evidence.get("person_label")
@@ -86,6 +109,7 @@ def _enrich_event(evt: dict, job_id: str) -> dict:
 
     return {
         **evt,
+        "evidence": evidence,
         "person_label": person_label,
         "crop_url":     _make_crop_url(crop_path, job_id or ""),
         "display_name": display_name,
@@ -103,17 +127,20 @@ async def serve_crop(job_id: str, filename: str):
     """Serve person crop thumbnails for the frontend."""
     from app.utils.storage import get_storage_root
 
-    # Try standard upload crops path first: storage/uploads/{job_id}/crops
-    crops_dir = get_storage_root().parent / "storage" / "uploads" / job_id / "crops"
-    file_path = crops_dir / filename
-
-    if not file_path.exists():
-        # Fallback to outputs root
-        file_path = get_storage_root() / "crops" / job_id / filename
-
-    if not file_path.exists():
-        # Fallback to local processed dir
-        file_path = get_storage_root().parent / "storage" / "processed" / job_id / "crops" / filename
+    # Try standard upload crops path, user storage, and fallbacks
+    candidates = [
+        get_storage_root().parent / "storage" / "uploads" / job_id / "crops" / filename,
+        Path(r"C:\Users\USER\storage\uploads") / job_id / "crops" / filename,
+        get_storage_root() / "crops" / job_id / filename,
+        Path("outputs") / job_id / "crops" / filename,
+        Path("backend") / "outputs" / job_id / "crops" / filename,
+    ]
+    file_path = next((p for p in candidates if p.exists() and p.is_file()), None)
+    if not file_path:
+        # Fallback to search in any crops folder
+        globbed = list(Path(".").glob(f"**/crops/{filename}"))
+        if globbed:
+            file_path = globbed[0]
 
     if not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404, detail=f"Crop not found: {filename}")

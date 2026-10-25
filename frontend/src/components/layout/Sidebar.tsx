@@ -1,133 +1,156 @@
 'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Upload, Zap, BarChart3, Settings, BookOpen } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-const navItems = [
-  { name: 'Dashboard',  href: '/',           icon: LayoutDashboard },
-  { name: 'Upload',     href: '/upload',      icon: Upload },
-  { name: 'Events',     href: '/events',      icon: Zap },
-  { name: 'Analytics',  href: '/analytics',   icon: BarChart3 },
-  { name: 'Settings',   href: '/settings',    icon: Settings },
-];
+import {
+  LayoutDashboard, Clock, Zap, GitFork, Upload, BarChart3, Settings
+} from 'lucide-react';
+import { api } from '@/lib/api/client';
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [firstVideoId, setFirstVideoId] = useState<string>('VID-PHASE6-06CE78E1');
 
-  // Extract videoId from pathname for context-aware Stories link
+  useEffect(() => {
+    let mounted = true;
+    api.videos.list()
+      .then((vids) => {
+        if (mounted && Array.isArray(vids) && vids.length > 0 && vids[0]?.id) {
+          setFirstVideoId(vids[0].id);
+        }
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
   const timelineMatch = pathname.match(/\/timeline\/([^/]+)/);
   const storiesMatch  = pathname.match(/\/stories\/([^/]+)/);
   const summaryMatch  = pathname.match(/\/summary\/([^/]+)/);
-  const contextVideoId = timelineMatch?.[1] ?? storiesMatch?.[1] ?? summaryMatch?.[1] ?? 'VID-PHASE6-06CE78E1';
+  const contextVideoId = timelineMatch?.[1] ?? storiesMatch?.[1] ?? summaryMatch?.[1] ?? firstVideoId;
 
-  const getIsActive = (href: string) => {
-    if (href === '/') {
-      return pathname === '/'
-        || pathname.startsWith('/timeline')
-        || pathname.startsWith('/processing');
+  const navItems = [
+    { name: 'Dashboard',   href: '/',                           icon: LayoutDashboard },
+    { name: 'Timeline',    href: `/timeline/${contextVideoId}`, icon: Clock },
+    { name: 'Events',      href: '/events',                     icon: Zap },
+    { name: 'Story Arcs',  href: `/stories/${contextVideoId}`,  icon: GitFork },
+    { name: 'Upload',      href: '/upload',                     icon: Upload },
+    { name: 'Analytics',   href: '/analytics',                  icon: BarChart3 },
+    { name: 'Settings',    href: '/settings',                   icon: Settings },
+  ];
+
+  const prewarmData = (href: string) => {
+    try {
+      if (href === '/') {
+        api.jobs.list().catch(() => {});
+        api.analytics().catch(() => {});
+        api.events.list().catch(() => {});
+      } else if (href.startsWith('/timeline')) {
+        api.timeline(contextVideoId).catch(() => {});
+      } else if (href === '/events') {
+        api.events.list({ limit: '300' }).catch(() => {});
+        api.videos.list().catch(() => {});
+      } else if (href.startsWith('/stories')) {
+        api.stories(contextVideoId).catch(() => {});
+      } else if (href === '/analytics') {
+        api.analytics().catch(() => {});
+        api.jobs.list().catch(() => {});
+      } else if (href === '/settings') {
+        api.settings.list().catch(() => {});
+      }
+    } catch {
+      // Ignore pre-warm errors
     }
-    return pathname === href || (href !== '/' && pathname.startsWith(href));
   };
 
-  const isStoriesActive = pathname.startsWith('/stories');
+  const getIsActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    if (href.startsWith('/timeline')) return pathname.startsWith('/timeline');
+    if (href.startsWith('/stories')) return pathname.startsWith('/stories');
+    return pathname === href || pathname.startsWith(href);
+  };
 
   return (
-    <aside className="w-[260px] flex-shrink-0 bg-[#090b10]/95 backdrop-blur-2xl border-r border-white/[0.08] flex flex-col h-full relative z-20 select-none">
-      {/* Brand Header */}
-      <div className="p-6 border-b border-white/[0.06]">
-        <Link href="/" className="flex items-center gap-3.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 ring-1 ring-white/20 group-hover:scale-105 transition-transform duration-200">
-            <span className="font-extrabold text-white text-sm tracking-wider">TCE</span>
+    <aside
+      style={{
+        width: 220,
+        flexShrink: 0,
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'var(--bg-sidebar)',
+        borderRight: '1px solid var(--border)',
+        zIndex: 20,
+        userSelect: 'none',
+      }}
+    >
+      {/* Brand */}
+      <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid var(--border-dim)' }}>
+        <Link href="/" prefetch={true} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: 6,
+            backgroundColor: 'var(--accent-bg)',
+            border: '1px solid var(--accent-dim)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.05em' }}>TCE</span>
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-slate-100 text-[15px] tracking-tight group-hover:text-white transition-colors">Time Compression</span>
-            </div>
-            <p className="text-[11px] font-medium text-slate-400">Intelligence Engine</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>TCE</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>•</span>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>Engine</span>
           </div>
         </Link>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3.5 py-5 space-y-1.5 overflow-y-auto">
-        <div className="px-3 pb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-          Platform
-        </div>
-
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '16px 10px', overflowY: 'auto' }}>
         {navItems.map((item) => {
           const isActive = getIsActive(item.href);
           return (
-            <Link key={item.name} href={item.href}>
+            <Link
+              key={item.name}
+              href={item.href}
+              prefetch={true}
+              onMouseEnter={() => prewarmData(item.href)}
+              style={{ textDecoration: 'none' }}
+            >
               <div
-                className={`relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl transition-all duration-200 group ${
-                  isActive
-                    ? 'nav-pill-active font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
-                }`}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 11,
+                  padding: '9px 12px',
+                  borderRadius: 6, marginBottom: 3,
+                  backgroundColor: isActive ? 'var(--accent-bg)' : 'transparent',
+                  color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
+                  fontWeight: isActive ? 600 : 500,
+                  fontSize: 13,
+                  transition: 'background 0.12s, color 0.12s',
+                  cursor: 'pointer',
+                  border: isActive ? '1px solid rgba(98, 221, 176, 0.35)' : '1px solid transparent',
+                }}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeNavIndicator"
-                    className="absolute left-0 w-1 h-5 rounded-r-full bg-indigo-400 shadow-[0_0_12px_#818cf8]"
-                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                  />
-                )}
-                <item.icon className={`w-4 h-4 transition-colors ${isActive ? 'text-indigo-400' : 'text-slate-400 group-hover:text-slate-200'}`} />
-                <span className="text-[13px]">{item.name}</span>
-                {item.name === 'Events' && (
-                  <span className="ml-auto text-[10px] font-mono px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                    Live
-                  </span>
-                )}
+                <item.icon size={16} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.7 }} />
+                <span>{item.name}</span>
               </div>
             </Link>
           );
         })}
-
-        <div className="pt-4 px-3 pb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-          Analysis
-        </div>
-
-        {/* Stories Link */}
-        <Link href={`/stories/${contextVideoId}`}>
-          <div
-            className={`relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl transition-all duration-200 group ${
-              isStoriesActive
-                ? 'nav-pill-active font-semibold'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
-            }`}
-          >
-            {isStoriesActive && (
-              <motion.div
-                layoutId="activeNavIndicator"
-                className="absolute left-0 w-1 h-5 rounded-r-full bg-indigo-400 shadow-[0_0_12px_#818cf8]"
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-              />
-            )}
-            <BookOpen className={`w-4 h-4 transition-colors ${isStoriesActive ? 'text-indigo-400' : 'text-slate-400 group-hover:text-slate-200'}`} />
-            <span className="text-[13px]">Story Arcs</span>
-            <span className="ml-auto text-[10px] font-mono px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20">
-              Arcs
-            </span>
-          </div>
-        </Link>
       </nav>
 
-      {/* System Status Card in Footer */}
-      <div className="p-3.5 mt-auto border-t border-white/[0.06]">
-        <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] transition-colors">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-medium text-slate-300">Engine Core</span>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-[10px] font-mono text-emerald-400">READY</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
-            <span>v1.1 Intelligence</span>
-            <span>RTX 5050</span>
-          </div>
+      {/* Footer matching reference */}
+      <div style={{
+        padding: '14px 16px',
+        borderTop: '1px solid var(--border-dim)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        fontSize: 11,
+        fontFamily: 'var(--font-mono)',
+        color: 'var(--text-muted)'
+      }}>
+        <span>v2.4.1-rc</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--accent)' }} />
+          <span style={{ color: 'var(--accent)' }}>Online</span>
         </div>
       </div>
     </aside>

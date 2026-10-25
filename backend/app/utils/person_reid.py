@@ -42,9 +42,7 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-# ── Constants ──────────────────────────────────────────────────────────────────
-SIMILARITY_THRESHOLD = 0.52      # cosine sim threshold (lowered from 0.62 — same person
-                                  # from different angles scores ~0.55-0.70 on MobileNetV3)
+SIMILARITY_THRESHOLD = 0.70      # cosine sim threshold (0.70 distinguishes distinct actors reliably in CCTV while linking reappearing subjects)
 MAX_GALLERY_AGE_MS   = 300_000   # remember person for 5 min of absence (was 2 min)
 EMBEDDING_DIM_HIST   = 144       # 6 bands × 3 channels × 8 bins
 EMBEDDING_DIM_DEEP   = 576       # MobileNetV3-Small last-pool features
@@ -194,6 +192,7 @@ class GalleryEntry:
     best_crop_path: Optional[str] = None        # absolute path to saved crop JPEG
     entry_direction: Optional[str] = None       # "left", "right", "top", "bottom"
     track_ids: list[int] = field(default_factory=list)  # all track IDs assigned
+    intervals: list[tuple[float, float]] = field(default_factory=list)  # [(start_ms, end_ms)]
 
 
 # ── Person Gallery ─────────────────────────────────────────────────────────────
@@ -251,12 +250,15 @@ class PersonGallery:
                 entry = self._entries[label]
                 entry.first_seen_ms = min(entry.first_seen_ms, timestamp_ms)
                 entry.last_seen_ms = max(entry.last_seen_ms, end_ts)
+                entry.intervals.append((timestamp_ms, end_ts))
             return label
 
         embedding = self._embedder.compute(crop_bgr)
 
-        # Try to match against gallery
-        best_label, best_sim = self._find_best_match(embedding)
+        # Try to match against gallery (excluding concurrent overlapping tracks)
+        best_label, best_sim = self._find_best_match(
+            embedding, track_interval=(timestamp_ms, end_ts)
+        )
 
         if best_label is not None and best_sim >= self._threshold:
             label = best_label
@@ -268,6 +270,7 @@ class PersonGallery:
             entry.first_seen_ms = min(entry.first_seen_ms, timestamp_ms)
             entry.last_seen_ms = max(entry.last_seen_ms, end_ts)
             entry.observation_count += add_obs
+            entry.intervals.append((timestamp_ms, end_ts))
             if track_id not in entry.track_ids:
                 entry.track_ids.append(track_id)
             logger.debug(
@@ -285,6 +288,7 @@ class PersonGallery:
                 observation_count=add_obs,
                 entry_direction=entry_direction,
                 track_ids=[track_id],
+                intervals=[(timestamp_ms, end_ts)],
             )
             logger.info(
                 "[ReID] New person registered: %s (track %d, sim=%.3f)",
@@ -343,6 +347,19 @@ class PersonGallery:
                     continue
                 e2 = self._entries[l2]
 
+                # Physical reality check: do not merge tracks that were observed at the same time!
+                has_temporal_overlap = False
+                for s1, end1 in e1.intervals:
+                    for s2, end2 in e2.intervals:
+                        if min(end1, end2) - max(s1, s2) > 1000.0:
+                            has_temporal_overlap = True
+                            break
+                    if has_temporal_overlap:
+                        break
+
+                if has_temporal_overlap:
+                    continue
+
                 sim = float(np.dot(e1.embedding, e2.embedding))
                 if sim >= threshold:
                     # Merge e2 into e1
@@ -353,6 +370,7 @@ class PersonGallery:
                     e1.first_seen_ms = min(e1.first_seen_ms, e2.first_seen_ms)
                     e1.last_seen_ms = max(e1.last_seen_ms, e2.last_seen_ms)
                     e1.observation_count += e2.observation_count
+                    e1.intervals.extend(e2.intervals)
                     for tid in e2.track_ids:
                         if tid not in e1.track_ids:
                             e1.track_ids.append(tid)
@@ -369,9 +387,11 @@ class PersonGallery:
     # ── Internal ────────────────────────────────────────────────────────────
 
     def _find_best_match(
-        self, embedding: np.ndarray
+        self,
+        embedding: np.ndarray,
+        track_interval: Optional[tuple[float, float]] = None,
     ) -> tuple[Optional[str], float]:
-        """Find gallery entry with highest cosine similarity."""
+        """Find gallery entry with highest cosine similarity, excluding entries with temporal collision."""
         if not self._entries:
             return None, 0.0
 
@@ -379,6 +399,17 @@ class PersonGallery:
         best_sim: float = 0.0
 
         for label, entry in self._entries.items():
+            # Physical reality check: two people observed simultaneously cannot be the same person!
+            if track_interval is not None and entry.intervals:
+                t_start, t_end = track_interval
+                overlaps = False
+                for s, e in entry.intervals:
+                    if min(t_end, e) - max(t_start, s) > 1000.0:
+                        overlaps = True
+                        break
+                if overlaps:
+                    continue
+
             sim = float(np.dot(embedding, entry.embedding))  # both L2-normalised
             if sim > best_sim:
                 best_sim = sim

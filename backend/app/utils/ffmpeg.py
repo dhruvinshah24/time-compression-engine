@@ -36,9 +36,36 @@ class FFmpegError(RuntimeError):
     """Raised when an ffmpeg/ffprobe command exits with a non-zero code."""
 
     def __init__(self, message: str, returncode: int, stderr: str) -> None:
-        super().__init__(message)
+        clean_stderr = stderr.strip() if stderr else ""
+        full_msg = f"{message} (returncode {returncode}): {clean_stderr}" if clean_stderr else message
+        super().__init__(full_msg)
         self.returncode = returncode
         self.stderr = stderr
+
+
+_VFR_FLAG: list[str] | None = None
+
+
+def get_vfr_args() -> list[str]:
+    """
+    Return variable frame rate arguments compatible with installed FFmpeg.
+    FFmpeg >= 5.1 introduced -fps_mode and deprecated -vsync.
+    FFmpeg >= 7.0 (and 9.0+) removed -vsync entirely.
+    """
+    global _VFR_FLAG
+    if _VFR_FLAG is not None:
+        return _VFR_FLAG
+    try:
+        import re
+        res = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True, timeout=5)
+        m = re.search(r"ffmpeg version (?:n)?(\d+)", res.stdout)
+        if m and int(m.group(1)) < 5:
+            _VFR_FLAG = ["-vsync", "vfr"]
+        else:
+            _VFR_FLAG = ["-fps_mode", "vfr"]
+    except Exception:
+        _VFR_FLAG = ["-fps_mode", "vfr"]
+    return _VFR_FLAG
 
 
 class VideoCorruptedError(ValueError):
@@ -594,7 +621,7 @@ def extract_frames(
         *time_args,
         "-i", str(video_path),
         "-vf", vf,
-        "-vsync", "vfr",               # variable frame rate output (required with select filter)
+        *get_vfr_args(),               # variable frame rate output (required with select filter)
         "-frame_pts", "1",             # embed PTS in frame (for timestamp recovery)
         "-q:v", str(config.quality),   # JPEG quality
         output_pattern,
@@ -816,7 +843,7 @@ def extract_frames_by_indices(
             "ffmpeg", "-y",
             "-i", str(video_path),
             "-vf", vf,
-            "-vsync", "vfr",
+            *get_vfr_args(),
             "-q:v", str(quality),
             batch_pattern,
         ]

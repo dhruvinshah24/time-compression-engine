@@ -85,16 +85,30 @@ class PipelineOrchestrator:
 
         logger.info("[%s] Pipeline starting — %d stages", job_id, len(_STAGE_MODULES))
 
-        # Mark job as running
+        # Initialize full 12-stage state so frontend inspector has immediate visibility
+        stages_state: list[dict] = [
+            {
+                "name":        m.split(".")[-1],
+                "label":       STAGE_LABELS.get(m.split(".")[-1], m.split(".")[-1]),
+                "status":      "pending",
+                "duration_ms": None,
+                "metrics":     {},
+                "warnings":    [],
+                "errors":      [],
+            }
+            for m in _STAGE_MODULES
+        ]
+
+        # Mark job as running with stages pre-populated
         await self._job_repo.update(job_id, {
             "status": "running",
             "current_stage": "s01_upload",
+            "current_stage_label": STAGE_LABELS.get("s01_upload", "Ingest"),
             "progress": 0,
-            "stages": [],
+            "stages": stages_state,
             "logs": [],
         })
 
-        completed_stages: list[dict] = []
         all_logs: list[str] = []
 
         for i, module_path in enumerate(_STAGE_MODULES):
@@ -105,11 +119,14 @@ class PipelineOrchestrator:
             logger.info("[%s] ▶ Stage %d/%d — %s",
                         job_id, i + 1, len(_STAGE_MODULES), stage_label)
 
-            # Announce stage start in job record
+            # Mark active stage as running in the 12-stage list
+            stages_state[i]["status"] = "running"
             await self._job_repo.update(job_id, {
                 "current_stage": stage_key,
                 "current_stage_label": stage_label,
                 "progress": progress,
+                "stages": stages_state,
+                "logs": all_logs,
             })
 
             # Import and run the stage
@@ -141,27 +158,29 @@ class PipelineOrchestrator:
             for line in result.logs or []:
                 all_logs.append(line)
 
-            stage_record = {
-                "name":        stage_key,
-                "label":       stage_label,
-                "status":      "success" if result.success else "failed",
-                "duration_ms": result.duration_ms,
-                "metrics":     result.metrics or {},
-                "warnings":    result.warnings or [],
-                "errors":      result.errors or [],
-            }
-            completed_stages.append(stage_record)
+            stages_state[i]["status"] = "success" if result.success else "failed"
+            stages_state[i]["duration_ms"] = result.duration_ms
+            stages_state[i]["metrics"] = result.metrics or {}
+            stages_state[i]["warnings"] = result.warnings or []
+            stages_state[i]["errors"] = result.errors or []
+
+            progress_after = int(((i + 1) / len(_STAGE_MODULES)) * 100)
+            await self._job_repo.update(job_id, {
+                "progress": progress_after,
+                "stages": stages_state,
+                "logs": all_logs,
+            })
 
             if not result.success:
                 error_msg = "; ".join(result.errors) if result.errors else "Unknown error"
                 logger.error("[%s] ✗ Stage %s FAILED: %s", job_id, stage_key, error_msg)
                 await self._job_repo.update(job_id, {
                     "status":       "failed",
-                    "progress":     progress,
+                    "progress":     progress_after,
                     "current_stage": stage_key,
                     "failed_stage": stage_key,
                     "error":        error_msg,
-                    "stages":       completed_stages,
+                    "stages":       stages_state,
                     "logs":         all_logs,
                 })
                 return False
@@ -304,7 +323,6 @@ class PipelineOrchestrator:
         )
 
         # Persist summary / export manifest
-        summary = context.metadata.get("summary", {})
         export_manifest = context.metadata.get("export_manifest", {})
 
         video_meta = context.metadata.get("video_metadata", {})
@@ -313,11 +331,29 @@ class PipelineOrchestrator:
             else getattr(video_meta, "to_dict", lambda: {})()
         )
 
+        from app.pipeline.summary_generator import generate_executive_summary
+        summary = generate_executive_summary(
+            video_id=video_id,
+            job_id=job_id,
+            video_meta=video_meta_dict,
+            event_records=event_records,
+            person_gallery=context.metadata.get("person_gallery", {}),
+            track_to_label=context.metadata.get("track_to_label", {}),
+            export_manifest=export_manifest,
+        )
+        context.metadata["summary"] = summary
+
+        if "summary" not in export_manifest:
+            export_manifest["summary"] = {}
+        export_manifest["summary"]["compression_ratio"] = summary["compression_ratio"]
+        export_manifest["summary"]["actors_count"] = summary["actors_count"]
+        export_manifest["compression_ratio"] = summary["compression_ratio"]
+
         await self._job_repo.update(job_id, {
             "status":           "completed",
             "progress":         100,
             "current_stage":    "done",
-            "stages":           completed_stages,
+            "stages":           stages_state,
             "logs":             all_logs,
             "event_count":      len(event_records),
             "summary":          summary,

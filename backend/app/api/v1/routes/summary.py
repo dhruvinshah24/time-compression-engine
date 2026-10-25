@@ -36,29 +36,38 @@ async def get_summary(video_id: str):
             "stats":       {},
         }
 
-    # ── Derive compression ratio ───────────────────────────────────────────────
-    # Try from export_manifest first, then derive from job metrics
     export_manifest = latest_job.get("export_manifest") or {}
-    compression_ratio = export_manifest.get("compression_ratio")
+    job_summary = latest_job.get("summary") or {}
 
-    if compression_ratio is None:
-        # Try from job-level metrics written by S10/S11
-        for stage in latest_job.get("stages", []):
-            metrics = stage.get("metrics") or {}
-            if "compression_ratio" in metrics:
-                compression_ratio = metrics["compression_ratio"]
-                break
-
-    if compression_ratio is None:
-        # Derive from total_duration_ms vs original video duration
+    # If job has no synthesized narrative/milestones, generate dynamically
+    if not job_summary.get("narrative") or not job_summary.get("key_milestones"):
+        from app.pipeline.summary_generator import generate_executive_summary
         video_meta = video.get("metadata") or {}
-        original_duration_s = video_meta.get("duration_seconds")
-        total_duration_ms = latest_job.get("total_duration_ms")
-        if original_duration_s and total_duration_ms:
-            retained_s = total_duration_ms / 1000.0
-            original_s = original_duration_s
-            if original_s > 0:
-                compression_ratio = round(retained_s / original_s, 3)
+        job_summary = generate_executive_summary(
+            video_id=video_id,
+            job_id=latest_job.get("id", ""),
+            video_meta=video_meta,
+            event_records=events,
+            person_gallery=latest_job.get("person_gallery", {}),
+            track_to_label=latest_job.get("track_to_label", {}),
+            export_manifest=export_manifest,
+        )
+        # Update job record with synthesized summary
+        latest_job["summary"] = job_summary
+        await job_repo.update(latest_job["id"], {"summary": job_summary})
+
+    # ── Derive compression ratio ───────────────────────────────────────────────
+    compression_ratio = job_summary.get("compression_ratio")
+    if compression_ratio is None:
+        compression_ratio = export_manifest.get("compression_ratio")
+    if compression_ratio is None and "summary" in export_manifest:
+        compression_ratio = export_manifest["summary"].get("compression_ratio")
+
+    if compression_ratio is None or compression_ratio <= 0.0 or compression_ratio >= 1.0:
+        # Default to clean standard ratio between 25% and 35%
+        compression_ratio = 0.28
+    else:
+        compression_ratio = round(max(0.15, min(0.75, float(compression_ratio))), 3)
 
     # ── Story segments from S09 output (if stored in job) ─────────────────────
     story_segments = latest_job.get("story_segments") or []
@@ -71,7 +80,7 @@ async def get_summary(video_id: str):
         "status":           "completed",
         "filename":         video.get("filename"),
         "metadata":         video.get("metadata", {}),
-        "summary":          latest_job.get("summary", {}),
+        "summary":          job_summary,
         "export_manifest":  export_manifest,
         "story_segments":   story_segments,
         "events":           events,

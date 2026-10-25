@@ -268,7 +268,7 @@ npm install
 ### Start the Backend Service
 From the `backend/` directory:
 ```bash
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app
 ```
 - **Backend API**: `http://localhost:8000`
 - **Interactive Swagger Docs**: `http://localhost:8000/docs`

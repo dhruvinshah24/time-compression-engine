@@ -23,5 +23,5 @@ numpy>=1.26.0
 # Phase 4: Hungarian algorithm for multi-object tracking
 scipy>=1.13.0
 
-# Phase 3B: object detection (optional — system degrades gracefully without it)
-# ultralytics>=8.0.0
+# Phase 3B: object detection (REQUIRED — without this, detection falls back to stub with zero results)
+ultralytics>=8.3.0

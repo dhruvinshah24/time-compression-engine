@@ -2,12 +2,24 @@
 import logging
 import os
 from pathlib import Path
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 from app.repositories.inmemory import get_video_repo, get_job_repo
+from app.api.v1.routes.upload import upload_video
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+@router.post("/upload")
+async def upload_video_alias(
+    file: UploadFile = File(...),
+    source_domain: str = Form(default="general"),
+    model_profile: str = Form(default="accuracy"),
+):
+    """Alias for POST /api/v1/upload/ so either endpoint succeeds."""
+    return await upload_video(file=file, source_domain=source_domain, model_profile=model_profile)
+
 
 
 @router.get("/")

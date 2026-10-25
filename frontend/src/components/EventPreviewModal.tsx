@@ -1,21 +1,9 @@
 'use client';
 
-/**
- * EventPreviewModal
- *
- * Displays real event media: before frame / event frame / after frame,
- * event thumbnail, clip player, evidence chain.
- *
- * Fetches from GET /api/v1/events/{event_id}/preview
- * Images served from GET /outputs/{path} (static files)
- * Clip served from GET /api/v1/events/{event_id}/clip
- */
-
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Loader2, AlertCircle, Play, Clock, User,
-  Shield, Info, Eye, MapPin, TrendingUp, Zap, Sparkles
+  Shield, Info, Eye, MapPin, TrendingUp, Zap, CheckCircle2
 } from 'lucide-react';
 import { API_BASE } from '@/lib/api/client';
 
@@ -60,10 +48,9 @@ function formatMs(ms: number): string {
 }
 
 function formatEventType(et: string): string {
-  return et.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return et.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/** Show an image from the backend outputs static path */
 function FrameImage({
   url, label, active = false,
 }: { url: string | null; label: string; active?: boolean }) {
@@ -72,13 +59,18 @@ function FrameImage({
 
   if (!url) {
     return (
-      <div className={`flex flex-col items-center justify-center rounded-2xl border text-center p-4 transition-all
-        ${active ? 'border-indigo-500/40 surface-card shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'border-white/5 surface-inset'}`}
-        style={{ minHeight: 140 }}
+      <div
+        className="card-inset"
+        style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          minHeight: 120, padding: 12, textAlign: 'center'
+        }}
       >
-        <AlertCircle size={18} className="text-white/20 mb-2" />
-        <p className="text-xs font-semibold text-white/50">{label}</p>
-        <p className="text-[10px] font-mono text-white/25 mt-0.5">Telemetry frame pending</p>
+        <AlertCircle size={16} style={{ color: 'var(--text-muted)', marginBottom: 6 }} />
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</span>
+        <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 2 }}>
+          Frame artifact pending
+        </span>
       </div>
     );
   }
@@ -87,41 +79,53 @@ function FrameImage({
 
   if (errored) {
     return (
-      <div className={`flex flex-col items-center justify-center rounded-2xl border text-center p-4 transition-all
-        ${active ? 'border-rose-500/30 bg-rose-500/5' : 'border-white/5 surface-inset'}`}
-        style={{ minHeight: 140 }}
+      <div
+        className="card-inset"
+        style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          minHeight: 120, padding: 12, textAlign: 'center'
+        }}
       >
-        <AlertCircle size={18} className="text-rose-400/50 mb-2" />
-        <p className="text-xs font-semibold text-white/50">{label}</p>
-        <p className="text-[10px] font-mono text-rose-400/40 mt-0.5">Frame not on storage disk</p>
+        <AlertCircle size={16} style={{ color: 'var(--warning)', marginBottom: 6 }} />
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</span>
+        <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 2 }}>
+          Artifact missing
+        </span>
       </div>
     );
   }
 
   return (
-    <div className={`relative rounded-2xl overflow-hidden border transition-all
-      ${active ? 'border-indigo-500/50 ring-2 ring-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)]' : 'border-white/10'}`}
-      style={{ minHeight: 140 }}
+    <div
+      style={{
+        position: 'relative', borderRadius: 6, overflow: 'hidden',
+        border: `1px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
+        minHeight: 120, backgroundColor: '#0D1013'
+      }}
     >
-      {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center surface-inset">
-          <Loader2 size={16} className="animate-spin text-indigo-400" />
-        </div>
-      )}
       <img
         src={src}
         alt={label}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-        style={{ maxHeight: 200 }}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', maxHeight: 150 }}
         onLoad={() => setLoaded(true)}
         onError={() => setErrored(true)}
       />
-      <div className="absolute bottom-0 left-0 right-0 py-1.5 px-2.5 bg-black/75 backdrop-blur-md text-[10px] font-mono text-white/70 text-center border-t border-white/5">
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        padding: '3px 6px', backgroundColor: 'rgba(19, 22, 24, 0.85)',
+        fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
+        textAlign: 'center', borderTop: '1px solid var(--border-dim)'
+      }}>
         {label}
       </div>
       {active && (
-        <div className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-indigo-600 text-[9px] text-white font-mono font-bold shadow-[0_0_10px_rgba(99,102,241,0.5)]">
-          PEAK EVENT
+        <div style={{
+          position: 'absolute', top: 4, right: 4,
+          padding: '1px 5px', borderRadius: 3,
+          backgroundColor: 'var(--accent)', color: '#1a1f1b',
+          fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700
+        }}>
+          EVENT PEAK
         </div>
       )}
     </div>
@@ -140,179 +144,161 @@ export default function EventPreviewModal({ eventId, eventType, confidence, star
     setError(null);
 
     fetch(`${API_BASE}/events/${eventId}/preview`)
-      .then(r => {
-        if (!r.ok) throw new Error(`Preview not available (${r.status})`);
+      .then((r) => {
+        if (!r.ok) throw new Error(`Preview unavailable (${r.status})`);
         return r.json();
       })
-      .then(data => {
+      .then((data) => {
         setPreview(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setError(err.message || 'Could not load preview');
         setLoading(false);
       });
   }, [eventId]);
 
   const clipApiUrl = `${API_BASE}/events/${eventId}/clip`;
-
   const displayEventType = preview?.event_type ?? eventType ?? 'Event';
   const displayConf = preview?.confidence ?? confidence;
-  const displayMs   = preview?.event_time_ms ?? startMs ?? 0;
-  const trackLabel  = preview?.person_label ?? (preview?.track_id ? `Track ${preview.track_id}` : null);
+  const displayMs = preview?.event_time_ms ?? startMs ?? 0;
+  const trackLabel = preview?.person_label ?? (preview?.track_id ? `Track ${preview.track_id}` : null);
 
   return (
-    <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 50,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 16
+    }}>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'absolute', inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(4px)'
+        }}
+      />
+
+      {/* Modal Window */}
+      <div
+        className="card-raised"
+        style={{
+          position: 'relative', width: '100%', maxWidth: 640,
+          borderRadius: 8, overflow: 'hidden', zIndex: 10,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          display: 'flex', flexDirection: 'column'
+        }}
       >
-        {/* Backdrop */}
-        <motion.div
-          className="absolute inset-0 bg-black/80 backdrop-blur-md"
-          onClick={onClose}
-        />
-
-        {/* Modal Window */}
-        <motion.div
-          className="relative w-full max-w-2xl surface-card border rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden z-10"
-          initial={{ scale: 0.96, opacity: 0, y: 15 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.96, opacity: 0, y: 15 }}
-          transition={{ type: 'spring', stiffness: 350, damping: 32 }}
-        >
-          {/* Header */}
-          <div className="flex items-start justify-between p-5 border-b border-white/5 surface-inset">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
-                  Event Verification
-                </span>
-                <span className="text-[10px] font-mono text-white/30">{eventId}</span>
-              </div>
-              <h2 className="text-lg font-bold text-white tracking-tight">
-                {formatEventType(displayEventType)}
-              </h2>
-              <div className="flex items-center gap-3 mt-1.5 font-mono text-xs">
-                <span className="flex items-center gap-1.5 text-white/50">
-                  <Clock size={12} className="text-indigo-400" /> {formatMs(displayMs)}
-                </span>
-                {displayConf !== undefined && (
-                  <span className="flex items-center gap-1.5 text-emerald-400">
-                    <Zap size={12} /> {Math.round(displayConf * 100)}% confidence
-                  </span>
-                )}
-                {trackLabel && (
-                  <span className="flex items-center gap-1.5 text-violet-300">
-                    <User size={12} /> {trackLabel}
-                  </span>
-                )}
-              </div>
+        {/* Header */}
+        <div style={{
+          padding: '14px 18px', backgroundColor: 'var(--bg-inset)',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between'
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+              <span className="badge badge-accent" style={{ fontSize: 10 }}>
+                Verification Frame Context
+              </span>
+              <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                {eventId}
+              </span>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl surface-card border text-white/40 hover:text-white transition-colors"
-            >
-              <X size={16} />
-            </button>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+              {formatEventType(displayEventType)}
+            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, fontSize: 11, fontFamily: 'var(--font-mono)' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>TC: {formatMs(displayMs)}</span>
+              {displayConf !== undefined && (
+                <span style={{ color: 'var(--accent)' }}>
+                  {Math.round(displayConf * 100)}% verified
+                </span>
+              )}
+              {trackLabel && (
+                <span style={{ color: 'var(--text-muted)' }}>
+                  {trackLabel}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Modal Content */}
-          <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto scrollbar-thin">
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3 text-white/40">
-                <Loader2 size={24} className="animate-spin text-indigo-400" />
-                <span className="text-xs font-mono uppercase tracking-wider">Retrieving multi-frame buffer…</span>
-              </div>
-            ) : error ? (
-              <div className="space-y-4">
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <AlertCircle size={32} className="text-white/20 mb-3" />
-                  <p className="text-sm font-semibold text-white/70">{error}</p>
-                  <p className="text-xs text-white/30 mt-1 max-w-sm">
-                    Frame capture artifacts are generated during full video pipeline analysis.
-                  </p>
-                </div>
-              </div>
-            ) : preview ? (
-              <>
-                {/* Before / Peak / After Frames */}
-                <div>
-                  <p className="text-[10px] font-mono text-white/40 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <Eye size={12} className="text-indigo-400" /> Multi-Frame Verification Context
-                  </p>
-                  <div className="grid grid-cols-3 gap-3">
-                    <FrameImage url={preview.frames.before.url} label="T-Before" />
-                    <FrameImage url={preview.frames.event.url}  label="T-Event Peak" active={true} />
-                    <FrameImage url={preview.frames.after.url}  label="T-After" />
-                  </div>
-                </div>
+          <button
+            onClick={onClose}
+            className="btn btn-ghost"
+            style={{ width: 28, height: 28, padding: 0 }}
+          >
+            <X size={15} />
+          </button>
+        </div>
 
-                {/* Clip player */}
-                {clipPlaying ? (
-                  <div className="rounded-2xl overflow-hidden border border-white/10 bg-black shadow-2xl">
-                    <video
-                      controls
-                      autoPlay
-                      className="w-full"
-                      style={{ maxHeight: 240 }}
-                      onError={() => setClipPlaying(false)}
-                    >
-                      <source src={clipApiUrl} type="video/mp4" />
-                    </video>
+        {/* Modal Body */}
+        <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 16, maxHeight: '75vh', overflowY: 'auto' }}>
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: 8, color: 'var(--text-muted)' }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid var(--border)', borderTopColor: 'var(--accent)', animation: 'spin 0.8s linear infinite' }} />
+              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)' }}>Loading frame sequence...</span>
+            </div>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: '30px 0' }}>
+              <AlertCircle size={24} style={{ color: 'var(--warning)', margin: '0 auto 8px' }} />
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>{error}</p>
+            </div>
+          ) : preview ? (
+            <>
+              {/* Before / Peak / After Frames */}
+              <div>
+                <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: 8 }}>
+                  TEMPORAL EVIDENCE SEQUENCE
+                </span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  <FrameImage url={preview.frames.before.url} label="T-Before" />
+                  <FrameImage url={preview.frames.event.url} label="T-Event Peak" active={true} />
+                  <FrameImage url={preview.frames.after.url} label="T-After" />
+                </div>
+              </div>
+
+              {/* Clip Video Player or Play Trigger */}
+              {clipPlaying ? (
+                <div style={{ borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)', backgroundColor: '#000' }}>
+                  <video controls autoPlay style={{ width: '100%', maxHeight: 220 }} onError={() => setClipPlaying(false)}>
+                    <source src={clipApiUrl} type="video/mp4" />
+                  </video>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setClipPlaying(true)}
+                  className="btn btn-secondary"
+                  style={{ width: '100%', padding: '10px', fontSize: 12 }}
+                >
+                  <Play size={13} style={{ color: 'var(--accent)' }} />
+                  <span>Stream Event Video Snippet</span>
+                </button>
+              )}
+
+              {/* Evidence Metadata */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11, fontFamily: 'var(--font-mono)' }}>
+                {preview.evidence.description && (
+                  <div className="card-inset" style={{ gridColumn: 'span 2', padding: 10 }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2 }}>EVIDENCE LOG</div>
+                    <div style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', fontSize: 12, lineHeight: 1.5 }}>
+                      {preview.evidence.description}
+                    </div>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => setClipPlaying(true)}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-indigo-600/20 via-violet-600/20 to-indigo-600/20 border border-indigo-500/30 hover:border-indigo-500/60 text-indigo-300 hover:text-white transition-all text-xs font-mono font-medium shadow-[0_0_15px_rgba(99,102,241,0.15)]"
-                  >
-                    <Play size={14} className="text-indigo-400" />
-                    Stream Event Video Snippet
-                  </button>
                 )}
-
-                {/* Evidence / Telemetry */}
-                <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                  {preview.evidence.description && (
-                    <div className="col-span-2 p-3.5 rounded-xl surface-inset border border-white/5">
-                      <p className="text-white/40 uppercase tracking-wider text-[10px] mb-1 flex items-center gap-1">
-                        <Info size={10} className="text-indigo-400" /> Synthetic Narrative
-                      </p>
-                      <p className="text-white/80 font-sans text-xs">{preview.evidence.description}</p>
-                    </div>
-                  )}
-                  {preview.evidence.zone_id && (
-                    <div className="p-3.5 rounded-xl surface-inset border border-white/5">
-                      <p className="text-white/40 uppercase tracking-wider text-[10px] mb-1 flex items-center gap-1">
-                        <MapPin size={10} className="text-indigo-400" /> ROI Coordinate Zone
-                      </p>
-                      <p className="text-indigo-300 font-semibold">{preview.evidence.zone_id}</p>
-                    </div>
-                  )}
-                  {preview.evidence.direction && (
-                    <div className="p-3.5 rounded-xl surface-inset border border-white/5">
-                      <p className="text-white/40 uppercase tracking-wider text-[10px] mb-1 flex items-center gap-1">
-                        <TrendingUp size={10} className="text-indigo-400" /> Vector Direction
-                      </p>
-                      <p className="text-white/80">{preview.evidence.direction}</p>
-                    </div>
-                  )}
-                  {preview.evidence.lighting_condition && (
-                    <div className="p-3.5 rounded-xl surface-inset border border-white/5">
-                      <p className="text-white/40 uppercase tracking-wider text-[10px] mb-1 flex items-center gap-1">
-                        <Shield size={10} className="text-indigo-400" /> Scene Illumination
-                      </p>
-                      <p className="text-emerald-400 font-semibold">{preview.evidence.lighting_condition}</p>
-                    </div>
-                  )}
+                <div className="card-inset" style={{ padding: 10 }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>VECTOR DIRECTION</div>
+                  <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>{preview.evidence.direction || 'In-frame'}</div>
                 </div>
-              </>
-            ) : null}
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+                <div className="card-inset" style={{ padding: 10 }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>SCENE ILLUMINATION</div>
+                  <div style={{ color: 'var(--success)', marginTop: 2 }}>{preview.evidence.lighting_condition || 'Normal'}</div>
+                </div>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }

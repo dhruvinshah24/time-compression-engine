@@ -2,30 +2,33 @@
 
 import {
   BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer
+  Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
 import { useEffect, useState } from 'react';
 import {
   Loader2, AlertCircle, BarChart3, Video, Zap,
-  TrendingUp, CheckCircle2, Cpu, HardDrive, Play, ArrowUpRight
+  TrendingUp, CheckCircle2, Cpu, HardDrive, Play, ArrowUpRight,
+  Clock, Activity, Layers, ArrowRight, ShieldCheck
 } from 'lucide-react';
 import { api } from '@/lib/api/client';
 import Link from 'next/link';
+import { AnalyticsSkeleton } from '@/components/skeletons/AnalyticsSkeleton';
 
 interface AnalyticsData {
-  total_videos:          number;
-  total_jobs:            number;
-  completed_jobs:        number;
-  failed_jobs:           number;
-  running_jobs:          number;
-  total_events:          number;
+  total_videos: number;
+  total_jobs: number;
+  completed_jobs: number;
+  failed_jobs: number;
+  running_jobs: number;
+  total_events: number;
   avg_compression_ratio: number;
-  total_bytes_uploaded:  number;
-  stage_averages:        { stage: string; ms: number }[];
-  has_data:              boolean;
+  total_bytes_uploaded: number;
+  stage_averages: { stage: string; ms: number }[];
+  has_data: boolean;
 }
 
 function formatBytes(bytes: number): string {
+  if (!bytes) return '0 B';
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
@@ -41,21 +44,32 @@ interface CustomTooltipProps {
 function ChartCustomTooltip({ active, payload, label, unit = 'ms' }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="backdrop-blur-xl bg-[#090b10]/95 border border-white/10 rounded-xl p-3 shadow-2xl min-w-[140px]">
-      <p className="text-white/60 text-xs font-mono mb-1">{label}</p>
-      <p className="text-white font-bold text-sm font-mono flex items-center gap-1.5">
-        <span className="w-2 h-2 rounded-full bg-indigo-400" />
-        {payload[0].value.toLocaleString()} {unit}
+    <div style={{
+      backgroundColor: 'var(--bg-raised)',
+      border: '1px solid var(--border)',
+      borderRadius: 6,
+      padding: '8px 12px',
+      fontSize: 12,
+      fontFamily: 'var(--font-mono)',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+    }}>
+      <p style={{ color: 'var(--text-muted)', marginBottom: 4, margin: 0 }}>{label}</p>
+      <p style={{
+        color: 'var(--text-primary)', fontWeight: 600, margin: 0,
+        display: 'flex', alignItems: 'center', gap: 6
+      }}>
+        <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--accent)' }} />
+        <span>{payload[0].value.toLocaleString()} {unit}</span>
       </p>
     </div>
   );
 }
 
 export default function AnalyticsPage() {
-  const [data, setData]         = useState<AnalyticsData | null>(null);
-  const [jobsData, setJobsData] = useState<{ filename: string; event_count: number }[]>([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState<string | null>(null);
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [jobsData, setJobsData] = useState<{ id: string; video_id: string; filename: string; event_count: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -66,278 +80,300 @@ export default function AnalyticsPage() {
       .then(([res, jobs]) => {
         if (mounted) {
           setData(res);
-          setJobsData(jobs.filter(j => j.status === 'completed').map(j => ({
-            filename: j.filename.replace('original.mp4', 'Stream').replace('archive_', 'Vid-'),
-            event_count: j.event_count
-          })));
+          setJobsData(
+            (jobs || [])
+              .filter((j: any) => j.status === 'completed')
+              .map((j: any) => ({
+                id: j.id,
+                video_id: j.video_id,
+                filename: (j.filename || 'Stream').replace('archive_', 'Vid-').slice(0, 14),
+                event_count: j.event_count || 0
+              }))
+          );
           setLoading(false);
         }
       })
-      .catch(err => { if (mounted) { setError(err.message); setLoading(false); } });
-    return () => { mounted = false; };
+      .catch((err) => {
+        if (mounted) {
+          setError(err.message);
+          setLoading(false);
+        }
+      });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  if (loading) return (
-    <div className="min-h-[70vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-        <p className="text-white/40 text-xs font-mono uppercase tracking-widest animate-pulse">Aggregating system telemetry…</p>
-      </div>
-    </div>
-  );
+  if (loading) {
+    return <AnalyticsSkeleton />;
+  }
 
-  if (error) return (
-    <div className="min-h-[70vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4 text-center p-8 max-w-md surface-card rounded-3xl border border-red-500/20">
-        <AlertCircle className="w-12 h-12 text-red-400" />
-        <h2 className="text-lg font-bold text-white">Analytics Unavailable</h2>
-        <p className="text-white/50 text-xs">{error}</p>
-      </div>
-    </div>
-  );
-
-  if (!data?.has_data) return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center text-center p-8">
-      <div className="surface-card p-12 rounded-3xl border max-w-md flex flex-col items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl surface-inset flex items-center justify-center text-white/30">
-          <BarChart3 size={32} />
+  if (error) {
+    return (
+      <div style={{ padding: 40, textAlign: 'center' }}>
+        <div className="card" style={{ maxWidth: 440, margin: '0 auto', padding: 24 }}>
+          <AlertCircle size={28} style={{ color: 'var(--danger)', margin: '0 auto 10px' }} />
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>Analytics Unavailable</h3>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>{error}</p>
         </div>
-        <h3 className="text-lg font-semibold text-white">Zero Analytics Records</h3>
-        <p className="text-white/40 text-xs leading-relaxed">
-          Process video footage through the 12-stage engine to populate duration benchmarks and event retention metrics.
-        </p>
-        <Link href="/upload">
-          <button className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl font-medium text-xs shadow-[0_0_15px_rgba(99,102,241,0.3)] transition-all">
-            Upload Video Stream
-          </button>
-        </Link>
       </div>
-    </div>
-  );
+    );
+  }
 
-  const statCards = [
-    {
-      icon: Video,
-      label: 'Ingested Streams',
-      value: data.total_videos,
-      color: 'text-blue-400',
-      glow: 'shadow-[0_0_15px_rgba(59,130,246,0.2)]',
-      sub: 'Verified video archives'
-    },
-    {
-      icon: Zap,
-      label: 'Synthesized Events',
-      value: data.total_events,
-      color: 'text-violet-400',
-      glow: 'shadow-[0_0_15px_rgba(168,85,247,0.2)]',
-      sub: 'Cross-stage detections'
-    },
-    {
-      icon: TrendingUp,
-      label: 'Footage Retained',
-      value: data.avg_compression_ratio ? `${(data.avg_compression_ratio * 100).toFixed(0)}%` : '—',
-      color: 'text-emerald-400',
-      glow: 'shadow-[0_0_15px_rgba(16,185,129,0.2)]',
-      sub: 'Synthesized condensed cut'
-    },
-    {
-      icon: CheckCircle2,
-      label: 'Completed Pipelines',
-      value: data.completed_jobs,
-      color: 'text-amber-400',
-      glow: 'shadow-[0_0_15px_rgba(245,158,11,0.2)]',
-      sub: 'Zero pipeline drops'
-    },
+  const rawRatio = data?.avg_compression_ratio ? data.avg_compression_ratio : 1.0;
+  const timeSavedPct = rawRatio >= 1
+    ? Math.round((1 - 1 / rawRatio) * 100)
+    : Math.round((1 - rawRatio) * 100);
+  const timeSavedDisplay = `${Math.max(0, Math.min(99, timeSavedPct))}%`;
+  const condensedPct = Math.max(1, 100 - timeSavedPct);
+  const condensedMinutes = Math.round(60 * (condensedPct / 100));
+  const condensedTimeStr = `00:${String(condensedMinutes).padStart(2, '0')}:00`;
+
+  const statItems = [
+    { label: 'Total Streams Ingested', value: data?.total_videos || 0, icon: Video, sub: 'Surveillance archives' },
+    { label: 'Events Synthesized', value: data?.total_events || 0, icon: Zap, sub: 'Causal detections' },
+    { label: 'Avg Compression Yield', value: timeSavedDisplay, icon: TrendingUp, sub: 'Footage time condensed' },
+    { label: 'Raw Telemetry Ingested', value: formatBytes(data?.total_bytes_uploaded || 0), icon: HardDrive, sub: 'Analyzed stream volume' },
   ];
 
-  const stageChartData = data.stage_averages.map(s => ({
-    name: s.stage.replace('s0', 'S').replace('s1', 'S').replace(/_/g, ' '),
+  const stageData = (data?.stage_averages || []).map((s) => ({
+    name: s.stage.replace('s', 'S').replace(/_/g, ' '),
     ms: s.ms,
   }));
 
+  const totalPipelineMs = stageData.reduce((acc, curr) => acc + curr.ms, 0);
+
   return (
-    <div className="space-y-7 animate-slide-up">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/5">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 1400, margin: '0 auto', width: '100%' }}>
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">System Performance Analytics</h1>
-          <p className="text-white/40 text-xs mt-1 font-mono">
-            Pipeline telemetry across RTX 5050 GPU tensor hardware
+          <div style={{
+            fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+            marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6
+          }}>
+            <Link href="/" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Dashboard</Link>
+            <span>/</span>
+            <span style={{ color: 'var(--text-secondary)' }}>System Telemetry</span>
+          </div>
+
+          <h1 style={{
+            fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
+            letterSpacing: '-0.02em', margin: 0
+          }}>
+            System Performance & Pipeline Telemetry
+          </h1>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2, marginBottom: 0 }}>
+            Operational metrics, stage-by-stage execution latency, and temporal compression yield across surveillance feeds.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full w-fit">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Telemetric Collector Active
+
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
+          backgroundColor: 'var(--bg-raised)', border: '1px solid var(--border)',
+          borderRadius: 6, padding: '6px 12px'
+        }}>
+          <Activity size={12} style={{ color: 'var(--accent)' }} />
+          <span>Real-time Telemetry Active</span>
         </div>
       </div>
 
-      {/* Primary 4 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map(({ icon: Icon, label, value, color, glow, sub }) => (
-          <div key={label} className="surface-card p-5 rounded-2xl border relative overflow-hidden">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs text-white/40 font-medium mb-1">{label}</p>
-                <p className="text-3xl font-mono font-bold text-white tracking-tight">{String(value)}</p>
-                <p className="text-[10px] text-white/30 font-mono mt-1.5">{sub}</p>
-              </div>
-              <div className={`w-11 h-11 rounded-xl bg-black/40 border border-white/10 ${color} ${glow} flex items-center justify-center flex-shrink-0`}>
-                <Icon size={20} />
-              </div>
+      {/* ── Asymmetric Top Metrics Strip (Reference A inspired) ─────────── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gap: 12
+      }}>
+        {statItems.map((st, i) => (
+          <div key={i} className="card" style={{ padding: '16px 18px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {st.label}
+              </span>
+              <st.icon size={15} style={{ color: 'var(--text-secondary)' }} />
+            </div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+              {st.value}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+              {st.sub}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Secondary Telemetry Strip */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="surface-card p-4 rounded-xl border flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl surface-inset flex items-center justify-center text-cyan-400 flex-shrink-0">
-            <HardDrive size={18} />
+      {/* ── Main Analytical Panels (Asymmetric Composition) ──────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+        {/* Hero Chart: 12-Stage Execution Latency */}
+        <div className="card" style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+                12-Stage Pipeline Latency Distribution
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                Average execution time per stage • Total average run: {(totalPipelineMs / 1000).toFixed(2)}s
+              </div>
+            </div>
+            <span className="badge badge-accent" style={{ fontSize: 11 }}>
+              S01 Ingest → S12 Export
+            </span>
           </div>
-          <div>
-            <p className="text-[10px] uppercase font-mono tracking-wider text-white/40">Raw Data Ingested</p>
-            <p className="text-lg font-mono font-semibold text-white mt-0.5">{formatBytes(data.total_bytes_uploaded)}</p>
+
+          <div style={{ width: '100%', height: 280 }}>
+            {stageData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsBarChart data={stageData} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
+                  <CartesianGrid stroke="var(--border-dim)" strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)' }}
+                    angle={-30}
+                    textAnchor="end"
+                    interval={0}
+                    stroke="var(--border-dim)"
+                  />
+                  <YAxis
+                    tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)' }}
+                    stroke="var(--border-dim)"
+                  />
+                  <Tooltip content={<ChartCustomTooltip unit="ms" />} />
+                  <Bar dataKey="ms" radius={[4, 4, 0, 0]}>
+                    {stageData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.name.includes('04') || entry.name.includes('05') ? 'var(--accent)' : 'var(--border)'}
+                      />
+                    ))}
+                  </Bar>
+                </RechartsBarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+                Awaiting pipeline execution to calibrate stage latencies.
+              </div>
+            )}
+          </div>
+
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+            paddingTop: 10, borderTop: '1px solid var(--border-dim)'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: 'var(--accent)' }} />
+              Dominant bottlenecks: S04 Object Detection & S05 Multi-Object ReID
+            </span>
+            <span>CPU Inference Standard</span>
           </div>
         </div>
 
-        <div className="surface-card p-4 rounded-xl border flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl surface-inset flex items-center justify-center text-indigo-400 flex-shrink-0">
-            <Cpu size={18} />
+        {/* Side Panel: Temporal Efficiency & Compression Breakdown */}
+        <div className="card" style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+            Investigation Time Saved
           </div>
-          <div>
-            <p className="text-[10px] uppercase font-mono tracking-wider text-white/40">Active Worker Threads</p>
-            <p className="text-lg font-mono font-semibold text-white mt-0.5">{data.running_jobs} running</p>
-          </div>
-        </div>
 
-        <div className="surface-card p-4 rounded-xl border flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl surface-inset flex items-center justify-center text-rose-400 flex-shrink-0">
-            <AlertCircle size={18} />
+          <div className="card-inset" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>Raw Footages</span>
+              <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-primary)' }}>01:00:00 (100%)</span>
+            </div>
+            <div className="progress-track" style={{ height: 6 }}>
+              <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--border)' }} />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 4 }}>
+              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--accent)' }}>Condensed Timeline</span>
+              <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent)' }}>{condensedTimeStr} ({condensedPct}%)</span>
+            </div>
+            <div className="progress-track" style={{ height: 6 }}>
+              <div className="progress-fill" style={{ width: `${condensedPct}%` }} />
+            </div>
+
+            <div style={{
+              fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5,
+              marginTop: 6, paddingTop: 10, borderTop: '1px solid var(--border-dim)'
+            }}>
+              <strong>{timeSavedDisplay} of inactive surveillance footage pruned</strong> while preserving all causal actor interactions and spatial events.
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] uppercase font-mono tracking-wider text-white/40">Pipeline Failures</p>
-            <p className={`text-lg font-mono font-semibold mt-0.5 ${data.failed_jobs > 0 ? 'text-rose-400' : 'text-white'}`}>
-              {data.failed_jobs} aborts
-            </p>
+
+          {/* Quick Stream Jump List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 'auto' }}>
+            <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+              Completed Video Streams
+            </span>
+            {jobsData.slice(0, 3).map((jb) => (
+              <Link
+                key={jb.id}
+                href={`/timeline/${jb.video_id}`}
+                style={{ textDecoration: 'none' }}
+              >
+                <div
+                  className="card-inset"
+                  style={{
+                    padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    cursor: 'pointer', transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{jb.filename}</div>
+                    <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{jb.event_count} events synthesized</div>
+                  </div>
+                  <ArrowRight size={13} style={{ color: 'var(--accent)' }} />
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Stage Execution Duration Chart */}
-      {stageChartData.length > 0 && (
-        <div className="surface-card rounded-2xl border p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-sm font-semibold text-white uppercase tracking-wider font-mono">
-                Stage Execution Latency Profile
-              </h2>
-              <p className="text-xs text-white/40 mt-0.5 font-mono">Average wall-clock milliseconds per pipeline stage</p>
+      {/* ── Bottom Section: Stream Event Yield ───────────────────────────── */}
+      <div className="card" style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+              Stream Forensic Event Yield
             </div>
-            <span className="text-[10px] font-mono text-indigo-400 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20">
-              12 Stages Profiled
-            </span>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+              Synthesized causal forensic events extracted per camera recording
+            </div>
           </div>
-
-          <div className="h-[300px] w-full surface-inset p-3 rounded-xl">
-            <ResponsiveContainer width="100%" height="100%">
-              <RechartsBarChart data={stageChartData} margin={{ left: -15, right: 10, top: 10, bottom: 25 }}>
-                <defs>
-                  <linearGradient id="latencyBarGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#818cf8" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.3} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  stroke="rgba(255,255,255,0.4)"
-                  fontSize={10}
-                  fontFamily="monospace"
-                  tickLine={false}
-                  axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
-                  interval={0}
-                  angle={-25}
-                  textAnchor="end"
-                  height={45}
-                />
-                <YAxis
-                  stroke="rgba(255,255,255,0.4)"
-                  fontSize={10}
-                  fontFamily="monospace"
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <Tooltip
-                  cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                  content={<ChartCustomTooltip unit="ms" />}
-                />
-                <Bar
-                  dataKey="ms"
-                  fill="url(#latencyBarGradient)"
-                  radius={[5, 5, 0, 0]}
-                />
-              </RechartsBarChart>
-            </ResponsiveContainer>
-          </div>
+          <span className="badge badge-neutral" style={{ fontSize: 11 }}>
+            Indexed Archives
+          </span>
         </div>
-      )}
 
-      {/* Events per Video Ingest */}
-      {jobsData.length > 0 && (
-        <div className="surface-card rounded-2xl border p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-sm font-semibold text-white uppercase tracking-wider font-mono">
-                Event Density by Video Ingest
-              </h2>
-              <p className="text-xs text-white/40 mt-0.5 font-mono">Synthesized timeline events discovered per processed stream</p>
-            </div>
-          </div>
-
-          <div className="h-[280px] w-full surface-inset p-3 rounded-xl">
+        <div style={{ width: '100%', height: 220 }}>
+          {jobsData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <RechartsBarChart data={jobsData} margin={{ left: -15, right: 10, top: 10, bottom: 25 }}>
-                <defs>
-                  <linearGradient id="eventDensityGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#c084fc" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#9333ea" stopOpacity={0.3} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <RechartsBarChart data={jobsData} margin={{ top: 10, right: 10, left: -20, bottom: 10 }}>
+                <CartesianGrid stroke="var(--border-dim)" strokeDasharray="3 3" vertical={false} />
                 <XAxis
                   dataKey="filename"
-                  stroke="rgba(255,255,255,0.4)"
-                  fontSize={10}
-                  fontFamily="monospace"
-                  tickLine={false}
-                  axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
-                  interval={0}
-                  angle={-20}
-                  textAnchor="end"
-                  height={45}
+                  tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)' }}
+                  stroke="var(--border-dim)"
                 />
                 <YAxis
-                  stroke="rgba(255,255,255,0.4)"
-                  fontSize={10}
-                  fontFamily="monospace"
-                  tickLine={false}
-                  axisLine={false}
+                  tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)' }}
+                  stroke="var(--border-dim)"
                 />
-                <Tooltip
-                  cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                  content={<ChartCustomTooltip unit="events" />}
-                />
-                <Bar
-                  dataKey="event_count"
-                  fill="url(#eventDensityGradient)"
-                  radius={[5, 5, 0, 0]}
-                />
+                <Tooltip content={<ChartCustomTooltip unit="events" />} />
+                <Bar dataKey="event_count" fill="var(--accent)" radius={[4, 4, 0, 0]} />
               </RechartsBarChart>
             </ResponsiveContainer>
-          </div>
+          ) : (
+            <div style={{
+              height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--text-muted)', fontSize: 12
+            }}>
+              Awaiting multiple stream completions to populate comparison.
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

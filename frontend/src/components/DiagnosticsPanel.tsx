@@ -131,11 +131,13 @@ export interface DiagnosticsPanelProps {
   jobId: string;
   /** Poll interval in ms. Default 3000. Pass 0 to disable polling. */
   refreshInterval?: number;
+  onClose?: () => void;
 }
 
 export default function DiagnosticsPanel({
   jobId,
   refreshInterval = 3000,
+  onClose,
 }: DiagnosticsPanelProps) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<DiagnosticsData | null>(null);

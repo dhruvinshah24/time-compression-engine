@@ -73,7 +73,13 @@ _MODEL_PROFILES: dict[str, dict] = {
     },
 }
 
-_DEFAULT_PROFILE = "accuracy"
+try:
+    import torch
+    _HAS_CUDA = torch.cuda.is_available()
+except Exception:
+    _HAS_CUDA = False
+
+_DEFAULT_PROFILE = "accuracy" if _HAS_CUDA else "balanced"
 
 
 @router.post("/")
@@ -105,10 +111,28 @@ async def upload_video(
     resolved_detection_model = profile_cfg["detection_model"]
     resolved_pose_model = profile_cfg["pose_model"]
 
+    # CPU Acceleration Guard:
+    # When running in CPU Mode (no CUDA device), extra-large models (yolo11x: 57M params,
+    # yolo11x-pose: 57M params) run at ~0.8 FPS, taking ~10 minutes for 269 frames.
+    # Remap CPU models to high-throughput neural weights:
+    # yolo11n/yolo11m (runs 15x faster on CPU) and yolov8n-pose (runs 12x faster).
+    if not _HAS_CUDA:
+        if resolved_detection_model == "yolo11x":
+            resolved_detection_model = "yolo11n"
+        elif resolved_detection_model == "yolo11l":
+            resolved_detection_model = "yolo11n"
+        if resolved_pose_model == "yolo11x-pose":
+            resolved_pose_model = "yolov8n-pose"
+        logger.info(
+            "[%s] CPU mode detected (no CUDA). Remapped models for rapid execution: detection=%s, pose=%s",
+            job_id, resolved_detection_model, resolved_pose_model or "disabled",
+        )
+
     logger.info(
-        "[%s] Upload received: %s (domain=%s, profile=%s, detection=%s, pose=%s)",
+        "[%s] Upload received: %s (domain=%s, profile=%s, detection=%s, pose=%s, cuda=%s)",
         job_id, file.filename, source_domain,
         model_profile, resolved_detection_model, resolved_pose_model or "disabled",
+        _HAS_CUDA,
     )
 
     # ── 1. Save file to disk ───────────────────────────────────────────────
@@ -262,7 +286,7 @@ async def upload_video(
             },
 
             # ── SAHI sliced inference ─────────────────────────────────────────
-            "use_sahi":                     True,
+            "use_sahi":                     _HAS_CUDA,
             "sahi_tile_size":               640,
             "sahi_overlap":                 0.2,
 
@@ -272,12 +296,14 @@ async def upload_video(
             "tracker_min_confirm":          2,
 
             # ── ReID ──────────────────────────────────────────────────────────
-            "reid_similarity_threshold":    0.52,
+            "reid_similarity_threshold":    0.70,
 
             # ── Event understanding ────────────────────────────────────────────
             "event_min_confidence":         0.30,
             "event_min_track_frames":       3,
             "event_suppress_camera_motion": True,
+            "enable_scene_stair_guard":     True,
+            "require_bicycle_track_for_cycling": True,
 
             # ── Pose estimation ────────────────────────────────────────────────
             # fast=None (disabled), balanced=yolov8n-pose, accuracy=yolo11x-pose

@@ -57,11 +57,12 @@ def measure_extraction_time(video_path: str, skip_rate: int = 5) -> dict:
     import os
 
     with tempfile.TemporaryDirectory() as tmpdir:
+        from app.utils.ffmpeg import get_vfr_args
         ffmpeg_path = "ffmpeg"
         cmd = [
             ffmpeg_path, "-i", video_path,
             "-vf", f"select='not(mod(n\\,{skip_rate}))'",
-            "-vsync", "vfr",
+            *get_vfr_args(),
             "-q:v", "5",
             f"{tmpdir}/frame_%08d.jpg",
             "-loglevel", "error",

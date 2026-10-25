@@ -4,9 +4,10 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   FileText, Download, User, Play, Pause, SkipBack, SkipForward,
-  Maximize2, Volume2, VolumeX, ChevronDown, ChevronRight,
+  Maximize2, Volume2, VolumeX, ChevronDown, ChevronRight, ChevronLeft,
   ShieldCheck, Eye, EyeOff, Search, Layers, Clock, CheckCircle2,
-  AlertTriangle, Crosshair, Sparkles, Filter, ExternalLink, Zap
+  AlertTriangle, Crosshair, Sparkles, Filter, ExternalLink, Zap,
+  Activity, Users, Box, Radio, Video, Laptop, Tag, Info, ArrowLeft, ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { api, API_BASE, BACKEND_URL } from '@/lib/api/client';
@@ -139,6 +140,121 @@ function resolveMediaUrl(path?: string | null): string | null {
   return `${BACKEND_URL}${normalized}`;
 }
 
+// ── Dynamic Category Visual & Actor Resolution ────────────────────────────────
+
+export interface CategoryVisual {
+  name: string;
+  color: string;
+  bg: string;
+  border: string;
+  badgeBg: string;
+  glow: string;
+  iconName: 'movement' | 'workstation' | 'interaction' | 'posture' | 'presence';
+}
+
+function getEventCategoryVisual(evt?: EventRecord | null): CategoryVisual {
+  const typeLower = ((evt?.event_type || '') + ' ' + (evt?.display_name || '') + ' ' + (evt?.evidence?.description || '')).toLowerCase();
+  
+  if (typeLower.includes('walk') || typeLower.includes('run') || typeLower.includes('step') || typeLower.includes('exit') || typeLower.includes('enter') || typeLower.includes('transit')) {
+    return {
+      name: 'Transit & Movement',
+      color: '#10b981',
+      bg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.32) 0%, rgba(5, 150, 105, 0.18) 100%)',
+      border: 'rgba(16, 185, 129, 0.85)',
+      badgeBg: 'rgba(16, 185, 129, 0.22)',
+      glow: 'rgba(16, 185, 129, 0.45)',
+      iconName: 'movement'
+    };
+  }
+  if (typeLower.includes('type') || typeLower.includes('keyboard') || typeLower.includes('laptop') || typeLower.includes('monitor') || typeLower.includes('workstation') || typeLower.includes('console') || typeLower.includes('terminal')) {
+    return {
+      name: 'Workstation & Tech',
+      color: '#06b6d4',
+      bg: 'linear-gradient(135deg, rgba(6, 182, 212, 0.32) 0%, rgba(2, 132, 199, 0.18) 100%)',
+      border: 'rgba(6, 182, 212, 0.85)',
+      badgeBg: 'rgba(6, 182, 212, 0.22)',
+      glow: 'rgba(6, 182, 212, 0.45)',
+      iconName: 'workstation'
+    };
+  }
+  if (typeLower.includes('headset') || typeLower.includes('reach') || typeLower.includes('gesture') || typeLower.includes('confer') || typeLower.includes('discuss') || typeLower.includes('inspection')) {
+    return {
+      name: 'Interaction & Telemetry',
+      color: '#f59e0b',
+      bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.32) 0%, rgba(217, 119, 6, 0.18) 100%)',
+      border: 'rgba(245, 158, 11, 0.85)',
+      badgeBg: 'rgba(245, 158, 11, 0.22)',
+      glow: 'rgba(245, 158, 11, 0.45)',
+      iconName: 'interaction'
+    };
+  }
+  if (typeLower.includes('sit') || typeLower.includes('seat') || typeLower.includes('stand') || typeLower.includes('crouch')) {
+    return {
+      name: 'Posture Shift',
+      color: '#a855f7',
+      bg: 'linear-gradient(135deg, rgba(168, 85, 247, 0.32) 0%, rgba(124, 58, 237, 0.18) 100%)',
+      border: 'rgba(168, 85, 247, 0.85)',
+      badgeBg: 'rgba(168, 85, 247, 0.22)',
+      glow: 'rgba(168, 85, 247, 0.45)',
+      iconName: 'posture'
+    };
+  }
+  return {
+    name: 'Surveillance Event',
+    color: '#62ddb0',
+    bg: 'linear-gradient(135deg, rgba(98, 221, 176, 0.32) 0%, rgba(46, 160, 120, 0.18) 100%)',
+    border: 'rgba(98, 221, 176, 0.85)',
+    badgeBg: 'rgba(98, 221, 176, 0.22)',
+    glow: 'rgba(98, 221, 176, 0.45)',
+    iconName: 'presence'
+  };
+}
+
+const ACTOR_PALETTES: Record<string, { color: string; border: string; bg: string; text: string; glow: string }> = {
+  'Person 1': { color: '#10b981', border: '#10b981', bg: 'rgba(16, 185, 129, 0.20)', text: '#34d399', glow: 'rgba(16, 185, 129, 0.45)' },
+  'Person 2': { color: '#06b6d4', border: '#06b6d4', bg: 'rgba(6, 182, 212, 0.20)', text: '#38bdf8', glow: 'rgba(6, 182, 212, 0.45)' },
+  'Person 3': { color: '#f59e0b', border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.20)', text: '#fbbf24', glow: 'rgba(245, 158, 11, 0.45)' },
+  'Person 4': { color: '#ec4899', border: '#ec4899', bg: 'rgba(236, 72, 153, 0.20)', text: '#f472b6', glow: 'rgba(236, 72, 153, 0.45)' },
+  'Person 5': { color: '#a855f7', border: '#a855f7', bg: 'rgba(168, 85, 247, 0.20)', text: '#c084fc', glow: 'rgba(168, 85, 247, 0.45)' },
+  'Person 6': { color: '#6366f1', border: '#6366f1', bg: 'rgba(99, 102, 241, 0.20)', text: '#818cf8', glow: 'rgba(99, 102, 241, 0.45)' },
+};
+
+function getActorPalette(label?: string) {
+  if (label && ACTOR_PALETTES[label]) return ACTOR_PALETTES[label];
+  const keys = Object.keys(ACTOR_PALETTES);
+  let hash = 0;
+  for (let i = 0; i < (label || '').length; i++) hash += (label || '').charCodeAt(i);
+  return ACTOR_PALETTES[keys[Math.abs(hash) % keys.length]] || ACTOR_PALETTES['Person 1'];
+}
+
+function parseActorAndAction(evt?: EventRecord | null): { actorLabel: string; actionTitle: string } {
+  if (!evt) return { actorLabel: 'Actor', actionTitle: 'Ambient Scene' };
+  const raw = evt.display_name || evt.evidence?.description || evt.event_type || 'Event';
+  let actor = evt.person_label || evt.evidence?.person_label || '';
+  let action = raw;
+
+  if (raw.includes(':')) {
+    const parts = raw.split(':');
+    if (!actor && /person/i.test(parts[0])) {
+      actor = parts[0].trim();
+    }
+    action = parts.slice(1).join(':').trim();
+  } else if (/^Person\s+\d+/i.test(raw)) {
+    const match = raw.match(/^(Person\s+\d+)\s+(.*)/i);
+    if (match) {
+      if (!actor) actor = match[1];
+      action = match[2];
+    }
+  }
+
+  if (!actor) actor = 'Actor';
+  action = action.replace(/^Person\s+\d+[:\s-]*/i, '').trim();
+  if (!action) action = formatLabel(evt.event_type || 'Action');
+  action = action.charAt(0).toUpperCase() + action.slice(1);
+
+  return { actorLabel: actor, actionTitle: action };
+}
+
 
 export default function ForensicTimelinePage() {
   const params = useParams();
@@ -162,7 +278,7 @@ export default function ForensicTimelinePage() {
   const [selectedEventIndex, setSelectedEventIndex] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<'Event' | 'Actors' | 'Assets' | 'Narrative'>('Event');
   const [evidenceExpanded, setEvidenceExpanded] = useState(false);
-  const [filterMode, setFilterMode] = useState<'events' | 'actors' | 'objects'>('events');
+  const [filterMode, setFilterMode] = useState<'events' | 'actors' | 'objects'>('actors');
   const [zoomLevel, setZoomLevel] = useState<'fit' | '1x' | '2x'>('fit');
   const [assetSearch, setAssetSearch] = useState('');
 
@@ -250,6 +366,12 @@ export default function ForensicTimelinePage() {
     seekTo(currentTime + deltaSec);
   }, [currentTime, seekTo]);
 
+  // Timeline Scrubber State
+  const [hoverTime, setHoverTime] = useState<number | null>(null);
+  const [hoverEvent, setHoverEvent] = useState<EventRecord | null>(null);
+  const [isScrubbing, setIsScrubbing] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       setCurrentTime(videoRef.current.currentTime);
@@ -259,14 +381,8 @@ export default function ForensicTimelinePage() {
     }
   };
 
-  const handleTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    seekTo(pos * duration);
-  };
-
   // Find nearest event when time changes or seek to event
-  const seekToEvent = (evt: EventRecord, index?: number) => {
+  const seekToEvent = useCallback((evt: EventRecord, index?: number) => {
     const sec = (evt.start_ms ?? evt.timestamp_ms ?? 0) / 1000;
     seekTo(sec);
     if (index !== undefined) {
@@ -276,6 +392,173 @@ export default function ForensicTimelinePage() {
         (e) => (e.event_id || e.id) === (evt.event_id || evt.id)
       );
       if (idx !== -1) setSelectedEventIndex(idx);
+    }
+  }, [allEvents, seekTo]);
+
+  // Dynamic Telemetry & Active Status at currentTime
+  const activeTelemetry = useMemo(() => {
+    if (!allEvents.length) {
+      return {
+        primaryEvent: null,
+        activeEvents: [] as EventRecord[],
+        actorLabel: 'Scene Normal',
+        actionTitle: 'Surveillance Stream Monitoring',
+        category: 'presence',
+        categoryVisual: getEventCategoryVisual(null),
+        actorPalette: getActorPalette('Person 1'),
+        confidence: 0.95,
+        activeActors: [] as Person[],
+      };
+    }
+
+    const curSec = currentTime;
+    const curMs = curSec * 1000;
+
+    // 1. Direct overlapping events
+    const activeEvents = allEvents.filter((e) => {
+      const s = (e.start_ms ?? e.timestamp_ms ?? 0) / 1000;
+      const end = (e.end_ms ?? (s * 1000 + 3500)) / 1000;
+      return curSec >= s - 0.25 && curSec <= end + 0.35;
+    });
+
+    // 2. Active persons in scene
+    const activeActors = (data?.persons || []).filter(
+      (p) => curMs >= p.first_seen_ms && curMs <= p.last_seen_ms
+    );
+
+    // 3. Primary event
+    let primary: EventRecord = activeEvents[0];
+    if (!primary) {
+      // Find closest event
+      let closest = allEvents[0];
+      let minDiff = Infinity;
+      for (const e of allEvents) {
+        const s = (e.start_ms ?? e.timestamp_ms ?? 0) / 1000;
+        const diff = Math.abs(s - curSec);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closest = e;
+        }
+      }
+      primary = closest;
+    }
+
+    const parsed = parseActorAndAction(primary);
+    const catVisual = getEventCategoryVisual(primary);
+    const actPalette = getActorPalette(parsed.actorLabel);
+
+    return {
+      primaryEvent: primary,
+      activeEvents,
+      actorLabel: parsed.actorLabel,
+      actionTitle: parsed.actionTitle,
+      category: catVisual.iconName,
+      categoryVisual: catVisual,
+      actorPalette: actPalette,
+      confidence: primary?.confidence || 0.88,
+      activeActors,
+    };
+  }, [currentTime, allEvents, data]);
+
+  // Tiered non-overlapping layout for Mode 1 ("events")
+  const tieredEvents = useMemo(() => {
+    if (!allEvents.length) return { assigned: [], trackCount: 1 };
+
+    const items = allEvents.map((evt, originalIdx) => {
+      const startSec = (evt.start_ms ?? evt.timestamp_ms ?? 0) / 1000;
+      const endSec = (evt.end_ms ?? (evt.start_ms ?? 0) + 3500) / 1000;
+      return { evt, originalIdx, startSec, endSec };
+    }).sort((a, b) => a.startSec - b.startSec);
+
+    const trackEnds: number[] = [];
+    const assigned = items.map((item) => {
+      let placedTrack = -1;
+      for (let t = 0; t < trackEnds.length; t++) {
+        if (trackEnds[t] <= item.startSec + 0.15) {
+          placedTrack = t;
+          trackEnds[t] = Math.max(item.endSec, item.startSec + 2.5);
+          break;
+        }
+      }
+      if (placedTrack === -1) {
+        placedTrack = trackEnds.length;
+        trackEnds.push(Math.max(item.endSec, item.startSec + 2.5));
+      }
+      return { ...item, track: placedTrack };
+    });
+
+    return { assigned, trackCount: Math.max(1, trackEnds.length) };
+  }, [allEvents]);
+
+  // Step event navigation
+  const goToPrevEvent = useCallback(() => {
+    if (!allEvents.length) return;
+    const curSec = currentTime;
+    const prev = [...allEvents].reverse().find(
+      (e) => (e.start_ms ?? e.timestamp_ms ?? 0) / 1000 < curSec - 0.5
+    );
+    if (prev) {
+      seekToEvent(prev);
+    } else {
+      seekToEvent(allEvents[0], 0);
+    }
+  }, [allEvents, currentTime, seekToEvent]);
+
+  const goToNextEvent = useCallback(() => {
+    if (!allEvents.length) return;
+    const curSec = currentTime;
+    const next = allEvents.find(
+      (e) => (e.start_ms ?? e.timestamp_ms ?? 0) / 1000 > curSec + 0.5
+    );
+    if (next) {
+      seekToEvent(next);
+    }
+  }, [allEvents, currentTime, seekToEvent]);
+
+  // Scrubber Pointer Handlers
+  const getTrackSeekPos = (clientX: number, target: HTMLElement) => {
+    const rect = target.getBoundingClientRect();
+    const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return pos * duration;
+  };
+
+  const handleTrackPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsScrubbing(true);
+    const sec = getTrackSeekPos(e.clientX, e.currentTarget);
+    seekTo(sec);
+  };
+
+  const handleTrackPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const sec = getTrackSeekPos(e.clientX, e.currentTarget);
+    setHoverTime(sec);
+
+    const curMs = sec * 1000;
+    const nearest = allEvents.find((evt) => {
+      const s = evt.start_ms ?? evt.timestamp_ms ?? 0;
+      const end = evt.end_ms ?? (s + 3500);
+      return curMs >= s - 400 && curMs <= end + 400;
+    }) || null;
+    setHoverEvent(nearest);
+
+    if (isScrubbing) {
+      seekTo(sec);
+    }
+  };
+
+  const handleTrackPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isScrubbing) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {}
+      setIsScrubbing(false);
+    }
+  };
+
+  const handleTrackPointerLeave = () => {
+    if (!isScrubbing) {
+      setHoverTime(null);
+      setHoverEvent(null);
     }
   };
 
@@ -462,7 +745,7 @@ export default function ForensicTimelinePage() {
               position: 'relative',
               width: '100%',
               aspectRatio: '16/9',
-              maxHeight: 520,
+              maxHeight: 'min(410px, 46vh)',
               backgroundColor: '#0D1013',
               overflow: 'hidden',
               display: 'flex',
@@ -696,211 +979,711 @@ export default function ForensicTimelinePage() {
             </div>
           </div>
 
-          {/* 2. Timeline Track Section (Below Video) */}
-          <div className="card" style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {/* Header: Left Filter Pills, Right Zoom Controls */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              {/* Left Filter Pills */}
+          {/* 2. Enhanced Multi-Layer Forensic Timeline Track Section */}
+          <div className="card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Header: Left Filter Pills, Center Live Activity Ticker, Right Navigation & Zoom */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+              {/* Left View Filter Mode Tabs */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <button
                   onClick={() => setFilterMode('events')}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '3px 8px', borderRadius: 4, fontSize: 11, fontFamily: 'var(--font-mono)',
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '4px 10px', borderRadius: 5, fontSize: 11, fontFamily: 'var(--font-mono)',
                     backgroundColor: filterMode === 'events' ? 'var(--accent-bg)' : 'var(--bg-raised)',
-                    border: `1px solid ${filterMode === 'events' ? 'var(--accent-dim)' : 'var(--border-dim)'}`,
+                    border: `1px solid ${filterMode === 'events' ? 'var(--accent)' : 'var(--border-dim)'}`,
                     color: filterMode === 'events' ? 'var(--accent)' : 'var(--text-secondary)',
-                    cursor: 'pointer'
+                    boxShadow: filterMode === 'events' ? '0 0 10px rgba(98, 221, 176, 0.25)' : 'none',
+                    cursor: 'pointer', transition: 'all 0.15s ease'
                   }}
                 >
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: 'var(--accent)' }} />
-                  <span>Events</span>
-                  <span style={{ color: 'var(--text-muted)' }}>{allEvents.length}</span>
+                  <Activity size={12} style={{ color: filterMode === 'events' ? 'var(--accent)' : 'var(--text-muted)' }} />
+                  <span style={{ fontWeight: 600 }}>Events</span>
+                  <span style={{
+                    fontSize: 10, padding: '1px 5px', borderRadius: 10,
+                    backgroundColor: filterMode === 'events' ? 'var(--accent)' : 'var(--bg-inset)',
+                    color: filterMode === 'events' ? '#0D1013' : 'var(--text-muted)',
+                    fontWeight: 700
+                  }}>
+                    {allEvents.length}
+                  </span>
                 </button>
 
                 <button
                   onClick={() => setFilterMode('actors')}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '3px 8px', borderRadius: 4, fontSize: 11, fontFamily: 'var(--font-mono)',
-                    backgroundColor: filterMode === 'actors' ? 'var(--accent-bg)' : 'var(--bg-raised)',
-                    border: `1px solid ${filterMode === 'actors' ? 'var(--accent-dim)' : 'var(--border-dim)'}`,
-                    color: filterMode === 'actors' ? 'var(--accent)' : 'var(--text-secondary)',
-                    cursor: 'pointer'
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '4px 10px', borderRadius: 5, fontSize: 11, fontFamily: 'var(--font-mono)',
+                    backgroundColor: filterMode === 'actors' ? 'rgba(6, 182, 212, 0.15)' : 'var(--bg-raised)',
+                    border: `1px solid ${filterMode === 'actors' ? '#06b6d4' : 'var(--border-dim)'}`,
+                    color: filterMode === 'actors' ? '#38bdf8' : 'var(--text-secondary)',
+                    boxShadow: filterMode === 'actors' ? '0 0 10px rgba(6, 182, 212, 0.25)' : 'none',
+                    cursor: 'pointer', transition: 'all 0.15s ease'
                   }}
                 >
-                  <span>Actors</span>
-                  <span style={{ color: 'var(--text-muted)' }}>{data.persons.length}</span>
+                  <Users size={12} style={{ color: filterMode === 'actors' ? '#38bdf8' : 'var(--text-muted)' }} />
+                  <span style={{ fontWeight: 600 }}>Actor Swimlanes</span>
+                  <span style={{
+                    fontSize: 10, padding: '1px 5px', borderRadius: 10,
+                    backgroundColor: filterMode === 'actors' ? '#06b6d4' : 'var(--bg-inset)',
+                    color: filterMode === 'actors' ? '#0D1013' : 'var(--text-muted)',
+                    fontWeight: 700
+                  }}>
+                    {data.persons.length}
+                  </span>
                 </button>
 
                 <button
                   onClick={() => setFilterMode('objects')}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '3px 8px', borderRadius: 4, fontSize: 11, fontFamily: 'var(--font-mono)',
-                    backgroundColor: filterMode === 'objects' ? 'var(--accent-bg)' : 'var(--bg-raised)',
-                    border: `1px solid ${filterMode === 'objects' ? 'var(--accent-dim)' : 'var(--border-dim)'}`,
-                    color: filterMode === 'objects' ? 'var(--accent)' : 'var(--text-secondary)',
-                    cursor: 'pointer'
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '4px 10px', borderRadius: 5, fontSize: 11, fontFamily: 'var(--font-mono)',
+                    backgroundColor: filterMode === 'objects' ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-raised)',
+                    border: `1px solid ${filterMode === 'objects' ? '#f59e0b' : 'var(--border-dim)'}`,
+                    color: filterMode === 'objects' ? '#fbbf24' : 'var(--text-secondary)',
+                    boxShadow: filterMode === 'objects' ? '0 0 10px rgba(245, 158, 11, 0.25)' : 'none',
+                    cursor: 'pointer', transition: 'all 0.15s ease'
                   }}
                 >
-                  <span>Objects</span>
-                  <span style={{ color: 'var(--text-muted)' }}>{data.detected_objects.length}</span>
+                  <Box size={12} style={{ color: filterMode === 'objects' ? '#fbbf24' : 'var(--text-muted)' }} />
+                  <span style={{ fontWeight: 600 }}>Objects</span>
+                  <span style={{
+                    fontSize: 10, padding: '1px 5px', borderRadius: 10,
+                    backgroundColor: filterMode === 'objects' ? '#f59e0b' : 'var(--bg-inset)',
+                    color: filterMode === 'objects' ? '#0D1013' : 'var(--text-muted)',
+                    fontWeight: 700
+                  }}>
+                    {data.detected_objects.length}
+                  </span>
                 </button>
               </div>
 
-              {/* Right Zoom Controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                {(['Fit', '1x'] as const).map((z) => (
+              {/* Center Live Forensic Activity Ticker Pill (Real-Time Dynamic Telemetry) */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '4px 12px', borderRadius: 20,
+                backgroundColor: 'var(--bg-inset)',
+                border: `1px solid ${activeTelemetry.categoryVisual.border}`,
+                boxShadow: `0 0 12px ${activeTelemetry.categoryVisual.glow}`,
+                fontSize: 11, fontFamily: 'var(--font-mono)',
+                maxWidth: 440, overflow: 'hidden'
+              }}>
+                <span style={{
+                  width: 7, height: 7, borderRadius: '50%',
+                  backgroundColor: activeTelemetry.categoryVisual.color,
+                  boxShadow: `0 0 6px ${activeTelemetry.categoryVisual.color}`,
+                  animation: isPlaying ? 'pulse 1.2s infinite' : 'none',
+                  flexShrink: 0
+                }} />
+                <span style={{ color: 'var(--text-muted)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Live Telemetry:
+                </span>
+                <span style={{
+                  padding: '1px 6px', borderRadius: 3,
+                  backgroundColor: activeTelemetry.actorPalette.bg,
+                  border: `1px solid ${activeTelemetry.actorPalette.border}`,
+                  color: activeTelemetry.actorPalette.text,
+                  fontWeight: 700, fontSize: 10, flexShrink: 0
+                }}>
+                  {activeTelemetry.actorLabel}
+                </span>
+                <span style={{
+                  color: 'var(--text-primary)', fontWeight: 600,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                }}>
+                  {activeTelemetry.actionTitle}
+                </span>
+                <span style={{
+                  fontSize: 9, padding: '1px 5px', borderRadius: 3,
+                  backgroundColor: activeTelemetry.categoryVisual.badgeBg,
+                  color: activeTelemetry.categoryVisual.color,
+                  fontWeight: 700, flexShrink: 0
+                }}>
+                  {Math.round(activeTelemetry.confidence * 100)}%
+                </span>
+              </div>
+
+              {/* Right Event Step Buttons & Zoom Controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {/* Previous / Next Event Buttons */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <button
-                    key={z}
-                    onClick={() => setZoomLevel(z.toLowerCase() as any)}
+                    onClick={goToPrevEvent}
+                    title="Jump to previous forensic event"
                     className="btn btn-secondary"
-                    style={{
-                      fontSize: 11, fontFamily: 'var(--font-mono)', padding: '2px 7px', height: 22,
-                      backgroundColor: zoomLevel === z.toLowerCase() ? 'var(--accent-bg)' : undefined,
-                      color: zoomLevel === z.toLowerCase() ? 'var(--accent)' : undefined,
-                    }}
+                    style={{ height: 26, padding: '0 8px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}
                   >
-                    {z}
+                    <ChevronLeft size={13} />
+                    <span>Prev</span>
                   </button>
-                ))}
-                <button
-                  onClick={() => setZoomLevel('fit')}
-                  className="btn btn-secondary"
-                  style={{ width: 22, height: 22, padding: 0, fontSize: 12 }}
-                >
-                  -
-                </button>
-                <button
-                  onClick={() => setZoomLevel('2x')}
-                  className="btn btn-secondary"
-                  style={{ width: 22, height: 22, padding: 0, fontSize: 12 }}
-                >
-                  +
-                </button>
+                  <button
+                    onClick={goToNextEvent}
+                    title="Jump to next forensic event"
+                    className="btn btn-secondary"
+                    style={{ height: 26, padding: '0 8px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <span>Next</span>
+                    <ChevronRight size={13} />
+                  </button>
+                </div>
+
+                {/* Zoom Controls */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3, paddingLeft: 6, borderLeft: '1px solid var(--border-dim)' }}>
+                  {(['Fit', '1x', '2x'] as const).map((z) => {
+                    const active = zoomLevel === z.toLowerCase();
+                    return (
+                      <button
+                        key={z}
+                        onClick={() => setZoomLevel(z.toLowerCase() as any)}
+                        className="btn btn-secondary"
+                        style={{
+                          fontSize: 10, fontFamily: 'var(--font-mono)', padding: '2px 8px', height: 24,
+                          backgroundColor: active ? 'var(--accent-bg)' : undefined,
+                          borderColor: active ? 'var(--accent)' : undefined,
+                          color: active ? 'var(--accent)' : undefined,
+                          fontWeight: active ? 700 : 500
+                        }}
+                      >
+                        {z}
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() => {
+                      if (zoomLevel === '2x') setZoomLevel('1x');
+                      else if (zoomLevel === '1x') setZoomLevel('fit');
+                    }}
+                    className="btn btn-secondary"
+                    style={{ width: 24, height: 24, padding: 0, fontSize: 12 }}
+                    title="Zoom out"
+                  >
+                    -
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (zoomLevel === 'fit') setZoomLevel('1x');
+                      else if (zoomLevel === '1x') setZoomLevel('2x');
+                    }}
+                    className="btn btn-secondary"
+                    style={{ width: 24, height: 24, padding: 0, fontSize: 12 }}
+                    title="Zoom in"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Time Ruler */}
+            {/* Time Ruler with Division Markers */}
             <div style={{
               display: 'flex', justifyContent: 'space-between',
               fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
-              padding: '0 2px', userSelect: 'none'
+              padding: '0 4px', userSelect: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)',
+              paddingBottom: 4
             }}>
-              {rulerTicks.map((t, idx) => (
-                <span key={idx}>{fmtSecOnly(t)}</span>
+              {[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0].map((pct, idx) => (
+                <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <span>{fmtSecOnly(pct * duration)}</span>
+                  <div style={{ width: 1, height: 4, backgroundColor: 'var(--border-dim)' }} />
+                </div>
               ))}
             </div>
 
-            {/* Interactive Timeline Track */}
-            <div
-              onClick={handleTrackClick}
-              style={{
-                position: 'relative',
-                height: 72,
-                backgroundColor: 'var(--bg-inset)',
-                border: '1px solid var(--border-dim)',
-                borderRadius: 6,
-                cursor: 'pointer',
-                overflow: 'hidden',
-                userSelect: 'none'
-              }}
-            >
-              {/* Subtle background grid lines */}
-              <div style={{
-                position: 'absolute', inset: 0,
-                backgroundImage: 'linear-gradient(to right, rgba(52, 60, 66, 0.25) 1px, transparent 1px)',
-                backgroundSize: '20% 100%',
-                pointerEvents: 'none'
-              }} />
-
-              {/* Event Markers / Capsules on Track */}
-              {allEvents.map((evt, idx) => {
-                const start = ((evt.start_ms ?? evt.timestamp_ms ?? 0) / 1000) / duration;
-                const end = ((evt.end_ms ?? (evt.start_ms ?? 0) + 4000) / 1000) / duration;
-                const width = Math.max(0.015, end - start);
-                const isSelected = selectedEventIndex === idx;
-
-                return (
-                  <div
-                    key={evt.event_id || evt.id || idx}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      seekToEvent(evt, idx);
-                    }}
-                    title={`${evt.display_name || formatLabel(evt.event_type || '')} (${fmtTimecode((evt.start_ms ?? 0) / 1000)})`}
-                    style={{
-                      position: 'absolute',
-                      left: `${start * 100}%`,
-                      top: 18,
-                      width: `${Math.max(1, width * 100)}%`,
-                      minWidth: 4,
-                      height: 36,
-                      borderRadius: 3,
-                      backgroundColor: isSelected
-                        ? 'rgba(173, 185, 162, 0.45)'
-                        : 'rgba(52, 60, 66, 0.8)',
-                      border: `1px solid ${isSelected ? 'var(--accent)' : 'rgba(129, 138, 139, 0.4)'}`,
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                      zIndex: isSelected ? 5 : 2
-                    }}
-                  />
-                );
-              })}
-
-              {/* Playhead Needle & Selected Event Pill */}
+            {/* Scrollable Track Wrapper (Expands when zoomed) */}
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              overflowX: zoomLevel !== 'fit' ? 'auto' : 'hidden',
+              overflowY: 'hidden',
+              borderRadius: 6
+            }}>
+              {/* Interactive Timeline Track Surface */}
               <div
+                ref={trackRef}
+                onPointerDown={handleTrackPointerDown}
+                onPointerMove={handleTrackPointerMove}
+                onPointerUp={handleTrackPointerUp}
+                onPointerLeave={handleTrackPointerLeave}
                 style={{
-                  position: 'absolute',
-                  left: `${(currentTime / duration) * 100}%`,
-                  top: 0, bottom: 0,
-                  width: 2,
-                  backgroundColor: 'var(--accent)',
-                  pointerEvents: 'none',
-                  zIndex: 8,
-                  transition: 'left 0.05s linear'
+                  position: 'relative',
+                  width: zoomLevel === '2x' ? '250%' : zoomLevel === '1x' ? '150%' : '100%',
+                  minHeight: filterMode === 'actors'
+                    ? (data.persons.length * 36 + 18)
+                    : filterMode === 'events'
+                    ? (tieredEvents.trackCount * 32 + 20)
+                    : (data.detected_objects.length * 28 + 20),
+                  backgroundColor: 'var(--bg-inset)',
+                  border: '1px solid var(--border-dim)',
+                  borderRadius: 6,
+                  cursor: isScrubbing ? 'grabbing' : 'crosshair',
+                  userSelect: 'none',
+                  transition: 'background-color 0.15s'
                 }}
               >
-                {/* Needle Top Pin */}
+                {/* Subtle vertical millisecond grid lines */}
                 <div style={{
-                  position: 'absolute', top: 0, left: -4,
-                  width: 10, height: 6,
-                  backgroundColor: 'var(--accent)',
-                  clipPath: 'polygon(0 0, 100% 0, 50% 100%)'
+                  position: 'absolute', inset: 0,
+                  backgroundImage: 'linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px)',
+                  backgroundSize: '10% 100%',
+                  pointerEvents: 'none'
                 }} />
 
-                {/* Selected Event Tag Capsule (Matching Screenshot: [04:42 Collab]) */}
-                {selectedEvent && (
+                {/* ── VIEW MODE 1: ALL EVENTS SMART TIERED NON-OVERLAPPING TRACKS ─── */}
+                {filterMode === 'events' && (
                   <div style={{
-                    position: 'absolute',
-                    top: 24,
-                    left: 6,
-                    padding: '2px 6px',
-                    borderRadius: 4,
-                    backgroundColor: 'var(--bg-panel)',
-                    border: '1px solid var(--accent)',
-                    color: 'var(--accent)',
-                    fontSize: 10,
-                    fontFamily: 'var(--font-mono)',
-                    whiteSpace: 'nowrap',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-                    pointerEvents: 'none'
+                    position: 'relative',
+                    width: '100%',
+                    height: Math.max(100, tieredEvents.trackCount * 32 + 16),
+                    padding: '8px 4px'
                   }}>
-                    {fmtSecOnly(eventStartSec)} {formatLabel(selectedEvent.event_type || 'Event').slice(0, 8)}
+                    {/* Background lane strips */}
+                    {Array.from({ length: tieredEvents.trackCount }).map((_, laneIdx) => (
+                      <div
+                        key={`lane-${laneIdx}`}
+                        style={{
+                          position: 'absolute',
+                          left: 0, right: 0,
+                          top: 8 + laneIdx * 32,
+                          height: 28,
+                          backgroundColor: laneIdx % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.18)',
+                          borderRadius: 4,
+                          border: '1px dashed rgba(255,255,255,0.04)',
+                          pointerEvents: 'none'
+                        }}
+                      />
+                    ))}
+
+                    {tieredEvents.assigned.map((item) => {
+                      const { evt, originalIdx, startSec, endSec, track } = item;
+                      const startPct = (startSec / duration) * 100;
+                      const rawWidthPct = ((endSec - startSec) / duration) * 100;
+                      const widthPct = Math.max(2.5, rawWidthPct);
+
+                      const isSelected = selectedEventIndex === originalIdx;
+                      const isCurrentActive = (currentTime >= startSec - 0.25 && currentTime <= endSec + 0.25);
+                      const cat = getEventCategoryVisual(evt);
+                      const parsed = parseActorAndAction(evt);
+                      const actPalette = getActorPalette(parsed.actorLabel);
+
+                      return (
+                        <div
+                          key={evt.event_id || evt.id || originalIdx}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            seekToEvent(evt, originalIdx);
+                          }}
+                          title={`${parsed.actorLabel}: ${parsed.actionTitle} (${fmtTimecode(startSec)} - ${fmtTimecode(endSec)})`}
+                          style={{
+                            position: 'absolute',
+                            left: `${startPct}%`,
+                            top: 8 + track * 32,
+                            width: `${widthPct}%`,
+                            height: 28,
+                            borderRadius: 5,
+                            background: isCurrentActive
+                              ? `linear-gradient(90deg, ${cat.bg}, ${actPalette.bg})`
+                              : cat.bg,
+                            border: `1.5px solid ${isCurrentActive || isSelected ? cat.color : cat.border}`,
+                            boxShadow: isCurrentActive
+                              ? `0 0 14px ${cat.glow}, inset 0 0 6px ${cat.glow}`
+                              : isSelected
+                              ? `0 0 10px ${cat.glow}`
+                              : '0 1px 4px rgba(0,0,0,0.3)',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            zIndex: isCurrentActive ? 6 : isSelected ? 5 : 2,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 5,
+                            padding: '0 6px',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          {/* Actor Badge */}
+                          <span style={{
+                            padding: '1px 5px', borderRadius: 3,
+                            backgroundColor: actPalette.bg,
+                            border: `1px solid ${actPalette.border}`,
+                            color: actPalette.text,
+                            fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700,
+                            whiteSpace: 'nowrap', flexShrink: 0
+                          }}>
+                            {parsed.actorLabel.replace(/^Person\s+/i, 'P')}
+                          </span>
+
+                          {/* Action Title */}
+                          <span style={{
+                            fontSize: 10, fontFamily: 'var(--font-sans)', fontWeight: 600,
+                            color: isCurrentActive ? '#FFFFFF' : 'var(--text-primary)',
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                            flex: 1
+                          }}>
+                            {parsed.actionTitle}
+                          </span>
+
+                          {/* Time Stamp */}
+                          {widthPct > 6 && (
+                            <span style={{
+                              fontSize: 8, fontFamily: 'var(--font-mono)',
+                              color: isCurrentActive ? cat.color : 'var(--text-muted)',
+                              flexShrink: 0
+                            }}>
+                              {fmtSecOnly(startSec)}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
+
+                {/* ── VIEW MODE 2: MULTI-TRACK ACTOR SWIMLANES ───────── */}
+                {filterMode === 'actors' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 10px' }}>
+                    {data.persons.map((person, pIdx) => {
+                      const pal = getActorPalette(person.person_label);
+                      const isActorPresentNow = (currentTime * 1000) >= person.first_seen_ms && (currentTime * 1000) <= person.last_seen_ms;
+                      const actorEvents = allEvents.filter(
+                        (e) => (e.person_label === person.person_label || e.evidence?.person_label === person.person_label)
+                      );
+                      const presStartPct = (person.first_seen_ms / 1000 / duration) * 100;
+                      const presEndPct = (person.last_seen_ms / 1000 / duration) * 100;
+                      const presWidthPct = Math.max(2, presEndPct - presStartPct);
+
+                      return (
+                        <div
+                          key={person.person_label || pIdx}
+                          style={{
+                            position: 'relative',
+                            height: 28,
+                            backgroundColor: isActorPresentNow ? 'rgba(255,255,255,0.03)' : 'transparent',
+                            borderRadius: 4,
+                            border: `1px solid ${isActorPresentNow ? pal.border : 'rgba(255,255,255,0.04)'}`,
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}
+                        >
+                          {/* Actor Label Chip Pinned to Left */}
+                          <div style={{
+                            position: 'sticky', left: 0, zIndex: 7,
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            padding: '2px 8px', borderRadius: 4,
+                            backgroundColor: 'rgba(15, 23, 20, 0.92)',
+                            borderRight: `2px solid ${pal.border}`,
+                            width: 140, flexShrink: 0
+                          }}>
+                            <span style={{
+                              width: 6, height: 6, borderRadius: '50%',
+                              backgroundColor: pal.color,
+                              boxShadow: isActorPresentNow ? `0 0 6px ${pal.color}` : 'none',
+                              animation: isActorPresentNow ? 'pulse 1.2s infinite' : 'none'
+                            }} />
+                            <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: pal.text }}>
+                              {person.person_label}
+                            </span>
+                            <span style={{ fontSize: 9, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {isActorPresentNow ? 'ACTIVE' : `${actorEvents.length} evts`}
+                            </span>
+                          </div>
+
+                          {/* Actor Scene Presence Bar */}
+                          <div style={{
+                            position: 'absolute',
+                            left: `${presStartPct}%`,
+                            width: `${presWidthPct}%`,
+                            height: 18,
+                            borderRadius: 3,
+                            backgroundColor: pal.bg,
+                            border: `1px dashed ${pal.border}80`,
+                            pointerEvents: 'none',
+                            zIndex: 1
+                          }} />
+
+                          {/* Specific Action Capsules for this Actor */}
+                          {actorEvents.map((evt, eIdx) => {
+                            const eStartSec = (evt.start_ms ?? evt.timestamp_ms ?? 0) / 1000;
+                            const eEndSec = (evt.end_ms ?? (evt.start_ms ?? 0) + 3500) / 1000;
+                            const eLeftPct = (eStartSec / duration) * 100;
+                            const eWidthPct = Math.max(2, ((eEndSec - eStartSec) / duration) * 100);
+                            const isCur = activeTelemetry.primaryEvent?.event_id === evt.event_id;
+                            const parsed = parseActorAndAction(evt);
+
+                            return (
+                              <div
+                                key={evt.event_id || evt.id || eIdx}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  seekToEvent(evt);
+                                }}
+                                title={`${person.person_label}: ${parsed.actionTitle} (${fmtSecOnly(eStartSec)})`}
+                                style={{
+                                  position: 'absolute',
+                                  left: `${eLeftPct}%`,
+                                  width: `${eWidthPct}%`,
+                                  height: 22,
+                                  borderRadius: 3,
+                                  backgroundColor: isCur ? pal.color : pal.border,
+                                  color: isCur ? '#0D1013' : '#FFFFFF',
+                                  boxShadow: isCur ? `0 0 10px ${pal.glow}` : '0 1px 4px rgba(0,0,0,0.4)',
+                                  fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700,
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  padding: '0 4px', cursor: 'pointer', zIndex: 3,
+                                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                                }}
+                              >
+                                {parsed.actionTitle.slice(0, 14)}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* ── VIEW MODE 3: PHYSICAL ASSET DENSITY HEATMAP ─────── */}
+                {filterMode === 'objects' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 10px' }}>
+                    {data.detected_objects.map((obj, oIdx) => {
+                      const colors = ['#06b6d4', '#38bdf8', '#10b981', '#f59e0b', '#ec4899'];
+                      const objColor = colors[oIdx % colors.length];
+
+                      return (
+                        <div
+                          key={obj.class_name || oIdx}
+                          style={{
+                            position: 'relative',
+                            height: 24,
+                            backgroundColor: 'rgba(255,255,255,0.02)',
+                            borderRadius: 4,
+                            border: '1px solid rgba(255,255,255,0.04)',
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}
+                        >
+                          {/* Object Name Label */}
+                          <div style={{
+                            position: 'sticky', left: 0, zIndex: 7,
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            padding: '2px 8px', borderRadius: 4,
+                            backgroundColor: 'rgba(15, 23, 20, 0.92)',
+                            borderRight: `2px solid ${objColor}`,
+                            width: 170, flexShrink: 0
+                          }}>
+                            <Box size={11} style={{ color: objColor }} />
+                            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-primary)' }}>
+                              {obj.display_name.split('(')[0].trim()}
+                            </span>
+                            <span style={{ fontSize: 9, color: objColor, fontWeight: 700 }}>
+                              x{obj.instance_count}
+                            </span>
+                          </div>
+
+                          {/* Full Span Active Utilization Strip */}
+                          <div style={{
+                            position: 'absolute',
+                            left: '0%', width: '100%', height: 14,
+                            borderRadius: 2,
+                            backgroundColor: `${objColor}22`,
+                            border: `1px solid ${objColor}55`,
+                            pointerEvents: 'none'
+                          }} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* ── HOVER GHOST NEEDLE & TOOLTIP ─────────────────────── */}
+                {hoverTime !== null && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: `${(hoverTime / duration) * 100}%`,
+                      top: 0, bottom: 0,
+                      width: 1,
+                      backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                      pointerEvents: 'none',
+                      zIndex: 7
+                    }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: -26,
+                      left: (hoverTime / duration) > 0.8 ? -90 : 8,
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                      backgroundColor: 'rgba(15, 23, 20, 0.95)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-primary)',
+                      fontSize: 10, fontFamily: 'var(--font-mono)',
+                      whiteSpace: 'nowrap',
+                      pointerEvents: 'none'
+                    }}>
+                      {fmtTimecode(hoverTime)} • Click to seek
+                    </div>
+                  </div>
+                )}
+
+                {/* ── PLAYHEAD NEEDLE & DYNAMIC ACTIVITY CALLOUT ──────── */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${Math.max(0, Math.min(100, (currentTime / duration) * 100))}%`,
+                    top: 0, bottom: 0,
+                    width: 2,
+                    background: 'linear-gradient(180deg, var(--accent) 0%, rgba(98, 221, 176, 0.7) 100%)',
+                    boxShadow: '0 0 10px rgba(98, 221, 176, 0.8)',
+                    pointerEvents: 'none',
+                    zIndex: 10,
+                    transition: isScrubbing ? 'none' : 'left 0.05s linear'
+                  }}
+                >
+                  {/* Needle Top Pin */}
+                  <div style={{
+                    position: 'absolute', top: 0, left: -4,
+                    width: 10, height: 7,
+                    backgroundColor: 'var(--accent)',
+                    clipPath: 'polygon(0 0, 100% 0, 50% 100%)'
+                  }} />
+
+                  {/* Needle Bottom Pin */}
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: -4,
+                    width: 10, height: 7,
+                    backgroundColor: 'var(--accent)',
+                    clipPath: 'polygon(50% 0, 100% 100%, 0 100%)'
+                  }} />
+
+                  {/* Real-Time Dynamic Action Telemetry Callout (Moves & updates live with video!) */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 10,
+                    // Auto-flip left/right near boundaries so it never overflows off-screen
+                    left: (currentTime / duration) > 0.75 ? 'auto' : 8,
+                    right: (currentTime / duration) > 0.75 ? 8 : 'auto',
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    backgroundColor: 'rgba(15, 23, 20, 0.96)',
+                    backdropFilter: 'blur(12px)',
+                    border: `1.5px solid ${activeTelemetry.categoryVisual.color}`,
+                    color: 'var(--text-primary)',
+                    boxShadow: `0 4px 16px rgba(0,0,0,0.65), 0 0 12px ${activeTelemetry.categoryVisual.glow}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    whiteSpace: 'nowrap',
+                    pointerEvents: 'none',
+                    zIndex: 12
+                  }}>
+                    <span style={{
+                      width: 6, height: 6, borderRadius: '50%',
+                      backgroundColor: activeTelemetry.categoryVisual.color,
+                      boxShadow: `0 0 6px ${activeTelemetry.categoryVisual.color}`,
+                      animation: isPlaying ? 'pulse 1.2s infinite' : 'none',
+                      flexShrink: 0
+                    }} />
+
+                    {/* Timecode */}
+                    <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {fmtSecOnly(currentTime)}
+                    </span>
+
+                    {/* Actor Badge */}
+                    <span style={{
+                      padding: '1px 5px', borderRadius: 3,
+                      backgroundColor: activeTelemetry.actorPalette.bg,
+                      border: `1px solid ${activeTelemetry.actorPalette.border}`,
+                      color: activeTelemetry.actorPalette.text,
+                      fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700,
+                      flexShrink: 0
+                    }}>
+                      {activeTelemetry.actorLabel}
+                    </span>
+
+                    {/* Dynamic Real-Time Action Text */}
+                    <span style={{
+                      fontSize: 11, fontFamily: 'var(--font-sans)', fontWeight: 600,
+                      color: '#FFFFFF', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis'
+                    }}>
+                      {activeTelemetry.actionTitle}
+                    </span>
+
+                    {/* Multi-event indicator if concurrent */}
+                    {activeTelemetry.activeEvents.length > 1 && (
+                      <span style={{
+                        fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700,
+                        padding: '1px 5px', borderRadius: 10,
+                        backgroundColor: 'rgba(98, 221, 176, 0.2)',
+                        border: '1px solid rgba(98, 221, 176, 0.4)',
+                        color: 'var(--accent)',
+                        flexShrink: 0
+                      }}>
+                        +{activeTelemetry.activeEvents.length - 1} concurrent
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Track Footer Info */}
+            {/* Track Footer Metadata & Live Causal Integrity */}
             <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)'
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap',
+              fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+              padding: '0 4px', gap: 8
             }}>
-              <span>{data.filename || 'Recording'} · {allEvents.length} events detected</span>
-              <span>{data.unique_persons > 0 ? `${data.unique_persons} unique actor${data.unique_persons !== 1 ? 's' : ''} identified` : 'No actors identified'}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ color: 'var(--text-secondary)' }}>
+                  Stream: <strong style={{ color: 'var(--text-primary)' }}>{data.filename || videoId}</strong>
+                </span>
+                <span>•</span>
+                <span>{allEvents.length} events indexed</span>
+                <span>•</span>
+                <span>{data.unique_persons} personas tracked</span>
+              </div>
+
+              {/* Live In-Scene Actor Beacon Indicators */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                  In Scene:
+                </span>
+                {(data.persons || []).map((person) => {
+                  const isPresent = (currentTime * 1000) >= person.first_seen_ms && (currentTime * 1000) <= person.last_seen_ms;
+                  const pal = getActorPalette(person.person_label);
+                  return (
+                    <span
+                      key={person.person_label}
+                      title={`${person.person_label}: ${isPresent ? 'Currently in frame' : 'Off screen'}`}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                        padding: '2px 7px', borderRadius: 12,
+                        fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700,
+                        backgroundColor: isPresent ? pal.bg : 'rgba(255,255,255,0.02)',
+                        border: `1px solid ${isPresent ? pal.border : 'rgba(255,255,255,0.06)'}`,
+                        color: isPresent ? pal.text : 'rgba(255,255,255,0.25)',
+                        boxShadow: isPresent ? `0 0 8px ${pal.glow}` : 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <span style={{
+                        width: 5, height: 5, borderRadius: '50%',
+                        backgroundColor: isPresent ? pal.color : 'rgba(255,255,255,0.2)',
+                        boxShadow: isPresent ? `0 0 5px ${pal.color}` : 'none',
+                        animation: isPresent ? 'pulse 1.2s infinite' : 'none'
+                      }} />
+                      {person.person_label}
+                    </span>
+                  );
+                })}
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <ShieldCheck size={13} style={{ color: 'var(--accent)' }} />
+                <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Causal ReID Synchronized</span>
+                <span style={{ color: 'var(--text-muted)' }}>•</span>
+                <span>100% Deterministic Matrix</span>
+              </div>
             </div>
           </div>
         </div>

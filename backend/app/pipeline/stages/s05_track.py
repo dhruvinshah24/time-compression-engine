@@ -187,6 +187,20 @@ async def run(context: PipelineContext) -> StageResult:
             gallery=gallery,
         )
 
+        merged_count = gallery.consolidate_gallery(threshold=0.68)
+        if merged_count > 0:
+            logs.append(
+                f"[{STAGE_NAME}] Consolidated {merged_count} fragmented tracks in gallery"
+            )
+            for tid in list(track_to_label.keys()):
+                lbl = gallery.get_label(tid)
+                if lbl:
+                    track_to_label[tid] = lbl
+
+            for track in result.all_tracks:
+                if track.track_id in track_to_label:
+                    track.person_label = track_to_label[track.track_id]
+
         gallery_dict = gallery.to_dict()
         n_persons = len(set(track_to_label.values()))
         logs.append(
@@ -232,6 +246,7 @@ async def run(context: PipelineContext) -> StageResult:
             int(min_activity_obs_raw) if min_activity_obs_raw is not None else None
         )
         require_bicycle = bool(context.settings.get("require_bicycle_for_cycling", True))
+        require_staircase = bool(context.settings.get("require_staircase_for_stairs", True))
         clf = ActivityClassifier(
             fps=fps,
             frame_skip=frame_skip,
@@ -239,6 +254,7 @@ async def run(context: PipelineContext) -> StageResult:
             require_temporal_overlap=require_temporal_overlap,
             min_activity_observations=min_activity_observations,
             require_bicycle_for_cycling=require_bicycle,
+            require_staircase_for_stairs=require_staircase,
         )
 
         confirmed_person_tracks = [

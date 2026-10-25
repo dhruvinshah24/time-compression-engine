@@ -370,7 +370,7 @@ export default function ForensicTimelinePage() {
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverEvent, setHoverEvent] = useState<EventRecord | null>(null);
   const [isScrubbing, setIsScrubbing] = useState(false);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const trackCanvasRef = useRef<HTMLDivElement>(null);
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
@@ -490,6 +490,62 @@ export default function ForensicTimelinePage() {
     return { assigned, trackCount: Math.max(1, trackEnds.length) };
   }, [allEvents]);
 
+  // Tiered non-overlapping layout for each Actor in Mode 2 ("actors")
+  const actorTiersMap = useMemo(() => {
+    if (!data?.persons?.length) return {};
+    const map: Record<
+      string,
+      {
+        assigned: Array<{ evt: EventRecord; startSec: number; endSec: number; track: number }>;
+        tierCount: number;
+      }
+    > = {};
+
+    for (const person of data.persons) {
+      const pEvents = allEvents
+        .filter(
+          (e) => e.person_label === person.person_label || e.evidence?.person_label === person.person_label
+        )
+        .map((evt) => {
+          const startSec = (evt.start_ms ?? evt.timestamp_ms ?? 0) / 1000;
+          const endSec = (evt.end_ms ?? (evt.start_ms ?? 0) + 3500) / 1000;
+          return { evt, startSec, endSec };
+        })
+        .sort((a, b) => a.startSec - b.startSec);
+
+      const trackEnds: number[] = [];
+      const assigned = pEvents.map((item) => {
+        let placedTrack = -1;
+        for (let t = 0; t < trackEnds.length; t++) {
+          if (trackEnds[t] <= item.startSec + 0.15) {
+            placedTrack = t;
+            trackEnds[t] = Math.max(item.endSec, item.startSec + 1.8);
+            break;
+          }
+        }
+        if (placedTrack === -1) {
+          placedTrack = trackEnds.length;
+          trackEnds.push(Math.max(item.endSec, item.startSec + 1.8));
+        }
+        return { ...item, track: placedTrack };
+      });
+
+      map[person.person_label] = {
+        assigned,
+        tierCount: Math.max(1, trackEnds.length)
+      };
+    }
+    return map;
+  }, [data?.persons, allEvents]);
+
+  const totalSwimlanesHeight = useMemo(() => {
+    if (!data?.persons?.length) return 180;
+    return data.persons.reduce((acc, p) => {
+      const tiers = actorTiersMap[p.person_label]?.tierCount || 1;
+      return acc + Math.max(44, tiers * 26 + 12) + 8;
+    }, 20);
+  }, [data?.persons, actorTiersMap]);
+
   // Step event navigation
   const goToPrevEvent = useCallback(() => {
     if (!allEvents.length) return;
@@ -516,8 +572,10 @@ export default function ForensicTimelinePage() {
   }, [allEvents, currentTime, seekToEvent]);
 
   // Scrubber Pointer Handlers
-  const getTrackSeekPos = (clientX: number, target: HTMLElement) => {
-    const rect = target.getBoundingClientRect();
+  const getTrackSeekPos = (clientX: number) => {
+    const canvas = trackCanvasRef.current;
+    if (!canvas) return 0;
+    const rect = canvas.getBoundingClientRect();
     const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     return pos * duration;
   };
@@ -525,12 +583,12 @@ export default function ForensicTimelinePage() {
   const handleTrackPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     setIsScrubbing(true);
-    const sec = getTrackSeekPos(e.clientX, e.currentTarget);
+    const sec = getTrackSeekPos(e.clientX);
     seekTo(sec);
   };
 
   const handleTrackPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const sec = getTrackSeekPos(e.clientX, e.currentTarget);
+    const sec = getTrackSeekPos(e.clientX);
     setHoverTime(sec);
 
     const curMs = sec * 1000;
@@ -1199,7 +1257,7 @@ export default function ForensicTimelinePage() {
             }}>
               {/* Interactive Timeline Track Surface */}
               <div
-                ref={trackRef}
+                ref={trackCanvasRef}
                 onPointerDown={handleTrackPointerDown}
                 onPointerMove={handleTrackPointerMove}
                 onPointerUp={handleTrackPointerUp}
@@ -1208,9 +1266,9 @@ export default function ForensicTimelinePage() {
                   position: 'relative',
                   width: zoomLevel === '2x' ? '250%' : zoomLevel === '1x' ? '150%' : '100%',
                   minHeight: filterMode === 'actors'
-                    ? (data.persons.length * 36 + 18)
+                    ? totalSwimlanesHeight
                     : filterMode === 'events'
-                    ? (tieredEvents.trackCount * 32 + 20)
+                    ? (tieredEvents.trackCount * 32 + 24)
                     : (data.detected_objects.length * 28 + 20),
                   backgroundColor: 'var(--bg-inset)',
                   border: '1px solid var(--border-dim)',
@@ -1233,8 +1291,8 @@ export default function ForensicTimelinePage() {
                   <div style={{
                     position: 'relative',
                     width: '100%',
-                    height: Math.max(100, tieredEvents.trackCount * 32 + 16),
-                    padding: '8px 4px'
+                    height: Math.max(100, tieredEvents.trackCount * 32 + 20),
+                    padding: '16px 4px 8px 4px'
                   }}>
                     {/* Background lane strips */}
                     {Array.from({ length: tieredEvents.trackCount }).map((_, laneIdx) => (
@@ -1243,7 +1301,7 @@ export default function ForensicTimelinePage() {
                         style={{
                           position: 'absolute',
                           left: 0, right: 0,
-                          top: 8 + laneIdx * 32,
+                          top: 14 + laneIdx * 32,
                           height: 28,
                           backgroundColor: laneIdx % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.18)',
                           borderRadius: 4,
@@ -1276,7 +1334,7 @@ export default function ForensicTimelinePage() {
                           style={{
                             position: 'absolute',
                             left: `${startPct}%`,
-                            top: 8 + track * 32,
+                            top: 14 + track * 32,
                             width: `${widthPct}%`,
                             height: 28,
                             borderRadius: 5,
@@ -1311,18 +1369,20 @@ export default function ForensicTimelinePage() {
                             {parsed.actorLabel.replace(/^Person\s+/i, 'P')}
                           </span>
 
-                          {/* Action Title */}
-                          <span style={{
-                            fontSize: 10, fontFamily: 'var(--font-sans)', fontWeight: 600,
-                            color: isCurrentActive ? '#FFFFFF' : 'var(--text-primary)',
-                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                            flex: 1
-                          }}>
-                            {parsed.actionTitle}
-                          </span>
+                          {/* Action Title (rendered only when enough room) */}
+                          {widthPct >= 6 && (
+                            <span style={{
+                              fontSize: 10, fontFamily: 'var(--font-sans)', fontWeight: 600,
+                              color: isCurrentActive ? '#FFFFFF' : 'var(--text-primary)',
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                              flex: 1
+                            }}>
+                              {parsed.actionTitle}
+                            </span>
+                          )}
 
                           {/* Time Stamp */}
-                          {widthPct > 6 && (
+                          {widthPct > 10 && (
                             <span style={{
                               fontSize: 8, fontFamily: 'var(--font-mono)',
                               color: isCurrentActive ? cat.color : 'var(--text-muted)',
@@ -1339,13 +1399,12 @@ export default function ForensicTimelinePage() {
 
                 {/* ── VIEW MODE 2: MULTI-TRACK ACTOR SWIMLANES ───────── */}
                 {filterMode === 'actors' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px 10px 10px 10px' }}>
                     {data.persons.map((person, pIdx) => {
                       const pal = getActorPalette(person.person_label);
                       const isActorPresentNow = (currentTime * 1000) >= person.first_seen_ms && (currentTime * 1000) <= person.last_seen_ms;
-                      const actorEvents = allEvents.filter(
-                        (e) => (e.person_label === person.person_label || e.evidence?.person_label === person.person_label)
-                      );
+                      const tierData = actorTiersMap[person.person_label] || { assigned: [], tierCount: 1 };
+                      const rowHeight = Math.max(40, tierData.tierCount * 24 + 14);
                       const presStartPct = (person.first_seen_ms / 1000 / duration) * 100;
                       const presEndPct = (person.last_seen_ms / 1000 / duration) * 100;
                       const presWidthPct = Math.max(2, presEndPct - presStartPct);
@@ -1355,35 +1414,83 @@ export default function ForensicTimelinePage() {
                           key={person.person_label || pIdx}
                           style={{
                             position: 'relative',
-                            height: 28,
-                            backgroundColor: isActorPresentNow ? 'rgba(255,255,255,0.03)' : 'transparent',
-                            borderRadius: 4,
-                            border: `1px solid ${isActorPresentNow ? pal.border : 'rgba(255,255,255,0.04)'}`,
+                            height: rowHeight,
+                            backgroundColor: isActorPresentNow ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.15)',
+                            borderRadius: 6,
+                            border: `1px solid ${isActorPresentNow ? pal.border : 'rgba(255,255,255,0.05)'}`,
                             display: 'flex',
-                            alignItems: 'center'
+                            alignItems: 'center',
+                            transition: 'all 0.15s ease'
                           }}
                         >
                           {/* Actor Label Chip Pinned to Left */}
                           <div style={{
-                            position: 'sticky', left: 0, zIndex: 7,
-                            display: 'flex', alignItems: 'center', gap: 6,
-                            padding: '2px 8px', borderRadius: 4,
-                            backgroundColor: 'rgba(15, 23, 20, 0.92)',
+                            position: 'sticky', left: 0, zIndex: 8,
+                            display: 'flex', alignItems: 'center', gap: 8,
+                            padding: '4px 8px', borderRadius: '5px 0 0 5px',
+                            backgroundColor: 'rgba(13, 16, 19, 0.96)',
+                            backdropFilter: 'blur(8px)',
                             borderRight: `2px solid ${pal.border}`,
-                            width: 140, flexShrink: 0
+                            borderLeft: isActorPresentNow ? `2px solid ${pal.color}` : '2px solid transparent',
+                            width: 164, height: '100%', flexShrink: 0
                           }}>
-                            <span style={{
-                              width: 6, height: 6, borderRadius: '50%',
-                              backgroundColor: pal.color,
-                              boxShadow: isActorPresentNow ? `0 0 6px ${pal.color}` : 'none',
-                              animation: isActorPresentNow ? 'pulse 1.2s infinite' : 'none'
-                            }} />
-                            <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: pal.text }}>
-                              {person.person_label}
-                            </span>
-                            <span style={{ fontSize: 9, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {isActorPresentNow ? 'ACTIVE' : `${actorEvents.length} evts`}
-                            </span>
+                            {/* Actor Avatar Thumbnail */}
+                            <div style={{
+                              width: 28, height: 28, borderRadius: 5, overflow: 'hidden',
+                              backgroundColor: 'rgba(0,0,0,0.5)',
+                              border: `1.5px solid ${pal.border}`,
+                              boxShadow: isActorPresentNow ? `0 0 8px ${pal.glow}` : 'none',
+                              position: 'relative', flexShrink: 0
+                            }}>
+                              {person.crop_url ? (
+                                <img
+                                  src={resolveMediaUrl(person.crop_url) || person.crop_url}
+                                  alt={person.person_label}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    const fallback = e.currentTarget.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                                    if (fallback) fallback.style.display = 'flex';
+                                  }}
+                                />
+                              ) : null}
+                              <div
+                                className="avatar-fallback"
+                                style={{
+                                  width: '100%', height: '100%',
+                                  display: person.crop_url ? 'none' : 'flex',
+                                  alignItems: 'center', justifyContent: 'center',
+                                  backgroundColor: pal.bg, color: pal.text,
+                                  fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)'
+                                }}
+                              >
+                                {person.person_label.replace(/[^0-9]/g, '') ? `P${person.person_label.replace(/[^0-9]/g, '')}` : 'P'}
+                              </div>
+                            </div>
+
+                            {/* Actor Info */}
+                            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: pal.text, whiteSpace: 'nowrap' }}>
+                                  {person.person_label}
+                                </span>
+                                {isActorPresentNow && (
+                                  <span style={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    backgroundColor: pal.color,
+                                    boxShadow: `0 0 6px ${pal.color}`,
+                                    animation: 'pulse 1.2s infinite'
+                                  }} />
+                                )}
+                              </div>
+                              <div style={{ fontSize: 9, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                {isActorPresentNow ? (
+                                  <span style={{ color: pal.color, fontWeight: 700 }}>ACTIVE</span>
+                                ) : (
+                                  <span>{tierData.assigned.length} evts</span>
+                                )}
+                              </div>
+                            </div>
                           </div>
 
                           {/* Actor Scene Presence Bar */}
@@ -1391,20 +1498,20 @@ export default function ForensicTimelinePage() {
                             position: 'absolute',
                             left: `${presStartPct}%`,
                             width: `${presWidthPct}%`,
-                            height: 18,
-                            borderRadius: 3,
-                            backgroundColor: pal.bg,
-                            border: `1px dashed ${pal.border}80`,
+                            top: 4, bottom: 4,
+                            borderRadius: 4,
+                            backgroundColor: `${pal.color}14`,
+                            border: `1px dashed ${pal.border}60`,
                             pointerEvents: 'none',
                             zIndex: 1
                           }} />
 
-                          {/* Specific Action Capsules for this Actor */}
-                          {actorEvents.map((evt, eIdx) => {
-                            const eStartSec = (evt.start_ms ?? evt.timestamp_ms ?? 0) / 1000;
-                            const eEndSec = (evt.end_ms ?? (evt.start_ms ?? 0) + 3500) / 1000;
-                            const eLeftPct = (eStartSec / duration) * 100;
-                            const eWidthPct = Math.max(2, ((eEndSec - eStartSec) / duration) * 100);
+                          {/* Non-overlapping Action Capsules across Actor Tiers */}
+                          {tierData.assigned.map((item, eIdx) => {
+                            const { evt, startSec, endSec, track } = item;
+                            const eLeftPct = (startSec / duration) * 100;
+                            const rawWidthPct = ((endSec - startSec) / duration) * 100;
+                            const eWidthPct = Math.max(2.2, rawWidthPct);
                             const isCur = activeTelemetry.primaryEvent?.event_id === evt.event_id;
                             const parsed = parseActorAndAction(evt);
 
@@ -1415,23 +1522,43 @@ export default function ForensicTimelinePage() {
                                   e.stopPropagation();
                                   seekToEvent(evt);
                                 }}
-                                title={`${person.person_label}: ${parsed.actionTitle} (${fmtSecOnly(eStartSec)})`}
+                                title={`${person.person_label}: ${parsed.actionTitle} (${fmtSecOnly(startSec)} - ${fmtSecOnly(endSec)})`}
                                 style={{
                                   position: 'absolute',
                                   left: `${eLeftPct}%`,
                                   width: `${eWidthPct}%`,
-                                  height: 22,
+                                  top: 7 + track * 24,
+                                  height: 20,
                                   borderRadius: 3,
-                                  backgroundColor: isCur ? pal.color : pal.border,
-                                  color: isCur ? '#0D1013' : '#FFFFFF',
-                                  boxShadow: isCur ? `0 0 10px ${pal.glow}` : '0 1px 4px rgba(0,0,0,0.4)',
+                                  backgroundColor: isCur ? pal.color : `${pal.color}33`,
+                                  border: `1px solid ${isCur ? '#FFFFFF' : pal.border}`,
+                                  color: isCur ? '#0D1013' : pal.text,
+                                  boxShadow: isCur ? `0 0 10px ${pal.glow}` : 'none',
                                   fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700,
                                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                                   padding: '0 4px', cursor: 'pointer', zIndex: 3,
-                                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                                  overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+                                  transition: 'all 0.15s ease'
                                 }}
                               >
-                                {parsed.actionTitle.slice(0, 14)}
+                                {eWidthPct >= 8 ? (
+                                  <span style={{
+                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                    maxWidth: '100%'
+                                  }}>
+                                    {parsed.actionTitle}
+                                  </span>
+                                ) : eWidthPct >= 4 ? (
+                                  <span style={{ opacity: 0.9, fontSize: 8 }}>
+                                    {parsed.actionTitle.split(' ')[0]}
+                                  </span>
+                                ) : (
+                                  <span style={{
+                                    width: 5, height: 5, borderRadius: '50%',
+                                    backgroundColor: isCur ? '#0D1013' : pal.color,
+                                    display: 'inline-block'
+                                  }} />
+                                )}
                               </div>
                             );
                           })}
@@ -1539,90 +1666,35 @@ export default function ForensicTimelinePage() {
                     transition: isScrubbing ? 'none' : 'left 0.05s linear'
                   }}
                 >
-                  {/* Needle Top Pin */}
+                  {/* Needle Top Pin Head with Sleek Timecode Badge */}
                   <div style={{
-                    position: 'absolute', top: 0, left: -4,
-                    width: 10, height: 7,
+                    position: 'absolute',
+                    top: 0,
+                    left: -20,
+                    width: 40,
+                    height: 16,
+                    borderRadius: 3,
                     backgroundColor: 'var(--accent)',
-                    clipPath: 'polygon(0 0, 100% 0, 50% 100%)'
-                  }} />
+                    color: '#0D1013',
+                    fontSize: 9,
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: 800,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 6px rgba(98, 221, 176, 0.6)',
+                    zIndex: 15,
+                  }}>
+                    {fmtSecOnly(currentTime)}
+                  </div>
 
                   {/* Needle Bottom Pin */}
                   <div style={{
                     position: 'absolute', bottom: 0, left: -4,
-                    width: 10, height: 7,
+                    width: 10, height: 6,
                     backgroundColor: 'var(--accent)',
                     clipPath: 'polygon(50% 0, 100% 100%, 0 100%)'
                   }} />
-
-                  {/* Real-Time Dynamic Action Telemetry Callout (Moves & updates live with video!) */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 10,
-                    // Auto-flip left/right near boundaries so it never overflows off-screen
-                    left: (currentTime / duration) > 0.75 ? 'auto' : 8,
-                    right: (currentTime / duration) > 0.75 ? 8 : 'auto',
-                    padding: '4px 10px',
-                    borderRadius: 6,
-                    backgroundColor: 'rgba(15, 23, 20, 0.96)',
-                    backdropFilter: 'blur(12px)',
-                    border: `1.5px solid ${activeTelemetry.categoryVisual.color}`,
-                    color: 'var(--text-primary)',
-                    boxShadow: `0 4px 16px rgba(0,0,0,0.65), 0 0 12px ${activeTelemetry.categoryVisual.glow}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    whiteSpace: 'nowrap',
-                    pointerEvents: 'none',
-                    zIndex: 12
-                  }}>
-                    <span style={{
-                      width: 6, height: 6, borderRadius: '50%',
-                      backgroundColor: activeTelemetry.categoryVisual.color,
-                      boxShadow: `0 0 6px ${activeTelemetry.categoryVisual.color}`,
-                      animation: isPlaying ? 'pulse 1.2s infinite' : 'none',
-                      flexShrink: 0
-                    }} />
-
-                    {/* Timecode */}
-                    <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {fmtSecOnly(currentTime)}
-                    </span>
-
-                    {/* Actor Badge */}
-                    <span style={{
-                      padding: '1px 5px', borderRadius: 3,
-                      backgroundColor: activeTelemetry.actorPalette.bg,
-                      border: `1px solid ${activeTelemetry.actorPalette.border}`,
-                      color: activeTelemetry.actorPalette.text,
-                      fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700,
-                      flexShrink: 0
-                    }}>
-                      {activeTelemetry.actorLabel}
-                    </span>
-
-                    {/* Dynamic Real-Time Action Text */}
-                    <span style={{
-                      fontSize: 11, fontFamily: 'var(--font-sans)', fontWeight: 600,
-                      color: '#FFFFFF', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis'
-                    }}>
-                      {activeTelemetry.actionTitle}
-                    </span>
-
-                    {/* Multi-event indicator if concurrent */}
-                    {activeTelemetry.activeEvents.length > 1 && (
-                      <span style={{
-                        fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700,
-                        padding: '1px 5px', borderRadius: 10,
-                        backgroundColor: 'rgba(98, 221, 176, 0.2)',
-                        border: '1px solid rgba(98, 221, 176, 0.4)',
-                        color: 'var(--accent)',
-                        flexShrink: 0
-                      }}>
-                        +{activeTelemetry.activeEvents.length - 1} concurrent
-                      </span>
-                    )}
-                  </div>
                 </div>
               </div>
             </div>
@@ -1985,6 +2057,7 @@ export default function ForensicTimelinePage() {
               {data.persons.map((person) => {
                 const dwellSec = Math.round((person.last_seen_ms - person.first_seen_ms) / 1000);
                 const isCurrent = activePerson?.person_label === person.person_label;
+                const pal = getActorPalette(person.person_label);
 
                 return (
                   <div
@@ -1994,57 +2067,99 @@ export default function ForensicTimelinePage() {
                     }}
                     className={isCurrent ? 'card card-selected' : 'card'}
                     style={{
-                      padding: 10, display: 'flex', gap: 10, cursor: 'pointer',
-                      transition: 'border-color 0.15s'
+                      padding: 10, display: 'flex', gap: 12, cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      borderLeft: isCurrent ? `3px solid ${pal.color}` : '3px solid transparent',
+                      boxShadow: isCurrent ? `0 0 12px ${pal.glow}` : undefined,
+                      backgroundColor: isCurrent ? 'rgba(255,255,255,0.03)' : undefined
                     }}
                   >
-                    {/* Portrait crop with reticle */}
+                    {/* Portrait crop with reticle and resilient fallback */}
                     <div style={{
-                      width: 48, height: 56, borderRadius: 4, overflow: 'hidden',
-                      backgroundColor: 'var(--bg-inset)', border: '1px solid var(--border)',
-                      position: 'relative', flexShrink: 0
+                      width: 52, height: 60, borderRadius: 6, overflow: 'hidden',
+                      backgroundColor: 'var(--bg-inset)', border: `1.5px solid ${pal.border}`,
+                      position: 'relative', flexShrink: 0,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
                     }}>
                       {person.crop_url ? (
                         <img
                           src={resolveMediaUrl(person.crop_url) || person.crop_url}
                           alt={person.person_label}
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.parentElement?.querySelector('.actor-card-fallback') as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
                         />
-                      ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <User size={18} style={{ color: 'var(--text-muted)' }} />
-                        </div>
-                      )}
+                      ) : null}
+                      <div
+                        className="actor-card-fallback"
+                        style={{
+                          width: '100%', height: '100%',
+                          display: person.crop_url ? 'none' : 'flex',
+                          flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                          backgroundColor: pal.bg, color: pal.text, gap: 2
+                        }}
+                      >
+                        <User size={20} style={{ color: pal.color }} />
+                        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
+                          {person.person_label.replace(/[^0-9]/g, '') ? `P${person.person_label.replace(/[^0-9]/g, '')}` : 'P'}
+                        </span>
+                      </div>
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-                          {person.person_label}
-                        </span>
-                        <span className="badge badge-accent" style={{ fontSize: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{
+                            width: 7, height: 7, borderRadius: '50%',
+                            backgroundColor: pal.color,
+                            boxShadow: isCurrent ? `0 0 6px ${pal.color}` : 'none'
+                          }} />
+                          <span style={{ fontSize: 13, fontWeight: 700, color: pal.text }}>
+                            {person.person_label}
+                          </span>
+                        </div>
+                        <span
+                          className="badge"
+                          style={{
+                            fontSize: 10,
+                            backgroundColor: pal.bg,
+                            border: `1px solid ${pal.border}`,
+                            color: pal.text,
+                            fontFamily: 'var(--font-mono)'
+                          }}
+                        >
                           {dwellSec}s dwell
                         </span>
                       </div>
 
-                      <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 2 }}>
+                      <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 4 }}>
                         Seen {fmtSecOnly(person.first_seen_ms / 1000)} → {fmtSecOnly(person.last_seen_ms / 1000)}
                       </div>
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDossierPerson(person);
-                        }}
-                        style={{
-                          marginTop: 6, fontSize: 11, color: 'var(--accent)',
-                          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                          textAlign: 'left', display: 'flex', alignItems: 'center', gap: 3
-                        }}
-                      >
-                        <span>Open Forensic Dossier</span>
-                        <ChevronRight size={11} />
-                      </button>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDossierPerson(person);
+                          }}
+                          style={{
+                            fontSize: 11, color: 'var(--accent)',
+                            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                            textAlign: 'left', display: 'flex', alignItems: 'center', gap: 3
+                          }}
+                        >
+                          <span>Open Forensic Dossier</span>
+                          <ChevronRight size={11} />
+                        </button>
+                        {isCurrent && (
+                          <span style={{ fontSize: 9, fontWeight: 700, color: pal.color, letterSpacing: '0.04em' }}>
+                            IN FRAME
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -2077,7 +2192,7 @@ export default function ForensicTimelinePage() {
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>No Objects Detected</div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                      No objects passed the detection confidence threshold. Re-process with the 'balanced' or 'accuracy' model profile for better results.
+                      No objects passed the detection confidence threshold. Re-process with the &apos;balanced&apos; or &apos;accuracy&apos; model profile for better results.
                     </div>
                   </div>
                 </div>

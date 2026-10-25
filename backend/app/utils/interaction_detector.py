@@ -209,7 +209,7 @@ class InteractionDetector:
     ) -> list[InteractionEvent]:
         results: list[InteractionEvent] = []
 
-        close = _close_frames(p_track, obj_track, max_dist=0.30)
+        close = _close_frames(p_track, obj_track, max_dist=0.20)
         if not close:
             return []
 
@@ -236,16 +236,41 @@ class InteractionDetector:
             ))
 
         # ── Drinking ────────────────────────────────────────────────
-        # Threshold: 1.5s min (was 0.5s) — prevents false positives when
-        # person walks past a table with bottles on it.
-        elif obj_cls in _DRINK_CLASSES and duration_close_s >= 1.5:
-            results.append(self._make_event(
-                event_type="person_drinking",
-                p_track=p_track, obj_track=obj_track, obj_cls=obj_cls,
-                close_frames=close,
-                confidence=min(0.80, 0.55 + duration_close_s * 0.07),
-                evidence={"object": obj_cls, "duration_s": round(duration_close_s, 1)},
-            ))
+        # Physical drinking requirements:
+        # 1. Object must be a stable track (len >= 6 observations) to reject 1-2 frame YOLO flickers.
+        # 2. Tight spatial proximity (dist < 0.18 or IoU > 0.02).
+        # 3. Elevation check: The container MUST be raised to upper body / mouth level
+        #    (obj_cy <= person_y1 + person_height * 0.40). Table/desk-height objects do NOT count as drinking.
+        # 4. Sustained at head level for >= 1.5s.
+        elif obj_cls in _DRINK_CLASSES:
+            if len(obj_track.observations) >= 6:
+                drinking_frames = []
+                for fn in close:
+                    po = _get_obs_at_frame(p_track, fn)
+                    oo = _get_obs_at_frame(obj_track, fn)
+                    if po is None or oo is None:
+                        continue
+                    p_h = po.bbox.y2 - po.bbox.y1
+                    obj_cy = (oo.bbox.y1 + oo.bbox.y2) / 2.0
+                    dist = _centroid_dist(po.bbox, oo.bbox)
+                    iou = _bbox_iou(po.bbox, oo.bbox)
+                    # Container must be close and elevated to head/chest area
+                    if (dist < 0.18 or iou > 0.02) and (obj_cy <= po.bbox.y1 + p_h * 0.40):
+                        drinking_frames.append(fn)
+
+                dur_drinking_s = len(drinking_frames) * self.frame_skip / self.fps
+                if len(drinking_frames) >= 3 and dur_drinking_s >= 1.5:
+                    results.append(self._make_event(
+                        event_type="person_drinking",
+                        p_track=p_track, obj_track=obj_track, obj_cls=obj_cls,
+                        close_frames=drinking_frames,
+                        confidence=min(0.85, 0.60 + dur_drinking_s * 0.05),
+                        evidence={
+                            "object": obj_cls,
+                            "duration_s": round(dur_drinking_s, 1),
+                            "head_level_frames": len(drinking_frames),
+                        },
+                    ))
 
         # ── Reading ──────────────────────────────────────────────────────────
         elif obj_cls in _BOOK_CLASSES and duration_close_s >= 1.5:
@@ -271,44 +296,58 @@ class InteractionDetector:
 
         # ── Pick up object ───────────────────────────────────────────────────
         # Object track ENDS while person is nearby — person picked it up
-        elif obj_cls in _PICK_UP_CLASSES:
-            p_end = max(o.frame_number for o in p_track.observations)
-            obj_end = max(o.frame_number for o in obj_track.observations)
-            obj_start = min(o.frame_number for o in obj_track.observations)
-            p_start = min(o.frame_number for o in p_track.observations)
+        # Requires the object to be a stable track (len >= 8 observations) to reject 1-2 frame YOLO flickers.
+        if obj_cls in _PICK_UP_CLASSES and not results:
+            if len(obj_track.observations) >= 8:
+                p_end = max(o.frame_number for o in p_track.observations)
+                obj_end = max(o.frame_number for o in obj_track.observations)
+                obj_start = min(o.frame_number for o in obj_track.observations)
+                p_start = min(o.frame_number for o in p_track.observations)
 
-            # Object ends at least 5 frames before person, person was nearby
-            if (obj_end < p_end - 5 and len(close) >= 2
-                    and close[-1] >= obj_end - 5):
-                # Check if object appeared during the video (not always present)
-                obj_duration_s = (obj_end - obj_start) * self.frame_skip / self.fps
-                confidence = 0.72 if len(close) >= 4 else 0.60
-                results.append(self._make_event(
-                    event_type=f"person_picked_up_{obj_cls}",
-                    p_track=p_track, obj_track=obj_track, obj_cls=obj_cls,
-                    close_frames=close,
-                    confidence=confidence,
-                    evidence={
-                        "object": obj_cls,
-                        "obj_disappeared_frame": obj_end,
-                        "close_frames": len(close),
-                    },
-                ))
+                last_obj_obs = _get_obs_at_frame(obj_track, obj_end)
+                p_obs_at_end = _get_obs_at_frame(p_track, obj_end)
+                close_at_end = False
+                if last_obj_obs and p_obs_at_end:
+                    dist_at_end = _centroid_dist(p_obs_at_end.bbox, last_obj_obs.bbox)
+                    close_at_end = dist_at_end < 0.20 or _bbox_iou(p_obs_at_end.bbox, last_obj_obs.bbox) > 0.05
 
-            # Object appears AFTER person nearby — person put it down
-            elif (obj_start > p_start + 10 and len(close) >= 2
-                    and close[0] >= obj_start - 5):
-                results.append(self._make_event(
-                    event_type=f"person_placed_{obj_cls}",
-                    p_track=p_track, obj_track=obj_track, obj_cls=obj_cls,
-                    close_frames=close,
-                    confidence=0.65,
-                    evidence={"object": obj_cls, "obj_appeared_frame": obj_start},
-                ))
+                # Object ends at least 5 frames before person, person was close to the object when it vanished
+                if (obj_end < p_end - 5 and len(close) >= 4 and close_at_end
+                        and close[-1] >= obj_end - 5):
+                    confidence = 0.75
+                    results.append(self._make_event(
+                        event_type=f"person_picked_up_{obj_cls}",
+                        p_track=p_track, obj_track=obj_track, obj_cls=obj_cls,
+                        close_frames=close,
+                        confidence=confidence,
+                        evidence={
+                            "object": obj_cls,
+                            "obj_disappeared_frame": obj_end,
+                            "close_frames": len(close),
+                        },
+                    ))
+
+                # Object appears AFTER person nearby — person put it down
+                elif (obj_start > p_start + 10 and len(close) >= 4
+                        and close[0] >= obj_start - 5):
+                    first_obj_obs = _get_obs_at_frame(obj_track, obj_start)
+                    p_obs_at_start = _get_obs_at_frame(p_track, obj_start)
+                    close_at_start = False
+                    if first_obj_obs and p_obs_at_start:
+                        dist_at_start = _centroid_dist(p_obs_at_start.bbox, first_obj_obs.bbox)
+                        close_at_start = dist_at_start < 0.20 or _bbox_iou(p_obs_at_start.bbox, first_obj_obs.bbox) > 0.05
+                    if close_at_start:
+                        results.append(self._make_event(
+                            event_type=f"person_placed_{obj_cls}",
+                            p_track=p_track, obj_track=obj_track, obj_cls=obj_cls,
+                            close_frames=close,
+                            confidence=0.70,
+                            evidence={"object": obj_cls, "obj_appeared_frame": obj_start},
+                        ))
 
         # ── Pocket interaction ────────────────────────────────────────────────
         # Small object disappears at hip level (y > 0.5 = bottom half)
-        elif obj_cls in _SMALL_POCKET_CLASSES:
+        if obj_cls in _SMALL_POCKET_CLASSES and not results:
             obj_end_obs = max(obj_track.observations, key=lambda o: o.frame_number)
             obj_end_y = (obj_end_obs.bbox.y1 + obj_end_obs.bbox.y2) / 2
 

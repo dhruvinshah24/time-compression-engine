@@ -276,8 +276,8 @@ async def upload_video(
                 "laptop":    0.30,
                 "cell phone":0.25,
                 "phone":     0.25,
-                "bottle":    0.25,
-                "cup":       0.25,
+                "bottle":    0.45,
+                "cup":       0.45,
                 "book":      0.25,
                 "backpack":  0.25,
                 "handbag":   0.25,
@@ -303,6 +303,7 @@ async def upload_video(
             "event_min_track_frames":       3,
             "event_suppress_camera_motion": True,
             "enable_scene_stair_guard":     True,
+            "require_staircase_for_stairs": True,
             "require_bicycle_track_for_cycling": True,
 
             # ── Pose estimation ────────────────────────────────────────────────

@@ -60,6 +60,13 @@ LOITER_STILL_SEC        = 12.0    # seconds of minimal movement → loitering
 # Object class names considered "bicycle" for cycling detection
 BICYCLE_CLASSES = {"bicycle", "bike", "cycle", "motorbike", "motorcycle", "scooter"}
 
+# Object class names considered staircase for stair walking verification
+STAIR_CLASSES = frozenset({
+    "stairs", "staircase", "steps", "stairway", "flight of stairs",
+    "stair steps", "staircase steps", "stairwell", "stone steps",
+    "concrete stairs", "indoor stairs", "outdoor stairs",
+})
+
 
 # ── Result ─────────────────────────────────────────────────────────────────────
 
@@ -111,6 +118,7 @@ class ActivityClassifier:
         require_temporal_overlap: bool = False,
         min_activity_observations: Optional[int] = None,
         require_bicycle_for_cycling: bool = False,
+        require_staircase_for_stairs: bool = False,
     ) -> None:
         self.fps = fps
         self.frame_skip = frame_skip
@@ -124,6 +132,7 @@ class ActivityClassifier:
         # When None, default baseline threshold (3 observations) is used.
         self._min_activity_observations = min_activity_observations
         self._require_bicycle_for_cycling = require_bicycle_for_cycling
+        self._require_staircase_for_stairs = require_staircase_for_stairs
 
     def classify(
         self,
@@ -247,15 +256,26 @@ class ActivityClassifier:
 
         # Stair walking
         if stair_conf >= 0.55 and mean_speed >= WALK_THRESHOLD:
-            label = f"walking_{stair_dir}stairs"
-            return ActivityResult(
-                label=label,
-                confidence=round(stair_conf, 3),
-                entry_direction=entry_dir,
-                exit_direction=exit_dir,
-                duration_ms=duration_ms,
-                evidence={**evidence, "stair_direction": stair_dir, "reason": "sustained_vertical_velocity"},
-            )
+            has_stair_track = True
+            if self._require_staircase_for_stairs:
+                has_stair_track = any(
+                    (getattr(t, "class_name", "") or "").lower() in STAIR_CLASSES
+                    and getattr(t, "is_confirmed", False)
+                    for t in (all_tracks or [])
+                )
+            if has_stair_track:
+                label = f"walking_{stair_dir}stairs"
+                return ActivityResult(
+                    label=label,
+                    confidence=round(stair_conf, 3),
+                    entry_direction=entry_dir,
+                    exit_direction=exit_dir,
+                    duration_ms=duration_ms,
+                    evidence={**evidence, "stair_direction": stair_dir, "reason": "sustained_vertical_velocity"},
+                )
+            else:
+                evidence["stair_suppressed"] = True
+                evidence["stair_suppression_reason"] = "no_staircase_in_scene"
 
         # Running
         if mean_speed >= RUN_THRESHOLD:

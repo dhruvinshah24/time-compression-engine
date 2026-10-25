@@ -84,9 +84,9 @@ _TCE_SETTINGS = [
     },
     {
         "key": "enable_scene_stair_guard",
-        "value": "False",
+        "value": "True",
         "display_name": "Scene Stair Guard",
-        "description": "When enabled, suppresses false person detections on staircase regions. Validated: 8/8 stair false positives suppressed in Phase 6E.13. Disabled by default (conservative setting).",
+        "description": "When enabled, suppresses false stair classifications on flat floor regions. Validated in Phase 6E.13.",
         "category": "Events",
         "readonly": True,
         "unit": "boolean",

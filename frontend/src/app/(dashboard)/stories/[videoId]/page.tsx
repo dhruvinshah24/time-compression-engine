@@ -161,7 +161,7 @@ export default function StoriesPage() {
             Actor Continuity & Story Sequencer
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2, marginBottom: 0 }}>
-            DAW-style multi-track timeline tracking each actor's entry, dwell duration, object interactions, and trajectory exit.
+            DAW-style multi-track timeline tracking each actor&apos;s entry, dwell duration, object interactions, and trajectory exit.
           </p>
         </div>
 

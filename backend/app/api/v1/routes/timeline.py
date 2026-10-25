@@ -142,7 +142,22 @@ async def serve_crop(job_id: str, filename: str):
         if globbed:
             file_path = globbed[0]
 
-    if not file_path.exists() or not file_path.is_file():
+    if not file_path or not file_path.exists():
+        # Fallback to search by person prefix (e.g. person_1)
+        prefix = filename.split("_")[0] + "_" + filename.split("_")[1] if "_" in filename else filename
+        for candidate_dir in [
+            get_storage_root().parent / "storage" / "uploads" / job_id / "crops",
+            Path(r"C:\Users\USER\storage\uploads") / job_id / "crops",
+            get_storage_root() / "crops" / job_id,
+            Path("outputs") / job_id / "crops",
+        ]:
+            if candidate_dir.exists():
+                matches = sorted(candidate_dir.glob(f"{prefix}*.jpg"))
+                if matches:
+                    file_path = matches[0]
+                    break
+
+    if not file_path or not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404, detail=f"Crop not found: {filename}")
 
     return FileResponse(
@@ -195,9 +210,53 @@ async def get_timeline(video_id: str):
     if latest_job:
         person_gallery = latest_job.get("person_gallery") or {}
 
+    crops_dir = None
+    for candidate_dir in [
+        Path(r"C:\Users\USER\storage\uploads") / job_id / "crops",
+        Path("outputs") / job_id / "crops",
+        Path("storage") / "uploads" / job_id / "crops",
+    ]:
+        if candidate_dir.exists():
+            crops_dir = candidate_dir
+            break
+
+    # If person_gallery is missing or has fragmented unclustered tracks, consolidate dynamically
+    if (not person_gallery or len(person_gallery) > 4) and enriched_events:
+        try:
+            from app.utils.person_cluster import cluster_tracks_into_persons
+            clustered_t2p, clustered_gallery = cluster_tracks_into_persons(
+                clips=enriched_events,
+                crops_dir=crops_dir,
+                raw_gallery=None,
+            )
+            if clustered_t2p and (not person_gallery or len(clustered_gallery) < len(person_gallery)):
+                person_gallery = clustered_gallery
+                for evt in enriched_events:
+                    tid = evt.get("track_id")
+                    if tid in clustered_t2p:
+                        evt["person_label"] = clustered_t2p[tid]
+                        if evt.get("evidence"):
+                            evt["evidence"]["person_label"] = clustered_t2p[tid]
+        except Exception:
+            pass
+
     # Build persons list for UI — one entry per unique "Person N"
     persons: list[dict] = []
     for label, entry in sorted(person_gallery.items()):
+        crop_path = entry.get("best_crop_path")
+        if not crop_path or not Path(crop_path).exists():
+            prefix = label.lower().replace(" ", "_")
+            for candidate_dir in [
+                Path(r"C:\Users\USER\storage\uploads") / job_id / "crops",
+                Path("outputs") / job_id / "crops",
+                Path("storage") / "uploads" / job_id / "crops",
+            ]:
+                if candidate_dir.exists():
+                    matches = sorted(candidate_dir.glob(f"{prefix}*.jpg"))
+                    if matches:
+                        crop_path = str(matches[0])
+                        break
+
         persons.append({
             "person_label":      label,
             "description":       entry.get("description"),
@@ -205,7 +264,7 @@ async def get_timeline(video_id: str):
             "last_seen_ms":      entry.get("last_seen_ms", 0),
             "observation_count": entry.get("observation_count", 0),
             "entry_direction":   entry.get("entry_direction"),
-            "crop_url":          _make_crop_url(entry.get("best_crop_path"), job_id),
+            "crop_url":          _make_crop_url(crop_path, job_id),
             "context_url":       _make_crop_url(entry.get("context_path"), job_id),
             "track_ids":         entry.get("track_ids", []),
         })

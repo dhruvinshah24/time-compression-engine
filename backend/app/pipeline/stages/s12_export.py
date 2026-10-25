@@ -302,6 +302,7 @@ async def run(context: PipelineContext) -> StageResult:
             "event_id": event.event_id,
             "event_type": event.event_type,
             "track_id": event.track_id,
+            "person_label": evidence.get("person_label") or getattr(event, "person_label", None),
             "start_ms": event.start_ms,
             "end_ms": event.end_ms,
             "duration_ms": event.end_ms - event.start_ms,
@@ -358,12 +359,34 @@ async def run(context: PipelineContext) -> StageResult:
     if video_quality_report:
         quality_summary = video_quality_report.summary_dict()
 
+    person_gallery = context.metadata.get("person_gallery", {})
+    track_to_label = context.metadata.get("track_to_label", {})
+    try:
+        from app.utils.person_cluster import cluster_tracks_into_persons
+        crops_dir = job_output_dir / "crops"
+        clustered_track_to_person, clustered_gallery = cluster_tracks_into_persons(
+            clips=clips,
+            crops_dir=crops_dir if crops_dir.exists() else None,
+            raw_gallery=person_gallery if person_gallery else None,
+        )
+        if clustered_track_to_person:
+            track_to_label = clustered_track_to_person
+            person_gallery = clustered_gallery
+            for c in clips:
+                tid = c.get("track_id")
+                if tid in track_to_label:
+                    c["person_label"] = track_to_label[tid]
+    except Exception as exc:
+        logger.debug("Export stage person clustering fallback: %s", exc)
+
     export_manifest = {
         "job_id": context.job_id,
         "video_id": context.video_id,
         "source_video": video_path,
         "processing_profile": processing_profile,
         "video_quality": quality_summary,
+        "person_gallery": person_gallery,
+        "track_to_label": track_to_label,
         "narrative_validation": {
             "is_valid": validation_report.is_valid,
             "errors": len(validation_report.errors()),

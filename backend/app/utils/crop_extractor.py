@@ -216,7 +216,7 @@ def extract_and_save_crops(
             track.exit_direction = exit_dir
 
     # Consolidate any over-segmented identities with high appearance similarity
-    merges = gallery.consolidate_gallery(threshold=0.72)
+    merges = gallery.consolidate_gallery(threshold=0.58)
     if merges > 0:
         logger.info("[CropExtractor] Post-ReID consolidation merged %d fragmented person identities", merges)
         # Refresh track_to_label mappings from gallery

@@ -50,10 +50,10 @@ logger = logging.getLogger(__name__)
 # ── Velocity thresholds (normalised frame-units per extracted frame) ───────────
 # One "unit" = full frame width or height traversal in one extracted frame.
 # At frame_skip=5, fps=30: each extracted frame = 5/30 = 0.167s apart.
-STILL_THRESHOLD         = 0.003   # cx/cy change < this → effectively stationary
-WALK_THRESHOLD          = 0.008   # moderate walking pace
-RUN_THRESHOLD           = 0.022   # fast movement (running)
-STAIR_VERT_THRESHOLD    = 0.005   # sustained vertical velocity → stairs
+STILL_THRESHOLD         = 0.020   # velocity (units/sec) < this → effectively stationary
+WALK_THRESHOLD          = 0.060   # moderate walking pace (units/sec)
+RUN_THRESHOLD           = 0.480   # true sprinting/running velocity (units/sec)
+STAIR_VERT_THRESHOLD    = 0.140   # sustained vertical velocity → stairs (units/sec)
 CYCLE_HORIZ_THRESHOLD   = 0.018   # high horizontal speed → possible cycling
 LOITER_STILL_SEC        = 12.0    # seconds of minimal movement → loitering
 
@@ -246,7 +246,7 @@ class ActivityClassifier:
             )
 
         # Stair walking
-        if stair_conf >= 0.55 and mean_speed >= WALK_THRESHOLD:
+        if stair_conf >= 0.70 and mean_speed >= WALK_THRESHOLD and abs(obs[-1].bbox.cy - obs[0].bbox.cy) > 0.12:
             label = f"walking_{stair_dir}stairs"
             return ActivityResult(
                 label=label,

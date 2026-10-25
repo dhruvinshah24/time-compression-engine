@@ -705,7 +705,7 @@ async def run(context: PipelineContext) -> StageResult:
         }
 
         # Phase 6E.13 Feature Flag: enable_scene_stair_guard (default False preserves baseline)
-        enable_scene_stair_guard = bool(context.settings.get("enable_scene_stair_guard", False))
+        enable_scene_stair_guard = bool(context.settings.get("enable_scene_stair_guard", True))
         stair_guard = None
         frame_paths_map: dict[int, str] = {}
         if enable_scene_stair_guard:

@@ -302,6 +302,8 @@ async def run(context: PipelineContext) -> StageResult:
             "event_id": event.event_id,
             "event_type": event.event_type,
             "track_id": event.track_id,
+            "person_label": evidence.get("person_label") or getattr(event, "person_label", None),
+            "description": evidence.get("description", ""),
             "start_ms": event.start_ms,
             "end_ms": event.end_ms,
             "duration_ms": event.end_ms - event.start_ms,

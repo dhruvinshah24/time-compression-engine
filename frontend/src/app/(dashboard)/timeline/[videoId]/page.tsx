@@ -87,10 +87,10 @@ export interface TimelineData {
 
 const PERSON_ACCENTS = [
   { text: 'text-amber-400',   border: 'border-amber-400/40',   bg: 'bg-amber-400/10',   hex: '#f59e0b', tag: 'PRIMARY SUBJECT' },
-  { text: 'text-cyan-400',    border: 'border-cyan-400/40',    bg: 'bg-cyan-400/10',    hex: '#00d4ff', tag: 'CO-ACTOR · CORRIDOR' },
-  { text: 'text-emerald-400', border: 'border-emerald-400/40', bg: 'bg-emerald-400/10', hex: '#10b981', tag: 'WORKSTATION A' },
-  { text: 'text-violet-400',  border: 'border-violet-400/40',  bg: 'bg-violet-400/10',  hex: '#a78bfa', tag: 'WORKSTATION B' },
-  { text: 'text-rose-400',    border: 'border-rose-400/40',    bg: 'bg-rose-400/10',    hex: '#fb7185', tag: 'REAR WORKSPACE' },
+  { text: 'text-cyan-400',    border: 'border-cyan-400/40',    bg: 'bg-cyan-400/10',    hex: '#00d4ff', tag: 'COLLABORATOR' },
+  { text: 'text-emerald-400', border: 'border-emerald-400/40', bg: 'bg-emerald-400/10', hex: '#10b981', tag: 'PARTICIPANT' },
+  { text: 'text-violet-400',  border: 'border-violet-400/40',  bg: 'bg-violet-400/10',  hex: '#a78bfa', tag: 'OBSERVER' },
+  { text: 'text-rose-400',    border: 'border-rose-400/40',    bg: 'bg-rose-400/10',    hex: '#fb7185', tag: 'SUBJECT' },
 ];
 
 const getAccent = (index: number) => PERSON_ACCENTS[index % PERSON_ACCENTS.length];
@@ -118,12 +118,9 @@ const isAnomalyEvent = (e: EventRecord) => {
   return (
     t.includes('theft') ||
     t.includes('stolen') ||
-    t.includes('pocketed') ||
-    t.includes('picked_up') ||
-    t.includes('unattended') ||
-    t.includes('disappeared') ||
-    t.includes('package_left') ||
-    t.includes('tampering')
+    t.includes('unattended_bag') ||
+    t.includes('tampering') ||
+    t.includes('unauthorized')
   );
 };
 

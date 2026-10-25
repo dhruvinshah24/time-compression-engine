@@ -299,7 +299,7 @@ def run_activity_state_machine(
                 state = ActivityState.WALKING
                 state_start_obs = o
             elif vel < STILL_VELOCITY_THRESHOLD:
-                if near_chair or pose_label == "sitting":
+                if pose_label == "sitting":
                     state = ActivityState.SITTING
                     standing_cy = o.bbox.cy - SITTING_CY_DROP
                     events.append(ActivityEvent(
@@ -328,7 +328,7 @@ def run_activity_state_machine(
         elif state == ActivityState.WALKING:
             if vel < STILL_VELOCITY_THRESHOLD:
                 # Stopped moving — sitting or standing?
-                if near_chair or pose_label == "sitting":
+                if pose_label == "sitting":
                     state = ActivityState.SITTING
                     standing_cy = o.bbox.cy - SITTING_CY_DROP
                     events.append(ActivityEvent(
@@ -389,7 +389,7 @@ def run_activity_state_machine(
                         },
                     ))
                 state_start_obs = o
-            elif (near_chair or pose_label == "sitting") and state_dur_ms >= 6000.0:
+            elif (pose_label == "sitting" or (near_chair and standing_cy is not None and o.bbox.cy > standing_cy + SITTING_CY_DROP)) and state_dur_ms >= 6000.0:
                 state = ActivityState.SITTING
                 standing_cy = o.bbox.cy - SITTING_CY_DROP
                 events.append(ActivityEvent(

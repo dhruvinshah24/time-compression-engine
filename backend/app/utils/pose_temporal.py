@@ -71,8 +71,8 @@ _BODY_HEIGHT_CROUCHING_MAX  = 0.18   # bbox height < 18% frame height → likely
 _BODY_HEIGHT_CRAWLING_MAX   = 0.15   # bbox height < 15% frame height → possibly crawling
 _BODY_HEIGHT_FALLEN_MAX     = 0.12   # very low → possibly fallen / sitting on floor
 _ASPECT_RATIO_HORIZONTAL    = 1.8    # width/height > 1.8 → horizontal body orientation
-_HORIZONTAL_DISP_WALKING    = 0.005  # >0.5% frame width per frame = walking speed
-_HORIZONTAL_DISP_RUNNING    = 0.020  # >2% frame width per frame = running speed
+_HORIZONTAL_DISP_WALKING    = 0.012  # lateral movement per frame
+_HORIZONTAL_DISP_RUNNING    = 0.075  # true running speed per frame
 _HORIZONTAL_DISP_CRAWLING   = 0.003  # >0.3% frame width per frame while crouched = crawling
 
 
@@ -337,19 +337,16 @@ class TemporalPoseAnalyzer:
     ) -> str:
         """Classify a single frame into a candidate pose state."""
 
-        # Priority 1: FALLEN — sudden horizontal body
-        if aspect_ratio >= _ASPECT_RATIO_HORIZONTAL and body_height < _BODY_HEIGHT_FALLEN_MAX:
+        # Priority 1: FALLEN — horizontal aspect ratio and collapsed height
+        if aspect_ratio >= 1.8 and body_height < 0.10:
             return STATE_FALLEN
 
-        # Priority 2: CRAWLING — low body height + lateral movement
-        if (
-            body_height < _BODY_HEIGHT_CRAWLING_MAX
-            and horiz_disp >= _HORIZONTAL_DISP_CRAWLING
-        ):
+        # Priority 2: CRAWLING — wide aspect ratio and low height with lateral movement
+        if aspect_ratio >= 1.2 and body_height < 0.12 and horiz_disp >= _HORIZONTAL_DISP_CRAWLING:
             return STATE_CRAWLING
 
-        # Priority 3: CROUCHING — low body height, little movement
-        if body_height < _BODY_HEIGHT_CROUCHING_MAX:
+        # Priority 3: CROUCHING — wide aspect ratio (bending/squatting)
+        if aspect_ratio >= 0.95 and body_height < 0.14:
             return STATE_CROUCHING
 
         # Priority 4: LOWERING — body height decreasing (transitional)

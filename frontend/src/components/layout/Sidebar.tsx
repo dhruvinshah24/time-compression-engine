@@ -19,7 +19,7 @@ export function Sidebar() {
   const timelineMatch = pathname.match(/\/timeline\/([^/]+)/);
   const storiesMatch  = pathname.match(/\/stories\/([^/]+)/);
   const summaryMatch  = pathname.match(/\/summary\/([^/]+)/);
-  const contextVideoId = timelineMatch?.[1] ?? storiesMatch?.[1] ?? summaryMatch?.[1] ?? 'VID-EBBEF071C0EA';
+  const contextVideoId = timelineMatch?.[1] ?? storiesMatch?.[1] ?? summaryMatch?.[1] ?? '';
 
   const getIsActive = (href: string) => {
     if (href === '/') {

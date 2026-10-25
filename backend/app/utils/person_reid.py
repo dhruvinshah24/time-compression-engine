@@ -43,7 +43,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
-SIMILARITY_THRESHOLD = 0.65      # cosine sim threshold (lowered from 0.62 — same person
+SIMILARITY_THRESHOLD = 0.58      # cosine sim threshold (lowered from 0.62 — same person
                                   # from different angles scores ~0.55-0.70 on MobileNetV3)
 MAX_GALLERY_AGE_MS   = 300_000   # remember person for 5 min of absence (was 2 min)
 EMBEDDING_DIM_HIST   = 144       # 6 bands × 3 channels × 8 bins
@@ -324,7 +324,7 @@ class PersonGallery:
             }
         return out
 
-    def consolidate_gallery(self, threshold: float = 0.72) -> int:
+    def consolidate_gallery(self, threshold: float = 0.58) -> int:
         """
         Merge gallery entries that represent the same person (cosine_sim >= threshold).
         Returns number of merges performed.

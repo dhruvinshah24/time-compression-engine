@@ -141,7 +141,7 @@ _SMALL_POCKET_CLASSES = frozenset({
 _PICK_UP_CLASSES = frozenset({
     "bottle", "cup", "mug", "coffee_mug", "book", "remote_control",
     "remote", "phone", "smartphone", "wallet", "glasses", "backpack",
-    "handbag", "briefcase", "laptop", "box", "package",
+    "handbag", "briefcase", "box", "package",
 })
 
 # Background fixtures — never fire pickup/interaction for these

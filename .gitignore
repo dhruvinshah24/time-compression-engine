@@ -83,6 +83,7 @@ datasets/benchmarks/**
 *.mov
 *.webm
 *.pt
+!backend/models/nightvision-unisv-five-v1.pt
 *.onnx
 *.pth
 *.bin

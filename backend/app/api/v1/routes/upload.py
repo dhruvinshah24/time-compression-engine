@@ -23,6 +23,8 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from app.pipeline.context import PipelineContext
+from app.core.config import settings as app_settings
+from pathlib import Path
 from app.pipeline.orchestrator import PipelineOrchestrator
 from app.repositories.inmemory import get_event_repo, get_job_repo, get_video_repo
 from app.utils.ffmpeg import (
@@ -87,6 +89,7 @@ async def upload_video(
     file: UploadFile = File(...),
     source_domain: str = Form(default="general"),
     model_profile: str = Form(default=_DEFAULT_PROFILE),
+    detection_mode: str = Form(default="standard"),
 ):
     """
     Accept a video upload, probe its metadata, and start the TCE pipeline.
@@ -96,6 +99,10 @@ async def upload_video(
     """
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided.")
+    if detection_mode not in ("standard", "night_vision"):
+        raise HTTPException(status_code=422, detail="Choose standard or night_vision detection.")
+    if detection_mode == "night_vision" and not Path(app_settings.NIGHT_VISION_WEIGHTS).is_file():
+        raise HTTPException(status_code=503, detail="Experimental night-vision model is not installed.")
 
     video_id = _video_id()
     job_id = _job_id()
@@ -187,6 +194,7 @@ async def upload_video(
         raise HTTPException(status_code=422, detail=f"Video probe failed: {exc}") from exc
 
     logger.info("[%s] Probe: %s", job_id, video_meta_dict.get("profile", "unknown"))
+    video_meta_dict["detection_mode"] = detection_mode
 
     # ── 3. Create Video + Job records ──────────────────────────────────────
     video_repo = get_video_repo()
@@ -234,6 +242,7 @@ async def upload_video(
         "ffprobe_available":    ffprobe_available,
         # Phase 3: model selection recorded for research evaluation
         "model_profile":        model_profile,
+        "detection_mode":       detection_mode,
         "detection_model":      resolved_detection_model,
         "pose_model":           resolved_pose_model,
     }
@@ -249,6 +258,8 @@ async def upload_video(
         settings={
             "source_domain":    source_domain,
             "model_profile":    model_profile,    # stored for research evaluation
+            "detection_mode":   detection_mode,
+            "night_vision_weights": app_settings.NIGHT_VISION_WEIGHTS if detection_mode == "night_vision" else None,
 
             # ── Frame extraction ─────────────────────────────────────────────
             # frame_skip_rate: fixed fallback used by S02 before adaptive skip.
@@ -319,6 +330,7 @@ async def upload_video(
     )
 
     orchestrator = PipelineOrchestrator(job_repo=job_repo, event_repo=event_repo)
+    await job_repo.update(job_id, {"settings": dict(context.settings)})
 
     async def run_pipeline() -> None:
         try:
@@ -340,6 +352,7 @@ async def upload_video(
         "filename":        file.filename,
         "status":          "queued",
         "model_profile":   model_profile,
+        "detection_mode":  detection_mode,
         "detection_model": resolved_detection_model,
         "metadata":        video_meta_dict,
     }

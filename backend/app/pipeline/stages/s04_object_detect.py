@@ -423,6 +423,21 @@ async def run(context: PipelineContext) -> StageResult:
             logs=logs,
         )
 
+    detection_mode = context.settings.get("detection_mode", "standard")
+    if detection_mode == "night_vision":
+        try:
+            from app.utils.night_vision import replace_person_detections, MODEL_NAME
+            count = replace_person_detections(
+                result, context.settings.get("night_vision_weights") or "",
+                frames_to_detect, confidence,
+            )
+            logs.append(f"[{STAGE_NAME}] Night Vision — Experimental: {MODEL_NAME}, {count} person boxes; standard model retained for other objects")
+            warnings.append("Experimental infrared person model trained with automatic labels on five videos; accuracy is not independently verified.")
+        except Exception as exc:
+            return StageResult(success=False, stage_name=STAGE_NAME,
+                duration_ms=int((time.perf_counter() - start) * 1000),
+                errors=[f"Experimental night-vision detection failed: {exc}"], logs=logs)
+
     # ── Step 7: Tag each FrameDetectionResult with quality provenance (NEW) ──
     # Attach lighting_condition and preprocessing_mode to each frame result.
     # S07 and S08 can then use this to discount low-light detections.
@@ -451,6 +466,13 @@ async def run(context: PipelineContext) -> StageResult:
             f"{pre_filter_count} → {new_total} detections"
         )
 
+    # Refresh counts after replacement and confidence filtering.
+    result.total_detections = sum(len(f.detections) for f in result.frame_results)
+    result.frames_with_detections = sum(bool(f.detections) for f in result.frame_results)
+    result.avg_inference_time_ms = (
+        sum(f.inference_time_ms for f in result.frame_results) / len(result.frame_results)
+        if result.frame_results else 0.0
+    )
     # ── Step 9: Store in context ──────────────────────────────────────────────
     context.metadata["detection_result"]   = result
     context.metadata["frame_detections"]   = result.frame_results
@@ -496,6 +518,10 @@ async def run(context: PipelineContext) -> StageResult:
         )
 
     metrics = result.to_metrics_dict()
+    metrics["detection_mode"] = detection_mode
+    if detection_mode == "night_vision":
+        metrics["night_vision_weights"] = context.settings["night_vision_weights"]
+        metrics["night_vision_person_detections"] = result.detections_by_class().get("person", 0)
 
     # Add quality metrics to stage metrics
     if frame_quality_report:

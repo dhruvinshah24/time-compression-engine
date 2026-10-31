@@ -46,6 +46,7 @@ export default function UploadPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [domain, setDomain] = useState('cctv_indoor');
   const [modelProfile, setModelProfile] = useState<'accuracy' | 'balanced' | 'fast'>('balanced');
+  const [detectionMode, setDetectionMode] = useState('standard');
   const xhrRef = useRef<XMLHttpRequest | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -85,6 +86,7 @@ export default function UploadPage() {
     formData.append('file', file);
     formData.append('source_domain', domain);
     formData.append('model_profile', modelProfile);
+    formData.append('detection_mode', detectionMode);
 
     try {
       const result = await new Promise<UploadResult>((resolve, reject) => {
@@ -363,6 +365,22 @@ export default function UploadPage() {
         )}
 
         {/* Step 3: Model & Inference Engine Profile */}
+        {!uploadResult && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label htmlFor="detection-mode" style={{ fontSize: 13, fontWeight: 700 }}>Video type</label>
+            <select id="detection-mode" value={detectionMode} disabled={uploading}
+              onChange={(event) => setDetectionMode(event.target.value)}
+              style={{ padding: 12, borderRadius: 6, backgroundColor: 'var(--bg-inset)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
+              <option value="standard">Standard video</option>
+              <option value="night_vision">Night Vision — Experimental</option>
+            </select>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
+              {detectionMode === 'night_vision'
+                ? 'For infrared footage. Uses the experimental person model and keeps other object detection. Trained on five videos; accuracy is not yet independently verified.'
+                : 'Use the standard detector for daytime and ordinary colour footage.'}
+            </p>
+          </div>
+        )}
         {!uploadResult && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

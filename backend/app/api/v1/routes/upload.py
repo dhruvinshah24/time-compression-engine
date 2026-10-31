@@ -79,7 +79,7 @@ try:
 except Exception:
     _HAS_CUDA = False
 
-_DEFAULT_PROFILE = "accuracy" if _HAS_CUDA else "balanced"
+_DEFAULT_PROFILE = "balanced"
 
 
 @router.post("/")
@@ -286,7 +286,8 @@ async def upload_video(
             },
 
             # ── SAHI sliced inference ─────────────────────────────────────────
-            "use_sahi":                     _HAS_CUDA,
+            # Keep normal uploads fast; sliced inference is an opt-in setting.
+            "use_sahi":                     False,
             "sahi_tile_size":               640,
             "sahi_overlap":                 0.2,
 

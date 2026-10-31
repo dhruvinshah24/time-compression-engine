@@ -2226,6 +2226,10 @@ export default function ForensicTimelinePage() {
           {/* ── TAB 4: NARRATIVE ──────────────────────────────────────── */}
           {activeTab === 'Narrative' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <Link href={`/stories/${videoId}`} className="btn btn-secondary" style={{ fontSize: 12 }}>
+                <Sparkles size={14} />
+                <span>Story Arcs Studio</span>
+              </Link>
               <div className="card-inset" style={{ padding: 12 }}>
                 <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent)', display: 'block', marginBottom: 6 }}>
                   INTELLIGENCE OVERVIEW

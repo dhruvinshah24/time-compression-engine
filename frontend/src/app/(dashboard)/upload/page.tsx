@@ -45,7 +45,7 @@ export default function UploadPage() {
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [domain, setDomain] = useState('cctv_indoor');
-  const [modelProfile, setModelProfile] = useState<'accuracy' | 'balanced' | 'fast'>('accuracy');
+  const [modelProfile, setModelProfile] = useState<'accuracy' | 'balanced' | 'fast'>('balanced');
   const xhrRef = useRef<XMLHttpRequest | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {

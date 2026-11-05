@@ -1,15 +1,20 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { Menu } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { api } from '@/lib/api/client';
 
 const ROUTE_LABELS: Record<string, string> = {
-  '/':          'Dashboard',
-  '/upload':    'Upload',
-  '/events':    'Events',
-  '/analytics': 'Analytics',
-  '/settings':  'Settings',
+  '/':           'Dashboard',
+  '/timeline':   'Timelines',
+  '/stories':    'Story Arcs',
+  '/processing': 'Processing Jobs',
+  '/summary':    'Executive Summaries',
+  '/upload':     'Upload',
+  '/events':     'Events',
+  '/analytics':  'Analytics',
+  '/settings':   'Settings',
 };
 
 function getBreadcrumb(pathname: string): string {
@@ -25,6 +30,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const page = getBreadcrumb(pathname);
   const isTimeline = pathname.startsWith('/timeline/');
   const [health, setHealth] = useState<any>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -32,6 +38,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
       .then((res) => { if (mounted) setHealth(res); })
       .catch(() => {});
     return () => { mounted = false; };
+  }, []);
+
+  // Close drawer on route change
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
+
+  // Close drawer on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileNavOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const isOnline = health?.status === 'ok';
@@ -44,17 +64,63 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100%', overflow: 'hidden', backgroundColor: 'var(--bg-main)' }}>
+      {/* Desktop Persistent Sidebar */}
       <Sidebar />
 
+      {/* Mobile Slide-Over Drawer + Backdrop */}
+      {mobileNavOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            className="fixed inset-y-0 left-0 z-50 lg:hidden shadow-2xl flex"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Main Navigation Menu"
+          >
+            <Sidebar
+              isMobileDrawer
+              onNavigate={() => setMobileNavOpen(false)}
+              onClose={() => setMobileNavOpen(false)}
+            />
+          </div>
+        </>
+      )}
+
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', minWidth: 0 }}>
-        {/* Top bar — only on standard dashboard pages */}
+        {/* Mobile Top Header (always available on <lg screens) */}
+        <div className="flex lg:hidden h-12 shrink-0 items-center justify-between px-3 sm:px-4 bg-[var(--bg-sidebar)] border-b border-[var(--border)] sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileNavOpen(true)}
+              aria-label="Open navigation menu"
+              className="p-1.5 rounded bg-[var(--bg-panel)] hover:bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer"
+            >
+              <Menu size={18} />
+            </button>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="font-mono text-[10px] text-[var(--accent)] font-bold px-1.5 py-0.5 rounded bg-[var(--accent-bg)] border border-[var(--accent-dim)]">TCE</span>
+              <span className="text-[var(--text-muted)] font-mono text-[11px]">/</span>
+              <span className="text-[var(--text-primary)] font-semibold truncate max-w-[180px] sm:max-w-xs">{page}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-[var(--accent)]' : 'bg-[var(--warning)]'} animate-pulse`} />
+            <span className="text-[10px] font-mono text-[var(--text-muted)] hidden sm:inline">Active</span>
+          </div>
+        </div>
+
+        {/* Desktop Top bar — standard dashboard pages */}
         {!isTimeline && (
-          <header style={{
+          <header className="hidden lg:flex" style={{
             height: 50,
             flexShrink: 0,
             borderBottom: '1px solid var(--border)',
             backgroundColor: 'var(--bg-sidebar)',
-            display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '0 24px',
@@ -88,14 +154,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </header>
         )}
 
-        <main style={{
-          flex: 1,
-          padding: isTimeline ? '16px 20px' : '24px 28px',
-          maxWidth: isTimeline ? '100%' : 1400,
-          width: '100%',
-          margin: isTimeline ? '0' : '0 auto',
-          boxSizing: 'border-box'
-        }}>
+        <main className={isTimeline ? "p-3 sm:p-4 lg:p-5 w-full flex-1 box-border" : "p-4 sm:p-6 lg:p-7 max-w-[1400px] w-full mx-auto flex-1 box-border"}>
           {children}
         </main>
       </div>

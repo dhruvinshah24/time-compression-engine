@@ -3,11 +3,17 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, Clock, Zap, GitFork, Upload, BarChart3, Settings
+  LayoutDashboard, Clock, Zap, GitFork, Upload, BarChart3, Settings, X
 } from 'lucide-react';
 import { api } from '@/lib/api/client';
 
-export function Sidebar() {
+export interface SidebarProps {
+  onNavigate?: () => void;
+  onClose?: () => void;
+  isMobileDrawer?: boolean;
+}
+
+export function Sidebar({ onNavigate, onClose, isMobileDrawer = false }: SidebarProps) {
   const pathname = usePathname();
   const [firstVideoId, setFirstVideoId] = useState<string>('VID-PHASE6-06CE78E1');
 
@@ -71,21 +77,16 @@ export function Sidebar() {
 
   return (
     <aside
-      style={{
-        width: 220,
-        flexShrink: 0,
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: 'var(--bg-sidebar)',
-        borderRight: '1px solid var(--border)',
-        zIndex: 20,
-        userSelect: 'none',
-      }}
+      className={isMobileDrawer ? 'w-64 h-full flex flex-col bg-[var(--bg-sidebar)] border-r border-[var(--border)] select-none' : 'hidden lg:flex w-[220px] shrink-0 h-screen flex-col bg-[var(--bg-sidebar)] border-r border-[var(--border)] z-20 select-none'}
     >
       {/* Brand */}
-      <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid var(--border-dim)' }}>
-        <Link href="/" prefetch={true} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+      <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid var(--border-dim)' }} className="flex items-center justify-between">
+        <Link
+          href="/"
+          prefetch={true}
+          onClick={() => onNavigate?.()}
+          style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}
+        >
           <div style={{
             width: 28, height: 28, borderRadius: 6,
             backgroundColor: 'var(--accent-bg)',
@@ -100,6 +101,16 @@ export function Sidebar() {
             <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>Engine</span>
           </div>
         </Link>
+
+        {isMobileDrawer && onClose && (
+          <button
+            onClick={onClose}
+            aria-label="Close navigation menu"
+            className="p-1 rounded hover:bg-white/5 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -111,6 +122,7 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               prefetch={true}
+              onClick={() => onNavigate?.()}
               onMouseEnter={() => prewarmData(item.href)}
               style={{ textDecoration: 'none' }}
             >

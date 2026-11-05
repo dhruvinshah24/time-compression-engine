@@ -38,11 +38,16 @@ const config: Config = {
         "accent-bg":      "#223A32",
         "text-on-accent": "#0F1915",
 
+        /* Tactical HUD */
+        "cyan-hud":       "#00D4FF",
+
         /* Semantic — distinct from Jade */
         "success":     "#48BB78",
         "success-bg":  "#1A2F23",
+        "warning":     "#E0A96D",
         "warning-c":   "#E0A96D",
         "warning-bg":  "#352818",
+        "danger":      "#E56B6F",
         "danger-c":    "#E56B6F",
         "danger-bg":   "#361D20",
       },

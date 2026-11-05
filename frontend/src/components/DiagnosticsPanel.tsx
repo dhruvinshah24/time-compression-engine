@@ -23,7 +23,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown, ChevronUp, Loader2, AlertCircle,
-  Activity, Eye, Layers, Clock, Package,
+  Activity, Eye, Layers, Clock, Package, X
 } from 'lucide-react';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
@@ -35,6 +35,7 @@ interface StageTimingRow {
   label: string;
   status: 'pending' | 'running' | 'success' | 'failed';
   duration_ms: number | null;
+  error_count?: number;
 }
 
 interface FrameStats {
@@ -71,8 +72,10 @@ interface DiagnosticsData {
   frame_stats?: FrameStats | null;
   detection_stats?: DetectionStats | null;
   event_stats?: EventStats | null;
+  stage_summary?: StageTimingRow[] | null;
   stage_timing?: StageTimingRow[] | null;
   export_stats?: ExportStats | null;
+  total_processing_ms?: number | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -131,15 +134,17 @@ export interface DiagnosticsPanelProps {
   jobId: string;
   /** Poll interval in ms. Default 3000. Pass 0 to disable polling. */
   refreshInterval?: number;
+  initialOpen?: boolean;
   onClose?: () => void;
 }
 
 export default function DiagnosticsPanel({
   jobId,
   refreshInterval = 3000,
+  initialOpen = true,
   onClose,
 }: DiagnosticsPanelProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
   const [data, setData] = useState<DiagnosticsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -182,23 +187,36 @@ export default function DiagnosticsPanel({
   }, [open, fetchDiagnostics, refreshInterval]);
 
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
-      {/* Toggle button */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/[0.04] transition-colors"
-      >
-        <Activity className="w-4 h-4 text-white/40" />
-        <span className="text-sm font-medium text-white/70">Diagnostics</span>
-        {loading && open && (
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-white/30 ml-1" />
+    <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] overflow-hidden" id="diagnostics-panel">
+      {/* Header bar with title, toggle & optional close */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white/[0.03] border-b border-white/[0.06]">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-3 text-left hover:text-white transition-colors cursor-pointer flex-1"
+          aria-expanded={open}
+        >
+          <Activity className="w-4 h-4 text-[var(--accent)]" />
+          <span className="text-sm font-semibold text-white/90">Engine Diagnostics Telemetry</span>
+          {loading && open && (
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent)] ml-1" />
+          )}
+          <span className="ml-2 text-white/40">
+            {open
+              ? <ChevronUp className="w-4 h-4" />
+              : <ChevronDown className="w-4 h-4" />}
+          </span>
+        </button>
+
+        {onClose && (
+          <button
+            onClick={onClose}
+            aria-label="Close diagnostics panel"
+            className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
         )}
-        <span className="ml-auto">
-          {open
-            ? <ChevronUp className="w-4 h-4 text-white/30" />
-            : <ChevronDown className="w-4 h-4 text-white/30" />}
-        </span>
-      </button>
+      </div>
 
       <AnimatePresence initial={false}>
         {open && (
@@ -304,34 +322,38 @@ export default function DiagnosticsPanel({
                   )}
 
                   {/* 4. Stage Timing */}
-                  {data.stage_timing && data.stage_timing.length > 0 && (
-                    <Section icon={Clock} title="Stage Timing">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="text-white/25 uppercase tracking-wider">
-                              <th className="text-left pb-1.5 pr-4 font-normal">Stage</th>
-                              <th className="text-left pb-1.5 pr-4 font-normal">Status</th>
-                              <th className="text-right pb-1.5 font-normal">Duration</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-white/[0.04]">
-                            {data.stage_timing.map((s) => (
-                              <tr key={s.name}>
-                                <td className="py-1 pr-4 text-white/60 font-mono">{s.label || s.name}</td>
-                                <td className={`py-1 pr-4 font-medium ${stageStatusColor(s.status)}`}>
-                                  {s.status}
-                                </td>
-                                <td className="py-1 text-right font-mono text-white/50">
-                                  {fmtMs(s.duration_ms)}
-                                </td>
+                  {(() => {
+                    const stages = data.stage_summary || data.stage_timing;
+                    if (!stages || stages.length === 0) return null;
+                    return (
+                      <Section icon={Clock} title="Stage Execution Timing">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="text-white/25 uppercase tracking-wider">
+                                <th className="text-left pb-1.5 pr-4 font-normal">Stage</th>
+                                <th className="text-left pb-1.5 pr-4 font-normal">Status</th>
+                                <th className="text-right pb-1.5 font-normal">Duration</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </Section>
-                  )}
+                            </thead>
+                            <tbody className="divide-y divide-white/[0.04]">
+                              {stages.map((s) => (
+                                <tr key={s.name}>
+                                  <td className="py-1 pr-4 text-white/60 font-mono">{s.label || s.name}</td>
+                                  <td className={`py-1 pr-4 font-medium ${stageStatusColor(s.status)}`}>
+                                    {s.status}
+                                  </td>
+                                  <td className="py-1 text-right font-mono text-white/50">
+                                    {fmtMs(s.duration_ms)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </Section>
+                    );
+                  })()}
 
                   {/* 5. Export */}
                   {data.export_stats && (
@@ -350,7 +372,7 @@ export default function DiagnosticsPanel({
                     !data.detection_stats &&
                     !data.event_stats &&
                     !data.export_stats &&
-                    (!data.stage_timing || data.stage_timing.length === 0) && (
+                    (!(data.stage_summary || data.stage_timing) || (data.stage_summary || data.stage_timing)!.length === 0) && (
                       <p className="text-xs text-white/25 text-center py-2">
                         No diagnostic data returned by the backend.
                       </p>

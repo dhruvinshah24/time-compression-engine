@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import {
   X, Loader2, AlertCircle, Play, Clock, User,
   Shield, Info, Eye, MapPin, TrendingUp, Zap, CheckCircle2
@@ -103,10 +104,12 @@ function FrameImage({
         minHeight: 120, backgroundColor: '#0D1013'
       }}
     >
-      <img
+      <Image
         src={src}
         alt={label}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', maxHeight: 150 }}
+        fill
+        unoptimized
+        style={{ objectFit: 'cover' }}
         onLoad={() => setLoaded(true)}
         onError={() => setErrored(true)}
       />
@@ -198,10 +201,10 @@ export default function EventPreviewModal({ eventId, eventType, confidence, star
         }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-              <span className="badge badge-accent" style={{ fontSize: 10 }}>
+              <span className="badge badge-accent">
                 Verification Frame Context
               </span>
-              <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                 {eventId}
               </span>
             </div>
@@ -225,6 +228,7 @@ export default function EventPreviewModal({ eventId, eventType, confidence, star
 
           <button
             onClick={onClose}
+            aria-label="Close event preview modal"
             className="btn btn-ghost"
             style={{ width: 28, height: 28, padding: 0 }}
           >

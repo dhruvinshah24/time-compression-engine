@@ -34,6 +34,7 @@ interface EventRecord {
 interface VideoRecord {
   id: string;
   filename?: string;
+  source_domain?: string;
   metadata?: {
     duration_hms?: string;
     resolution?: string;
@@ -306,6 +307,9 @@ export default function EventsPage() {
 
             const videoMeta = videos.find((v) => v.id === vid);
             const filename = videoMeta?.filename || vid;
+            const sourceDomain = videoMeta?.source_domain ? videoMeta.source_domain.replace(/_/g, ' ') : 'Surveillance Source';
+            const resolution = videoMeta?.metadata?.resolution || 'HD Stream';
+            const fps = videoMeta?.metadata?.fps ? `${Math.round(videoMeta.metadata.fps)} FPS` : '';
 
             return (
               <div key={vid} className="card" style={{ overflow: 'hidden' }}>
@@ -335,11 +339,11 @@ export default function EventsPage() {
                           {vid}
                         </span>
                         <span className="badge badge-accent" style={{ fontSize: 10 }}>
-                          CAM-07 • Node
+                          {sourceDomain}
                         </span>
                       </div>
                       <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 2 }}>
-                        {videoEvents.length} events catalogued • 4K CCTV Source Stream
+                        {videoEvents.length} events catalogued • {resolution} {fps ? `(${fps})` : ''} Source Stream
                       </div>
                     </div>
                   </div>

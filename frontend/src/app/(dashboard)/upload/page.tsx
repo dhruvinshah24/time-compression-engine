@@ -129,22 +129,13 @@ export default function UploadPage() {
   };
 
   // Determine current active step in guided flow
-  const currentStep = uploadResult ? 4 : uploading ? 3 : file ? 2 : 1;
+  const currentStep = uploadResult ? 4 : uploading ? 4 : (domain && modelProfile && file) ? 3 : file ? 2 : 1;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 960, margin: '0 auto', width: '100%' }}>
-      {/* ── Header & Breadcrumb ─────────────────────────────────────────── */}
+      {/* ── Header ──────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{
-            fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
-            marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6
-          }}>
-            <Link href="/" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Dashboard</Link>
-            <span>/</span>
-            <span style={{ color: 'var(--text-secondary)' }}>Ingestion Workstation</span>
-          </div>
-
           <h1 style={{
             fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
             letterSpacing: '-0.02em', margin: 0

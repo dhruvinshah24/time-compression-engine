@@ -239,24 +239,6 @@ export default function ProcessingPage() {
 
         {/* Header Action Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {isCompleted && videoId && (
-            <>
-              <Link href={`/timeline/${videoId}`} style={{ textDecoration: 'none' }}>
-                <button className="btn btn-primary" style={{ fontSize: 12, padding: '8px 18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Play size={13} />
-                  <span>Launch Forensic Timeline</span>
-                </button>
-              </Link>
-
-              <Link href={`/summary/${videoId}`} style={{ textDecoration: 'none' }}>
-                <button className="btn btn-secondary" style={{ fontSize: 12, padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <FileText size={13} />
-                  <span>View Executive Summary</span>
-                </button>
-              </Link>
-            </>
-          )}
-
           <button
             onClick={() => setShowDiagnostics(!showDiagnostics)}
             className="btn btn-secondary"

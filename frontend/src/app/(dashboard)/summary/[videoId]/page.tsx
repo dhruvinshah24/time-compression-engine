@@ -183,11 +183,13 @@ export default function SummaryPage() {
             <span>Print Dossier</span>
           </button>
 
-          <Link href={`/timeline/${videoId}`} style={{ textDecoration: 'none' }}>
-            <button className="btn btn-primary" style={{ fontSize: 12, padding: '8px 18px', fontWeight: 700 }}>
-              <Play size={13} />
-              <span>Open Forensic Timeline</span>
-            </button>
+          <Link
+            href={`/timeline/${videoId}`}
+            className="btn btn-primary"
+            style={{ fontSize: 12, padding: '8px 18px', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <Play size={13} />
+            <span>Open Forensic Timeline</span>
           </Link>
         </div>
       </div>
@@ -295,7 +297,7 @@ export default function SummaryPage() {
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
             Investigative Executive Narrative
           </div>
-          <span className="badge badge-accent" style={{ fontSize: 10 }}>
+          <span className="badge badge-accent">
             TCE v1.1 Synthesis
           </span>
         </div>

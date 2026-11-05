@@ -11,8 +11,18 @@ export const BACKEND_URL =
 export function mediaUrl(path: string | null | undefined): string {
   if (!path) return '';
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  
+  // Normalize backslashes to forward slashes
+  let normalized = path.replace(/\\/g, '/');
+  
+  // If absolute filesystem path containing storage/..., extract relative storage path
+  const storageIdx = normalized.indexOf('storage/');
+  if (storageIdx !== -1) {
+    normalized = normalized.slice(storageIdx);
+  }
+  
   const base = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  const cleanPath = normalized.startsWith('/') ? normalized : `/${normalized}`;
   return `${base}${cleanPath}`;
 }
 

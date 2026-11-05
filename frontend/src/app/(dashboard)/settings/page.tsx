@@ -146,6 +146,9 @@ export default function SettingsPage() {
           <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
           <input
             type="text"
+            id="settings-search-input"
+            name="settingsSearch"
+            aria-label="Filter configuration parameters"
             placeholder="Search parameter key or description..."
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -155,6 +158,7 @@ export default function SettingsPage() {
           {search && (
             <button
               onClick={() => setSearch('')}
+              aria-label="Clear search query"
               style={{
                 position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                 background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 2
@@ -203,101 +207,100 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* ── Structured Parameter Table / List ────────────────────────────── */}
+      {/* ── Structured Parameter Table ─────────────────────────────────── */}
       <div className="card" style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--border)' }}>
-        {/* Table Header */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '140px 240px 180px 1fr 90px',
-          padding: '10px 16px',
-          backgroundColor: 'var(--bg-raised)',
-          borderBottom: '1px solid var(--border)',
-          fontSize: 11,
-          fontFamily: 'var(--font-mono)',
-          fontWeight: 700,
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em'
-        }}>
-          <div>Category</div>
-          <div>Parameter Name & Key</div>
-          <div>Configured Value</div>
-          <div>Functional Description</div>
-          <div style={{ textAlign: 'right' }}>Status</div>
-        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[760px]">
+            {/* Table Header */}
+            <thead>
+              <tr style={{
+                backgroundColor: 'var(--bg-raised)',
+                borderBottom: '1px solid var(--border)',
+                fontSize: 11,
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 700,
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                <th scope="col" style={{ padding: '10px 16px', width: 140 }}>Category</th>
+                <th scope="col" style={{ padding: '10px 16px', width: 240 }}>Parameter Name & Key</th>
+                <th scope="col" style={{ padding: '10px 16px', width: 180 }}>Configured Value</th>
+                <th scope="col" style={{ padding: '10px 16px' }}>Functional Description</th>
+                <th scope="col" style={{ padding: '10px 16px', width: 90, textAlign: 'right' }}>Status</th>
+              </tr>
+            </thead>
 
-        {/* Rows */}
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {filteredSettings.map((setting, idx) => {
-            const Icon = CATEGORY_ICONS[setting.category] ?? Settings2;
-            const isLast = idx === filteredSettings.length - 1;
+            {/* Rows */}
+            <tbody className="divide-y divide-[var(--border-dim)]">
+              {filteredSettings.map((setting, idx) => {
+                const Icon = CATEGORY_ICONS[setting.category] ?? Settings2;
 
-            return (
-              <div
-                key={setting.key}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '140px 240px 180px 1fr 90px',
-                  alignItems: 'center',
-                  padding: '12px 16px',
-                  borderBottom: isLast ? 'none' : '1px solid var(--border-dim)',
-                  backgroundColor: idx % 2 === 1 ? 'rgba(255, 255, 255, 0.015)' : 'transparent',
-                  transition: 'background-color 0.15s ease'
-                }}
-              >
-                {/* Category */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{
-                    width: 24, height: 24, borderRadius: 4,
-                    backgroundColor: 'var(--accent-bg)', border: '1px solid var(--accent-dim)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'var(--accent)', flexShrink: 0
-                  }}>
-                    <Icon size={12} />
-                  </div>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
-                    {setting.category}
-                  </span>
-                </div>
+                return (
+                  <tr
+                    key={setting.key}
+                    style={{
+                      backgroundColor: idx % 2 === 1 ? 'rgba(255, 255, 255, 0.015)' : 'transparent',
+                      transition: 'background-color 0.15s ease'
+                    }}
+                  >
+                    {/* Category */}
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{
+                          width: 24, height: 24, borderRadius: 4,
+                          backgroundColor: 'var(--accent-bg)', border: '1px solid var(--accent-dim)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'var(--accent)', flexShrink: 0
+                        }}>
+                          <Icon size={12} />
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                          {setting.category}
+                        </span>
+                      </div>
+                    </td>
 
-                {/* Name & Key */}
-                <div style={{ paddingRight: 12 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {setting.display_name}
-                  </div>
-                  <div style={{
-                    fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
-                    marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-                  }}>
-                    {setting.key}
-                  </div>
-                </div>
+                    {/* Name & Key */}
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {setting.display_name}
+                      </div>
+                      <div style={{
+                        fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+                        marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220
+                      }}>
+                        {setting.key}
+                      </div>
+                    </td>
 
-                {/* Value & Unit */}
-                <div>
-                  <ValueBadge value={setting.value} unit={setting.unit} />
-                </div>
+                    {/* Value & Unit */}
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                      <ValueBadge value={setting.value} unit={setting.unit} />
+                    </td>
 
-                {/* Description */}
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', paddingRight: 16, lineHeight: 1.4 }}>
-                  {setting.description}
-                </div>
+                    {/* Description */}
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                      {setting.description}
+                    </td>
 
-                {/* Status / Lock */}
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                    fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
-                    backgroundColor: 'var(--bg-inset)', padding: '3px 6px', borderRadius: 4,
-                    border: '1px solid var(--border-dim)'
-                  }}>
-                    <Lock size={9} />
-                    <span>Frozen</span>
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+                    {/* Status / Lock */}
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'right' }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                        fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+                        backgroundColor: 'var(--bg-inset)', padding: '3px 6px', borderRadius: 4,
+                        border: '1px solid var(--border-dim)'
+                      }}>
+                        <Lock size={10} />
+                        <span>Frozen</span>
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
 
         {filteredSettings.length === 0 && (

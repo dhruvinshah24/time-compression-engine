@@ -626,12 +626,15 @@ export default function ForensicTimelinePage() {
     (p) => currentMs >= p.first_seen_ms && currentMs <= p.last_seen_ms
   ) || data.persons[0]) : null;
 
-  // Derive real detection bounding box from selected event evidence or active detection
+  // Derive real detection bounding box from selected event evidence
+  // Per Rule C & TASK 2.1: Never fabricate 0.42 fallback coordinates.
+  // Distinguish event static evidence snapshot from continuous tracking.
   const activeBBox = useMemo(() => {
     if (!showOverlays || !selectedEvent) return null;
     const ev = selectedEvent.evidence as any;
     if (!ev) return null;
 
+    // 1. Genuine normalized bounding box coordinates [x1, y1, x2, y2]
     if (ev.bbox_norm && Array.isArray(ev.bbox_norm) && ev.bbox_norm.length === 4) {
       const [x1, y1, x2, y2] = ev.bbox_norm;
       return {
@@ -639,13 +642,20 @@ export default function ForensicTimelinePage() {
         left: `${(x1 * 100).toFixed(1)}%`,
         width: `${((x2 - x1) * 100).toFixed(1)}%`,
         height: `${((y2 - y1) * 100).toFixed(1)}%`,
-        label: selectedEvent.person_label || activePerson?.person_label || 'Detected Actor',
+        label: `${selectedEvent.person_label || activePerson?.person_label || 'Detected Actor'} (Evidence Snapshot)`,
+        isStaticEvidence: true,
       };
     }
 
-    if (typeof ev.entry_cx === 'number' && typeof ev.entry_cy === 'number') {
-      const h = ev.mean_height || 0.42;
-      const w = h * 0.42;
+    // 2. Genuine telemetry with measured bounding dimensions (no synthetic 0.42 ratio)
+    if (
+      typeof ev.entry_cx === 'number' &&
+      typeof ev.entry_cy === 'number' &&
+      typeof ev.mean_height === 'number' &&
+      typeof ev.mean_width === 'number'
+    ) {
+      const h = ev.mean_height;
+      const w = ev.mean_width;
       const top = Math.max(2, Math.min(95, (ev.entry_cy - h / 2) * 100));
       const left = Math.max(2, Math.min(95, (ev.entry_cx - w / 2) * 100));
       return {
@@ -653,7 +663,8 @@ export default function ForensicTimelinePage() {
         left: `${left.toFixed(1)}%`,
         width: `${(w * 100).toFixed(1)}%`,
         height: `${(h * 100).toFixed(1)}%`,
-        label: selectedEvent.person_label || activePerson?.person_label || 'Detected Actor',
+        label: `${selectedEvent.person_label || activePerson?.person_label || 'Detected Actor'} (Evidence Snapshot)`,
+        isStaticEvidence: true,
       };
     }
 
@@ -698,7 +709,7 @@ export default function ForensicTimelinePage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 14 }}>
       {/* ── BREADCRUMB & HEADER BAR ────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
         <div>
           {/* Breadcrumb */}
           <div style={{
@@ -746,7 +757,7 @@ export default function ForensicTimelinePage() {
         </div>
 
         {/* Right Header Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <Link href={`/summary/${videoId}`} style={{ textDecoration: 'none' }}>
             <button className="btn btn-secondary" style={{ fontSize: 12, padding: '6px 12px' }}>
               <FileText size={13} style={{ color: 'var(--text-secondary)' }} />
@@ -784,17 +795,11 @@ export default function ForensicTimelinePage() {
         </div>
       </div>
 
-      {/* ── MAIN WORKSPACE: 70% VIDEO & TRACK + 30% INSPECTOR PANEL ─── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) 370px',
-        gap: 16,
-        flex: 1,
-        minHeight: 0,
-      }}>
+      {/* ── MAIN WORKSPACE: RESPONSIVE 70/30 ON DESKTOP, STACKED ON TABLET/MOBILE ─── */}
+      <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_370px] gap-4 flex-1 min-h-0">
 
         {/* ── LEFT COLUMN: VIDEO PLAYER + TIMELINE TRACK ─────────────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
+        <div className="flex flex-col gap-3 min-w-0 w-full">
           
           {/* 1. Video Player Surface */}
           <div className="player-surface" style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
@@ -857,8 +862,8 @@ export default function ForensicTimelinePage() {
                 <span>{data.filename || videoId} · {fmtTimecode(currentTime)}</span>
               </div>
 
-              {/* Bounding Box Overlay (HUD) — only renders when real coordinate telemetry exists */}
-              {activeBBox && (
+              {/* Bounding Box Overlay (HUD) — only renders genuine coordinate telemetry when paused/inspecting */}
+              {activeBBox && !isPlaying && (
                 <div style={{
                   position: 'absolute',
                   top: activeBBox.top,
@@ -921,6 +926,7 @@ export default function ForensicTimelinePage() {
             {/* ── Player Controls Bar (Below Video) ───────────────────── */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              flexWrap: 'wrap', gap: 8,
               padding: '8px 14px',
               backgroundColor: 'var(--bg-inset)',
               borderTop: '1px solid var(--border-dim)'
@@ -1124,7 +1130,7 @@ export default function ForensicTimelinePage() {
                 border: `1px solid ${activeTelemetry.categoryVisual.border}`,
                 boxShadow: `0 0 12px ${activeTelemetry.categoryVisual.glow}`,
                 fontSize: 11, fontFamily: 'var(--font-mono)',
-                maxWidth: 440, overflow: 'hidden'
+                maxWidth: 'min(440px, 100%)', overflow: 'hidden'
               }}>
                 <span style={{
                   width: 7, height: 7, borderRadius: '50%',
@@ -1760,11 +1766,8 @@ export default function ForensicTimelinePage() {
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN: INSPECTOR PANEL (370px) ─────────────────── */}
-        <div className="card" style={{
-          display: 'flex', flexDirection: 'column',
-          padding: 16, height: '100%', overflowY: 'auto'
-        }}>
+        {/* ── RIGHT COLUMN: INSPECTOR PANEL (370px on desktop, full-width on mobile/tablet) ─── */}
+        <div className="card w-full xl:w-[370px] flex flex-col p-4 xl:h-full overflow-y-auto">
           {/* Top Segmented Tabs: Event, Actors, Assets, Narrative */}
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',

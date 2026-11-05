@@ -34,6 +34,14 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
+function fmtHMS(totalSec: number): string {
+  if (!totalSec || totalSec <= 0) return '00:00:00';
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = Math.round(totalSec % 60);
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
 interface CustomTooltipProps {
   active?: boolean;
   payload?: Array<{ value: number; name: string }>;
@@ -87,7 +95,8 @@ export default function AnalyticsPage() {
                 id: j.id,
                 video_id: j.video_id,
                 filename: (j.filename || 'Stream').replace('archive_', 'Vid-').slice(0, 14),
-                event_count: j.event_count || 0
+                event_count: j.event_count || 0,
+                duration_seconds: j.video_metadata?.duration_seconds || 0,
               }))
           );
           setLoading(false);
@@ -126,8 +135,12 @@ export default function AnalyticsPage() {
     : Math.round((1 - rawRatio) * 100);
   const timeSavedDisplay = `${Math.max(0, Math.min(99, timeSavedPct))}%`;
   const condensedPct = Math.max(1, 100 - timeSavedPct);
-  const condensedMinutes = Math.round(60 * (condensedPct / 100));
-  const condensedTimeStr = `00:${String(condensedMinutes).padStart(2, '0')}:00`;
+
+  // Compute actual ingested footage duration rather than hardcoded 60 minutes
+  const totalRawSeconds = (jobsData || []).reduce((acc: number, j: any) => acc + (j.duration_seconds || 0), 0);
+  const rawDurationStr = totalRawSeconds > 0 ? `${fmtHMS(totalRawSeconds)} (100%)` : '—';
+  const condensedSeconds = totalRawSeconds > 0 ? Math.round(totalRawSeconds * (condensedPct / 100)) : 0;
+  const condensedTimeStr = totalRawSeconds > 0 ? `${fmtHMS(condensedSeconds)} (${condensedPct}%)` : '—';
 
   const statItems = [
     { label: 'Total Streams Ingested', value: data?.total_videos || 0, icon: Video, sub: 'Surveillance archives' },
@@ -277,8 +290,8 @@ export default function AnalyticsPage() {
 
           <div className="card-inset" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>Raw Footages</span>
-              <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-primary)' }}>01:00:00 (100%)</span>
+              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>Raw Ingested Footage</span>
+              <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-primary)' }}>{rawDurationStr}</span>
             </div>
             <div className="progress-track" style={{ height: 6 }}>
               <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--border)' }} />
@@ -286,7 +299,7 @@ export default function AnalyticsPage() {
 
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 4 }}>
               <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--accent)' }}>Condensed Timeline</span>
-              <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent)' }}>{condensedTimeStr} ({condensedPct}%)</span>
+              <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent)' }}>{condensedTimeStr}</span>
             </div>
             <div className="progress-track" style={{ height: 6 }}>
               <div className="progress-fill" style={{ width: `${condensedPct}%` }} />

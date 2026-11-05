@@ -67,6 +67,35 @@ function formatLabel(str: string): string {
   return str.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function getStoryCompleteness(arc: StoryArc): {
+  status: 'COMPLETE' | 'PARTIAL' | 'MINIMAL';
+  label: string;
+  badgeStyle: { bg: string; color: string; border: string };
+} {
+  const hasEntry = arc.events?.some((e) => e.event_type?.includes('entered') || e.rule_name?.includes('entered'));
+  const hasExit = arc.events?.some((e) => e.event_type?.includes('left') || e.rule_name?.includes('left'));
+
+  if ((hasEntry && hasExit) || arc.event_count >= 6) {
+    return {
+      status: 'COMPLETE',
+      label: 'Complete Chain',
+      badgeStyle: { bg: 'rgba(72, 187, 120, 0.12)', color: '#48BB78', border: '1px solid rgba(72, 187, 120, 0.3)' }
+    };
+  }
+  if (arc.event_count >= 2) {
+    return {
+      status: 'PARTIAL',
+      label: 'Partial Chain',
+      badgeStyle: { bg: 'rgba(224, 169, 109, 0.12)', color: '#E0A96D', border: '1px solid rgba(224, 169, 109, 0.3)' }
+    };
+  }
+  return {
+    status: 'MINIMAL',
+    label: 'Minimal Evidence',
+    badgeStyle: { bg: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', border: '1px solid rgba(255, 255, 255, 0.1)' }
+  };
+}
+
 export default function StoriesPage() {
   const router = useRouter();
   const params = useParams();
@@ -275,25 +304,21 @@ export default function StoriesPage() {
             const widthPct = Math.max(4, endPct - startPct);
             const isSelected = activeStory?.story_id === arc.story_id;
 
+            const completeness = getStoryCompleteness(arc);
+
             return (
               <div
                 key={arc.story_id || idx}
                 onClick={() => setActiveStory(arc)}
+                className="flex flex-col md:grid md:grid-cols-[300px_1fr] gap-4 p-4 border-b border-[var(--border-dim)] cursor-pointer transition-colors"
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: '280px 1fr',
-                  gap: 16,
-                  padding: '16px 18px',
-                  borderBottom: idx === data.stories.length - 1 ? 'none' : '1px solid var(--border-dim)',
                   backgroundColor: isSelected ? 'var(--selected-surface)' : idx % 2 === 1 ? 'rgba(255,255,255,0.015)' : 'transparent',
-                  transition: 'background-color 0.15s ease',
-                  cursor: 'pointer'
                 }}
               >
                 {/* Left Track Identity Info */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                   <div style={{
-                    width: 38, height: 38, borderRadius: 5,
+                    width: 40, height: 40, borderRadius: 6,
                     backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     overflow: 'hidden', flexShrink: 0
@@ -305,27 +330,45 @@ export default function StoriesPage() {
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     ) : (
-                      <User size={18} style={{ color: 'var(--accent)' }} />
+                      <User size={20} style={{ color: 'var(--accent)' }} />
                     )}
                   </div>
 
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {arc.person_label || `Actor (Track #${arc.track_id})`}
                       </span>
-                      <span className="badge badge-accent" style={{ fontSize: 9 }}>
-                        {arc.event_count} evts
+                      {/* SRS Completeness Indicator Badge */}
+                      <span
+                        style={{
+                          fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700,
+                          padding: '1px 6px', borderRadius: 4,
+                          backgroundColor: completeness.badgeStyle.bg,
+                          color: completeness.badgeStyle.color,
+                          border: completeness.badgeStyle.border
+                        }}
+                      >
+                        {completeness.label}
                       </span>
                     </div>
 
-                    <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 2 }}>
+                    <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 3 }}>
                       {fmtMs(arc.start_ms)} → {fmtMs(arc.end_ms)} ({formatDuration(arc.duration_ms)})
                     </div>
 
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-                      {arc.entry_direction ? `In: ${arc.entry_direction}` : ''}
-                      {arc.exit_direction ? ` • Out: ${arc.exit_direction}` : ''}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: 'var(--text-muted)', marginTop: 3, flexWrap: 'wrap' }}>
+                      <span>{arc.event_count} causal events</span>
+                      <span>•</span>
+                      <span style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                        {Math.round(arc.avg_confidence * 100)}% confidence
+                      </span>
+                      {arc.entry_direction && (
+                        <>
+                          <span>•</span>
+                          <span>In: {arc.entry_direction}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -415,11 +458,30 @@ export default function StoriesPage() {
       {activeStory && (
         <div className="card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <Sparkles size={16} style={{ color: 'var(--accent)' }} />
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
                 Identity Arc Dossier: {activeStory.person_label || `Actor #${activeStory.track_id}`}
               </div>
+              {(() => {
+                const cmp = getStoryCompleteness(activeStory);
+                return (
+                  <span
+                    style={{
+                      fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700,
+                      padding: '2px 8px', borderRadius: 4,
+                      backgroundColor: cmp.badgeStyle.bg,
+                      color: cmp.badgeStyle.color,
+                      border: cmp.badgeStyle.border
+                    }}
+                  >
+                    {cmp.label}
+                  </span>
+                );
+              })()}
+              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--accent)' }}>
+                {Math.round(activeStory.avg_confidence * 100)}% Avg Confidence
+              </span>
             </div>
 
             <button

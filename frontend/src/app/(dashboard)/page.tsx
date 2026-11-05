@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api/client";
+import { api, mediaUrl } from "@/lib/api/client";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import {
   Film, Zap, TrendingDown, HardDrive, UploadCloud,
@@ -234,7 +234,7 @@ export default function DashboardPage() {
                   <div key={job.id}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                       <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{job.filename}</span>
-                      <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--warning-c)' }}>
+                      <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--warning)' }}>
                         {job.current_stage ?? "PROCESSING"} · {job.progress}%
                       </span>
                     </div>
@@ -263,45 +263,80 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div>
-                  {jobs.map(job => (
-                    <div key={job.id} style={{
-                      display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px',
-                      borderBottom: '1px solid var(--border-dim)',
-                    }}>
-                      {/* Thumbnail placeholder */}
-                      <div style={{ width: 56, height: 38, borderRadius: 4, backgroundColor: 'var(--bg-inset)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text-muted)' }}>
-                        <PlaySquare size={16} />
-                      </div>
-                      {/* Info */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.filename}</p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
-                          <StatusBadge status={job.status} />
-                          <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                            {job.event_count} events
-                          </span>
-                          {job.video_metadata?.duration_hms && (
-                            <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
-                              <Clock size={10} /> {job.video_metadata.duration_hms}
-                            </span>
+                  {jobs.map(job => {
+                    const thumbUrl = (job as any).person_gallery?.[0]?.crop_url
+                      ? mediaUrl((job as any).person_gallery[0].crop_url)
+                      : (job as any).export_manifest?.clips?.[0]?.thumbnail_path
+                      ? mediaUrl((job as any).export_manifest.clips[0].thumbnail_path)
+                      : null;
+
+                    return (
+                      <div key={job.id} style={{
+                        display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px',
+                        borderBottom: '1px solid var(--border-dim)',
+                      }}>
+                        {/* Video Thumbnail */}
+                        <div style={{
+                          width: 56, height: 38, borderRadius: 4,
+                          backgroundColor: 'var(--bg-inset)', border: '1px solid var(--border)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          flexShrink: 0, color: 'var(--text-muted)', overflow: 'hidden'
+                        }}>
+                          {thumbUrl ? (
+                            <img
+                              src={thumbUrl}
+                              alt={job.filename}
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <PlaySquare size={16} />
                           )}
                         </div>
-                      </div>
-                      {/* Actions */}
-                      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                        <Link href={`/timeline/${job.video_id}`}>
-                          <button className={job.status === "completed" ? "btn btn-primary" : "btn btn-secondary"} style={{ fontSize: 11, padding: '5px 12px' }} disabled={job.status !== "completed"}>
-                            Timeline
-                          </button>
-                        </Link>
-                        <Link href={`/processing/${job.id}`}>
-                          <button className="btn btn-ghost" style={{ fontSize: 11, padding: '5px 10px' }}>
+                        {/* Info */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.filename}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
+                            <StatusBadge status={job.status} />
+                            <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                              {job.event_count} events
+                            </span>
+                            {job.video_metadata?.duration_hms && (
+                              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                                <Clock size={10} /> {job.video_metadata.duration_hms}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {/* Actions — cleanly styled Links without nested button tags */}
+                        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                          {job.status === "completed" ? (
+                            <Link
+                              href={`/timeline/${job.video_id}`}
+                              className="btn btn-primary"
+                              style={{ fontSize: 11, padding: '5px 12px', textDecoration: 'none' }}
+                            >
+                              Timeline
+                            </Link>
+                          ) : (
+                            <span
+                              className="btn btn-secondary"
+                              style={{ fontSize: 11, padding: '5px 12px', opacity: 0.5, cursor: 'not-allowed' }}
+                            >
+                              Timeline
+                            </span>
+                          )}
+                          <Link
+                            href={`/processing/${job.id}`}
+                            className="btn btn-ghost"
+                            style={{ fontSize: 11, padding: '5px 10px', textDecoration: 'none' }}
+                          >
                             Pipeline
-                          </button>
-                        </Link>
+                          </Link>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

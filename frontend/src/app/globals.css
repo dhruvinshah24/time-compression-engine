@@ -465,3 +465,64 @@ body {
   }
 }
 
+/* ── Accessible Focus Visible States (Task 4.4) ─────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Respect user's reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Print Media Styles for Forensic Dossiers (Task 4.6) ─────────────────── */
+@media print {
+  aside,
+  header,
+  nav,
+  button:not(.print-include),
+  .no-print {
+    display: none !important;
+  }
+
+  body, html {
+    background: #ffffff !important;
+    color: #111827 !important;
+    font-size: 11pt !important;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .card, .card-raised, .card-inset {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  .badge {
+    border: 1px solid #d1d5db !important;
+    color: #111827 !important;
+    background: #f3f4f6 !important;
+  }
+}
+

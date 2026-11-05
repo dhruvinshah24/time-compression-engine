@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import {
   X, User, Clock, Eye, MapPin, Activity,
   ChevronRight, Target, ArrowRight,
@@ -114,11 +115,11 @@ export default function PersonDossierModal({
                 <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
                   {person.person_label}
                 </span>
-                <span className="badge badge-accent" style={{ fontSize: 10 }}>
+                <span className="badge badge-accent">
                   Active Subject
                 </span>
               </div>
-              <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                 Visual Dossier & Continuity Log
               </div>
             </div>
@@ -126,6 +127,7 @@ export default function PersonDossierModal({
 
           <button
             onClick={onClose}
+            aria-label="Close person dossier modal"
             className="btn btn-ghost"
             style={{ width: 28, height: 28, padding: 0 }}
           >
@@ -150,11 +152,13 @@ export default function PersonDossierModal({
               position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
               {cropSrc && !imgError ? (
-                <img
+                <Image
                   src={cropSrc}
                   alt={person.person_label}
+                  fill
+                  unoptimized
                   onError={() => setImgError(true)}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ objectFit: 'cover' }}
                 />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}>
@@ -224,11 +228,11 @@ export default function PersonDossierModal({
                         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
                           {evt.display_name || evt.event_type?.replace(/_/g, ' ')}
                         </div>
-                        <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 2 }}>
+                        <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 2 }}>
                           At {fmtTimecode(ms)} • {evt.confidence ? `${Math.round(evt.confidence * 100)}% verified` : 'Observed'}
                         </div>
                       </div>
-                      <span className="badge badge-neutral" style={{ fontSize: 10 }}>
+                      <span className="badge badge-neutral">
                         {fmtTimecode(ms).slice(0, 5)}
                       </span>
                     </div>
